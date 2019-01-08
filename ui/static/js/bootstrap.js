@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     FormHandler.handleSubmitButtons();
 
     let touchHandler = new TouchHandler();
@@ -42,9 +42,13 @@ document.addEventListener("DOMContentLoaded", function() {
         EntryHandler.toggleBookmark(event.target);
     });
 
+    mouseHandler.onClick("a[data-toggle-cache]", (event) => {
+        EntryHandler.toggleCache(event.target);
+    });
+
     mouseHandler.onClick("a[data-toggle-status]", (event) => {
         let currentItem = DomHelper.findParent(event.target, "entry");
-        if (! currentItem) {
+        if (!currentItem) {
             currentItem = DomHelper.findParent(event.target, "item");
         }
 
@@ -52,6 +56,17 @@ document.addEventListener("DOMContentLoaded", function() {
             EntryHandler.toggleEntryStatus(currentItem);
         }
     });
+
+    mouseHandler.onClick("a[data-set-read]", (event) => {
+        let currentItem = DomHelper.findParent(event.target, "entry");
+        if (!currentItem) {
+            currentItem = DomHelper.findParent(event.target, "item");
+        }
+        if (currentItem) {
+            EntryHandler.setEntryStatusRead(currentItem)
+        }
+
+    }, true);
 
     mouseHandler.onClick("a[data-fetch-content-entry]", (event) => {
         EntryHandler.fetchOriginalContent(event.target);
@@ -82,5 +97,23 @@ document.addEventListener("DOMContentLoaded", function() {
         if (scriptElement) {
             navigator.serviceWorker.register(scriptElement.src);
         }
+    }
+
+    let msnryElement = document.querySelector('.masonry');
+    if (msnryElement) {
+        var msnry = new Masonry(msnryElement, {
+            itemSelector: '.item',
+            columnWidth: '.item-sizer',
+            gutter: 10
+        })
+        let callback = (instance, image) => {
+            if (!image.img.dataset.src && !image.isLoaded) {
+                let thumbnail = DomHelper.findParent(image.img, "thumbnail");
+                if (thumbnail) thumbnail.parentNode.removeChild(thumbnail);
+            }
+            msnry.layout();
+        }
+        imagesLoaded('.masonry .item').on('progress', callback);
+        LazyloadHandler.add(".item", 'progress', callback);
     }
 });

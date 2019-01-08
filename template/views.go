@@ -123,7 +123,8 @@ var templateViewsMap = map[string]string{
 {{ if not .entries }}
     <p class="alert alert-info">{{ t "alert.no_bookmark" }}</p>
 {{ else }}
-    <div class="items">
+    <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
+        <div class="item-sizer"></div>
         {{ range .entries }}
         <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
             <div class="item-header">
@@ -131,11 +132,18 @@ var templateViewsMap = map[string]string{
                     {{ if ne .Feed.Icon.IconID 0 }}
                         <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" alt="{{ .Feed.Title }}">
                     {{ end }}
-                    <a href="{{ route "starredEntry" "entryID" .ID }}">{{ .Title }}</a>
+                    <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "starredEntry" "entryID" .ID }}">{{ .Title }}</a>
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry }}
+            {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
+            <div class="thumbnail">
+                <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "starredEntry" "entryID" .ID }}">
+                    <img class="lazy" src="" data-src="{{ proxyURL .Thumbnail }}">
+                </a>
+            </div>
+            {{ end }}
         </article>
         {{ end }}
     </div>
@@ -227,7 +235,8 @@ var templateViewsMap = map[string]string{
 {{ if not .entries }}
     <p class="alert">{{ t "alert.no_category_entry" }}</p>
 {{ else }}
-    <div class="items">
+    <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
+        <div class="item-sizer"></div>
         {{ range .entries }}
         <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
             <div class="item-header">
@@ -235,11 +244,18 @@ var templateViewsMap = map[string]string{
                     {{ if ne .Feed.Icon.IconID 0 }}
                         <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" alt="{{ .Feed.Title }}">
                     {{ end }}
-                    <a href="{{ route "categoryEntry" "categoryID" .Feed.Category.ID "entryID" .ID }}">{{ .Title }}</a>
+                    <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "categoryEntry" "categoryID" .Feed.Category.ID "entryID" .ID }}">{{ .Title }}</a>
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry  }}
+            {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
+            <div class="thumbnail">
+                <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "categoryEntry" "categoryID" .Feed.Category.ID "entryID" .ID }}">
+                    <img class="lazy" src="" data-src="{{ proxyURL .Thumbnail }}">
+                </a>
+            </div>
+            {{ end }}
         </article>
         {{ end }}
     </div>
@@ -484,7 +500,7 @@ var templateViewsMap = map[string]string{
         </select>
 
         <label><input type="checkbox" name="crawler" value="1" {{ if .form.Crawler }}checked{{ end }}> {{ t "form.feed.label.crawler" }}</label>
-
+        <label><input type="checkbox" name="cache_media" value="1" {{ if .form.CacheMedia }}checked{{ end }}> {{ t "form.feed.label.cache_media" }}</label>
         <div class="buttons">
             <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="{{ route "feeds" }}">{{ t "action.cancel" }}</a>
         </div>
@@ -495,19 +511,28 @@ var templateViewsMap = map[string]string{
             <li><strong>{{ t "page.edit_feed.last_check" }} </strong><time datetime="{{ isodate .feed.CheckedAt }}" title="{{ isodate .feed.CheckedAt }}">{{ elapsed $.user.Timezone .feed.CheckedAt }}</time></li>
             <li><strong>{{ t "page.edit_feed.etag_header" }} </strong>{{ if .feed.EtagHeader }}{{ .feed.EtagHeader }}{{ else }}{{ t "page.edit_feed.no_header" }}{{ end }}</li>
             <li><strong>{{ t "page.edit_feed.last_modified_header" }} </strong>{{ if .feed.LastModifiedHeader }}{{ .feed.LastModifiedHeader }}{{ else }}{{ t "page.edit_feed.no_header" }}{{ end }}</li>
+            <li><strong>{{ t "page.edit_feed.medias" }} </strong>{{ if eq .mediaCount 0 }}{{ t "page.edit_feed.no_media" }}{{ else }}{{ plural "page.edit_feed.media_statistics" .mediaCount .mediaCount }}{{ if eq .cacheCount 0 }}{{ t "page.edit_feed.no_cache" }}{{ else }}{{ plural "page.edit_feed.cache_statistics" .cacheCount .cacheCount .cacheSize }}{{end}}{{end}}</li>
         </ul>
     </div>
 
     <div class="alert alert-error">
-        <a href="#"
-            data-confirm="true"
-            data-action="remove-feed"
-            data-label-question="{{ t "confirm.question" }}"
-            data-label-yes="{{ t "confirm.yes" }}"
-            data-label-no="{{ t "confirm.no" }}"
-            data-label-loading="{{ t "confirm.loading" }}"
-            data-url="{{ route "removeFeed" "feedID" .feed.ID }}"
-            data-redirect-url="{{ route "feeds" }}">{{ t "action.remove_feed" }}</a>
+            <a href="#"
+                data-confirm="true"
+                data-action="remove-feed"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}"
+                data-url="{{ route "removeFeed" "feedID" .feed.ID }}"
+                data-redirect-url="{{ route "feeds" }}">{{ t "action.remove_feed" }}</a>,
+            <a href="#"
+                data-confirm="true"
+                data-action="remove-feed"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}"
+                data-url="{{ route "removeFeedCache" "feedID" .feed.ID }}">{{ t "action.remove_feed_cache" }}</a>
     </div>
 {{ end }}
 
@@ -567,7 +592,7 @@ var templateViewsMap = map[string]string{
 	"entry": `{{ define "title"}}{{ .entry.Title }}{{ end }}
 
 {{ define "content"}}
-<section class="entry" data-id="{{ .entry.ID }}">
+<section class="entry touch-item" data-id="{{ .entry.ID }}">
     <header class="entry-header">
         <h1>
             <a href="{{ .entry.URL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .entry.Title }}</a>
@@ -616,6 +641,18 @@ var templateViewsMap = map[string]string{
                 {{ if .entry.CommentsURL }}
                     <li>
                         <a href="{{ .entry.CommentsURL }}" title="{{ t "entry.comments.title" }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ t "entry.comments.label" }}</a>
+                    </li>
+                {{ end }}
+                {{ if .hasCacheService }}
+                    <li>
+                        <a href="#"
+                            data-toggle-cache="true"
+                            data-cache-url="{{ route "toggleCache" "entryID" .entry.ID }}"
+                            data-label-loading="{{ t "entry.state.saving" }}"
+                            data-label-cached="{{ t "entry.cache.toggle.on" }}"
+                            data-label-uncached="{{ t "entry.cache.toggle.off" }}"
+                            data-value="{{ if .entryCached }}cached{{ else }}uncached{{ end }}"
+                            >{{ if .entryCached }}{{ t "entry.cache.toggle.off" }}{{ else }}{{ t "entry.cache.toggle.on" }}{{ end }}</a>
                     </li>
                 {{ end }}
             </ul>
@@ -742,7 +779,8 @@ var templateViewsMap = map[string]string{
         <p class="alert">{{ t "alert.no_feed_entry" }}</p>
     {{ end }}
 {{ else }}
-    <div class="items">
+    <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
+        <div class="item-sizer"></div>
         {{ range .entries }}
         <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
             <div class="item-header">
@@ -750,11 +788,18 @@ var templateViewsMap = map[string]string{
                     {{ if ne .Feed.Icon.IconID 0 }}
                         <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" alt="{{ .Feed.Title }}">
                     {{ end }}
-                    <a href="{{ route "feedEntry" "feedID" .Feed.ID "entryID" .ID }}">{{ .Title }}</a>
+                    <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "feedEntry" "feedID" .Feed.ID "entryID" .ID }}">{{ .Title }}</a>
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry }}
+            {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
+            <div class="thumbnail">
+                <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "feedEntry" "feedID" .Feed.ID "entryID" .ID }}">
+                    <img class="lazy" src="" data-src="{{ proxyURL .Thumbnail }}">
+                </a>
+            </div>
+            {{ end }}
         </article>
         {{ end }}
     </div>
@@ -867,7 +912,8 @@ var templateViewsMap = map[string]string{
 {{ if not .entries }}
     <p class="alert alert-info">{{ t "alert.no_history" }}</p>
 {{ else }}
-    <div class="items">
+    <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
+        <div class="item-sizer"></div>
         {{ range .entries }}
         <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
             <div class="item-header">
@@ -875,11 +921,18 @@ var templateViewsMap = map[string]string{
                     {{ if ne .Feed.Icon.IconID 0 }}
                         <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" alt="{{ .Feed.Title }}">
                     {{ end }}
-                    <a href="{{ route "readEntry" "entryID" .ID }}">{{ .Title }}</a>
+                    <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "readEntry" "entryID" .ID }}">{{ .Title }}</a>
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry  }}
+            {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
+            <div class="thumbnail">
+                <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "readEntry" "entryID" .ID }}">
+                    <img class="lazy" src="" data-src="{{ proxyURL .Thumbnail }}">
+                </a>
+            </div>
+            {{ end }}
         </article>
         {{ end }}
     </div>
@@ -1124,7 +1177,8 @@ var templateViewsMap = map[string]string{
 {{ if not .entries }}
     <p class="alert alert-info">{{ t "alert.no_search_result" }}</p>
 {{ else }}
-    <div class="items">
+    <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
+        <div class="item-sizer"></div>
         {{ range .entries }}
         <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
             <div class="item-header">
@@ -1132,11 +1186,18 @@ var templateViewsMap = map[string]string{
                     {{ if ne .Feed.Icon.IconID 0 }}
                         <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" alt="{{ .Feed.Title }}">
                     {{ end }}
-                    <a href="{{ route "searchEntry" "entryID" .ID }}?q={{ $.searchQuery }}">{{ .Title }}</a>
+                    <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "searchEntry" "entryID" .ID }}?q={{ $.searchQuery }}">{{ .Title }}</a>
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry  }}
+            {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
+            <div class="thumbnail">
+                <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "searchEntry" "entryID" .ID }}?q={{ $.searchQuery }}">
+                    <img class="lazy" src="" data-src="{{ proxyURL .Thumbnail }}">
+                </a>
+            </div>
+            {{ end }}
         </article>
         {{ end }}
     </div>
@@ -1262,6 +1323,13 @@ var templateViewsMap = map[string]string{
     {{ end }}
     </select>
 
+    <label for="form-view">{{ t "form.prefs.label.view" }}</label>
+    <select id="form-view" name="view">
+    {{ range $key, $value := .views }}
+        <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ $value }}</option>
+    {{ end }}
+    </select>
+
     <label for="form-entry-direction">{{ t "form.prefs.label.entry_sorting" }}</label>
     <select id="form-entry-direction" name="entry_direction">
         <option value="asc" {{ if eq "asc" $.form.EntryDirection }}selected="selected"{{ end }}>{{ t "form.prefs.select.older_first" }}</option>
@@ -1307,7 +1375,8 @@ var templateViewsMap = map[string]string{
 {{ if not .entries }}
     <p class="alert">{{ t "alert.no_unread_entry" }}</p>
 {{ else }}
-    <div class="items hide-read-items">
+    <div class='{{ if eq .view "masonry" }}items masonry{{ else }}items hide-read-items{{ end }}'>
+        <div class="item-sizer"></div>
         {{ range .entries }}
         <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
             <div class="item-header">
@@ -1315,11 +1384,18 @@ var templateViewsMap = map[string]string{
                     {{ if ne .Feed.Icon.IconID 0 }}
                         <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" alt="{{ .Feed.Title }}">
                     {{ end }}
-                    <a href="{{ route "unreadEntry" "entryID" .ID }}">{{ .Title }}</a>
+                    <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "unreadEntry" "entryID" .ID }}">{{ .Title }}</a>
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry }}
+            {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
+            <div class="thumbnail">
+                <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "unreadEntry" "entryID" .ID }}">
+                    <img class="lazy" src="" data-src="{{ proxyURL .Thumbnail }}">
+                </a>
+            </div>
+            {{ end }}
         </article>
         {{ end }}
     </div>
@@ -1405,25 +1481,25 @@ var templateViewsMap = map[string]string{
 var templateViewsMapChecksums = map[string]string{
 	"about":               "844e3313c33ae31a74b904f6ef5d60299773620d8450da6f760f9f317217c51e",
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
-	"bookmark_entries":    "609f4b2342152fe495a219a32f17a4528b01807d61f53cee0cbebf728be73c42",
+	"bookmark_entries":    "62b60ec722ec1b1f851802cc6a06e1b9909cc529ace41505cddf340f2f640ca0",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "07ff798025f8527de5351a89fd5fc51973c1ea6c56710b4f703cbae183fbcbb6",
+	"category_entries":    "89bd1c239dcad5ec78f095e74badd62eff93632a1df555dc87f9069c10445bf1",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
 	"edit_category":       "daf073d2944a180ce5aaeb80b597eb69597a50dff55a9a1d6cf7938b48d768cb",
-	"edit_feed":           "ab30c31a4385a7b16c54baa78bdcb93a57181ed1c5018ce097d7eb50673bb995",
+	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
-	"entry":               "2ea9fee1ae5513ef1abb5923221c2ef1212e26d3bb651da66069ce8a336cbb7c",
-	"feed_entries":        "ba6a764d2784797629103500cc099178f29856dcfc95e59f0d134c32951cd3a4",
+	"entry":               "b37129c4a449db6b9bc16944fd42f2bdda4b757515087b7c40c9a12acb3a89f0",
+	"feed_entries":        "f460f5d3f3e66ebb28195197343140121f443d661d0feceab6e0c5c613bc1d8f",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
-	"history_entries":     "b65ca1d85615caa7c314a33f1cb997aa3477a79e66b9894b2fd387271ad467d2",
+	"history_entries":     "c418db61decb1d20503c54cecbe756fcfb718dbdac65c8f045c7560dfa96e5ef",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",
 	"integrations":        "f85b4a48ab1fc13b8ca94bfbbc44bd5e8784f35b26a63ec32cbe82b96b45e008",
 	"login":               "f9e6714d34fdce82266c8b23b0ff449d05ba71e474d26f711da66f8c4fdc076a",
-	"search_entries":      "d71849a4f2b0573c7c76ad0ea941812009e9f022de60895987a781d3e6f08a01",
+	"search_entries":      "8e674dae75e14fb0d13e1a90fb5bef3755a1599905a4c61be578adb9e8fdc370",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
-	"settings":            "bc04faf83dd977306825973375954600bd014619340188e1243fd9e2f5d5e1a9",
-	"unread_entries":      "880018cbc59ec09b23dd800c4010fadad944d7023e0d36a3872c09b5d4952799",
+	"settings":            "1209b97876ca12a8fe3cc2f3f99505725dbccf4966a94e57c2c9478c5a276bff",
+	"unread_entries":      "9794d48d14e5facf67178b66740bf6270b535fe1e94a898c097b2027823ff188",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

@@ -16,8 +16,12 @@ import (
 // Serve starts the internal scheduler.
 func Serve(cfg *config.Config, store *storage.Storage, pool *worker.Pool) {
 	logger.Info(`Starting scheduler...`)
+	go store.CreateMediasRunOnce()
 	go feedScheduler(store, pool, cfg.PollingFrequency(), cfg.BatchSize())
 	go cleanupScheduler(store, cfg.CleanupFrequency(), cfg.ArchiveReadDays())
+	if cfg.HasCacheService() {
+		go cacheScheduler(store, cfg.CacheFrequency())
+	}
 }
 
 func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency, batchSize int) {
@@ -42,6 +46,21 @@ func cleanupScheduler(store *storage.Storage, frequency int, archiveDays int) {
 
 		if err := store.ArchiveEntries(archiveDays); err != nil {
 			logger.Error("[Scheduler:Cleanup] %v", err)
+		}
+		if err := store.CleanupMedias(); err != nil {
+			logger.Error("[Scheduler:Cleanup] %v", err)
+		}
+		if err := store.CleanupCaches(); err != nil {
+			logger.Error("[Scheduler:Cleanup] %v", err)
+		}
+	}
+}
+
+func cacheScheduler(store *storage.Storage, frequency int) {
+	c := time.Tick(time.Duration(frequency) * time.Hour)
+	for range c {
+		if err := store.CacheMedias(30); err != nil {
+			logger.Error("[Scheduler:Cache] %v", err)
 		}
 	}
 }

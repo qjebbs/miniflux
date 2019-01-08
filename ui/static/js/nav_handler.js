@@ -125,7 +125,9 @@ class NavHandler {
     openSelectedItem() {
         let currentItemLink = document.querySelector(".current-item .item-title a");
         if (currentItemLink !== null) {
-            window.location.href = currentItemLink.getAttribute("href");
+            let e=document.createEvent("MouseEvents");
+            e.initEvent("click", true, true);
+            currentItemLink.dispatchEvent(e);
         }
     }
 
@@ -182,6 +184,13 @@ class NavHandler {
         } else {
             this.goToPage('feeds');
         }
+    }
+
+    goToListItem(item) {
+        if (!item) return;
+        document.querySelectorAll(".items .current-item")
+            .forEach(e => e.classList.remove("current-item"));
+        item.classList.add("current-item");
     }
 
     goToPreviousListItem() {

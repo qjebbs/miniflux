@@ -69,6 +69,7 @@ func Serve(router *mux.Router, cfg *config.Config, store *storage.Storage, pool 
 	uiRouter.HandleFunc("/feed/{feedID}/entries/all", handler.showFeedEntriesAllPage).Name("feedEntriesAll").Methods("GET")
 	uiRouter.HandleFunc("/feed/{feedID}/entry/{entryID}", handler.showFeedEntryPage).Name("feedEntry").Methods("GET")
 	uiRouter.HandleFunc("/feed/icon/{iconID}", handler.showIcon).Name("icon").Methods("GET")
+	uiRouter.HandleFunc("/feed/{feedID}/caches/remove", handler.removeFeedCaches).Name("removeFeedCache").Methods("POST")
 
 	// Category pages.
 	uiRouter.HandleFunc("/category/{categoryID}/entry/{entryID}", handler.showCategoryEntryPage).Name("categoryEntry").Methods("GET")
@@ -87,6 +88,7 @@ func Serve(router *mux.Router, cfg *config.Config, store *storage.Storage, pool 
 	uiRouter.HandleFunc("/entry/download/{entryID}", handler.fetchContent).Name("fetchContent").Methods("POST")
 	uiRouter.HandleFunc("/proxy/{encodedURL}", handler.imageProxy).Name("proxy").Methods("GET")
 	uiRouter.HandleFunc("/entry/bookmark/{entryID}", handler.toggleBookmark).Name("toggleBookmark").Methods("POST")
+	uiRouter.HandleFunc("/entry/cache/{entryID}", handler.toggleCache).Name("toggleCache").Methods("POST")
 
 	// User pages.
 	uiRouter.HandleFunc("/users", handler.showUsersPage).Name("users").Methods("GET")

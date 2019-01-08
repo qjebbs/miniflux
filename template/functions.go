@@ -7,8 +7,8 @@ package template // import "miniflux.app/template"
 import (
 	"encoding/base64"
 	"fmt"
-	"math"
 	"html/template"
+	"math"
 	"net/mail"
 	"strings"
 	"time"
@@ -20,8 +20,8 @@ import (
 	"miniflux.app/timezone"
 	"miniflux.app/url"
 
-	"github.com/gorilla/mux"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/gorilla/mux"
 )
 
 type funcMap struct {
@@ -55,9 +55,13 @@ func (f *funcMap) Map() template.FuncMap {
 			return imageProxyFilter(f.router, f.cfg, data)
 		},
 		"proxyURL": func(link string) string {
+			if link == "" {
+				return ""
+			}
+			hasCacheService := f.cfg.HasCacheService()
 			proxyImages := f.cfg.ProxyImages()
 
-			if proxyImages == "all" || (proxyImages != "none" && !url.IsHTTPS(link)) {
+			if hasCacheService || proxyImages == "all" || (proxyImages != "none" && !url.IsHTTPS(link)) {
 				return proxify(f.router, link)
 			}
 
@@ -179,8 +183,9 @@ func elapsedTime(printer *locale.Printer, tz string, t time.Time) string {
 }
 
 func imageProxyFilter(router *mux.Router, cfg *config.Config, data string) string {
+	hasCacheService := cfg.HasCacheService()
 	proxyImages := cfg.ProxyImages()
-	if proxyImages == "none" {
+	if proxyImages == "none" && !hasCacheService {
 		return data
 	}
 
@@ -191,7 +196,7 @@ func imageProxyFilter(router *mux.Router, cfg *config.Config, data string) strin
 
 	doc.Find("img").Each(func(i int, img *goquery.Selection) {
 		if srcAttr, ok := img.Attr("src"); ok {
-			if proxyImages == "all" || !url.IsHTTPS(srcAttr) {
+			if hasCacheService || proxyImages == "all" || !url.IsHTTPS(srcAttr) {
 				img.SetAttr("src", proxify(router, srcAttr))
 			}
 		}

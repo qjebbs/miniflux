@@ -14,17 +14,17 @@ import (
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
 	"miniflux.app/http/route"
-	"miniflux.app/storage"
 	"miniflux.app/logger"
 	"miniflux.app/model"
+	"miniflux.app/storage"
 
 	"github.com/gorilla/mux"
 )
 
 type middleware struct {
 	router *mux.Router
-	cfg *config.Config
-	store *storage.Storage
+	cfg    *config.Config
+	store  *storage.Storage
 }
 
 func newMiddleware(router *mux.Router, cfg *config.Config, store *storage.Storage) *middleware {
@@ -93,6 +93,7 @@ func (m *middleware) handleAppSession(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, request.FlashErrorMessageContextKey, session.Data.FlashErrorMessage)
 		ctx = context.WithValue(ctx, request.UserLanguageContextKey, session.Data.Language)
 		ctx = context.WithValue(ctx, request.UserThemeContextKey, session.Data.Theme)
+		ctx = context.WithValue(ctx, request.UserViewContextKey, session.Data.View)
 		ctx = context.WithValue(ctx, request.PocketRequestTokenContextKey, session.Data.PocketRequestToken)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

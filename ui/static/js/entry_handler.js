@@ -5,12 +5,6 @@ class EntryHandler {
         request.withBody({entry_ids: entryIDs, status: status});
         request.withCallback(callback);
         request.execute();
-
-        if (status === "read") {
-            UnreadCounterHandler.decrement(1);
-        } else {
-            UnreadCounterHandler.increment(1);
-        }
     }
 
     static toggleEntryStatus(element) {
@@ -25,15 +19,69 @@ class EntryHandler {
         if (currentStatus === "read") {
             link.innerHTML = link.dataset.labelRead;
             link.dataset.value = "unread";
+            UnreadCounterHandler.increment(1);
         } else {
             link.innerHTML = link.dataset.labelUnread;
             link.dataset.value = "read";
+            UnreadCounterHandler.decrement(1);
         }
 
         if (element.classList.contains("item-status-" + currentStatus)) {
             element.classList.remove("item-status-" + currentStatus);
             element.classList.add("item-status-" + newStatus);
         }
+    }
+
+    static setEntryStatusRead(element){
+        let link = element.querySelector("a[data-set-read]");
+        let sendRequest = !link.dataset.noRequest;
+        if(sendRequest){
+            let entryID = parseInt(element.dataset.id, 10);
+            this.updateEntriesStatus([entryID], "read");
+        }
+
+        link = element.querySelector("a[data-toggle-status]");
+        if (link && link.dataset.value === "unread") {
+            link.innerHTML = link.dataset.labelUnread;
+            link.dataset.value = "read";
+        }
+
+        if (element && element.classList.contains("item-status-unread")) {
+            element.classList.remove("item-status-unread");
+            element.classList.add("item-status-read");
+            UnreadCounterHandler.decrement(1);
+        }
+    }
+
+    static setEntriesAboveStatusRead(element){
+        let currentItem = document.querySelector(".current-item");
+        let items = DomHelper.getVisibleElements(".items .item");
+        if (currentItem === null || items.length === 0) {
+            return;
+        }
+        let targetItems=[];
+        let entryIds=[];
+        for (let i = 0; i < items.length; i++) {
+            targetItems.push(items[i]);
+            entryIds.push(parseInt(items[i].dataset.id, 10));
+            if (items[i].classList.contains("current-item")) {
+                break;
+            }
+        }
+        this.updateEntriesStatus(entryIds, "read",() => {
+            targetItems.map(item => {
+                let link = item.querySelector("a[data-toggle-status]");
+                if (link && link.dataset.value === "unread") {
+                    link.innerHTML = link.dataset.labelUnread;
+                    link.dataset.value = "read";
+                }
+                if (item && item.classList.contains("item-status-unread")) {
+                    item.classList.remove("item-status-unread");
+                    item.classList.add("item-status-read");
+                    UnreadCounterHandler.decrement(1);
+                }
+            });
+        });
     }
 
     static toggleBookmark(element) {
@@ -52,6 +100,22 @@ class EntryHandler {
         request.execute();
     }
 
+    static toggleCache(element) {
+        element.innerHTML = element.dataset.labelLoading;
+
+        let request = new RequestBuilder(element.dataset.cacheUrl);
+        request.withCallback(() => {
+            if (element.dataset.value === "cached") {
+                element.innerHTML = element.dataset.labelCached;
+                element.dataset.value = "uncached";
+            } else {
+                element.innerHTML = element.dataset.labelUncached;
+                element.dataset.value = "cached";
+            }
+        });
+        request.execute();
+    }
+
     static markEntryAsRead(element) {
         if (element.classList.contains("item-status-unread")) {
             element.classList.remove("item-status-unread");
@@ -59,6 +123,7 @@ class EntryHandler {
 
             let entryID = parseInt(element.dataset.id, 10);
             this.updateEntriesStatus([entryID], "read");
+            UnreadCounterHandler.decrement(1);
         }
     }
 

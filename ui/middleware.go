@@ -61,15 +61,24 @@ func (m *middleware) handleAppSession(next http.Handler) http.Handler {
 		session := m.getAppSessionValueFromCookie(r)
 
 		if session == nil {
-			logger.Debug("[UI:AppSession] Session not found")
-
-			session, err = m.store.CreateSession()
-			if err != nil {
-				html.ServerError(w, r, err)
-				return
+			if (request.IsAuthenticated(r)) {
+				userID := request.UserID(r)
+				logger.Debug("[UI:AppSession] Cookie expired but user #%d is logged: creating a new session", userID)
+				session, err = m.store.CreateAppSessionWithUserPrefs(userID)
+				if err != nil {
+					html.ServerError(w, r, err)
+					return
+				}
+			} else {
+				logger.Debug("[UI:AppSession] Session not found, creating a new one")
+				session, err = m.store.CreateAppSession()
+				if err != nil {
+					html.ServerError(w, r, err)
+					return
+				}
 			}
 
-			http.SetCookie(w, cookie.New(cookie.CookieSessionID, session.ID, m.cfg.IsHTTPS, m.cfg.BasePath()))
+			http.SetCookie(w, cookie.New(cookie.CookieAppSessionID, session.ID, m.cfg.IsHTTPS, m.cfg.BasePath()))
 		} else {
 			logger.Debug("[UI:AppSession] %s", session)
 		}
@@ -100,12 +109,12 @@ func (m *middleware) handleAppSession(next http.Handler) http.Handler {
 }
 
 func (m *middleware) getAppSessionValueFromCookie(r *http.Request) *model.Session {
-	cookieValue := request.CookieValue(r, cookie.CookieSessionID)
+	cookieValue := request.CookieValue(r, cookie.CookieAppSessionID)
 	if cookieValue == "" {
 		return nil
 	}
 
-	session, err := m.store.Session(cookieValue)
+	session, err := m.store.AppSession(cookieValue)
 	if err != nil {
 		logger.Error("[UI:AppSession] %v", err)
 		return nil

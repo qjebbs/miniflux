@@ -273,7 +273,8 @@ select {
 input[type="search"],
 input[type="url"],
 input[type="password"],
-input[type="text"] {
+input[type="text"],
+textarea {
     border: 1px solid #ccc;
     padding: 3px;
     line-height: 20px;
@@ -287,11 +288,17 @@ input[type="text"] {
 input[type="search"]:focus,
 input[type="url"]:focus,
 input[type="password"]:focus,
-input[type="text"]:focus {
+input[type="text"]:focus,
+textarea:focus {
     color: #000;
     border-color: rgba(82, 168, 236, 0.8);
     outline: 0;
     box-shadow: 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+textarea {
+    min-width: 100%;
+    min-height: 400px;
 }
 
 input[type="checkbox"] {

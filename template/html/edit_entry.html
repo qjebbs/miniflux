@@ -2,7 +2,7 @@
 
 {{ define "content"}}
 {{ if not .entry }}
-    <p class="alert alert-error">{{ t "page.edit_entry.no_feeds" }}</p>
+    <p class="alert alert-error">{{ t "page.categories.no_feed" }}</p>
 {{ else }}
     <form action="{{ route "updateEntry" "entryID" .entry.ID }}" method="post" autocomplete="off">
         <input type="hidden" name="csrf" value="{{ .csrf }}">
@@ -23,7 +23,7 @@
         <label for="form-comments-url">{{ t "form.entry.label.comments_url" }}</label>
         <input type="url" name="comments_url" id="form-comments-url" placeholder="https://domain.tld/" value="{{ .form.CommentsURL }}">
         
-        <label for="form-feed">{{ t "form.feed.label.feed" }}</label>
+        <label for="form-feed">{{ t "form.entry.label.feed" }}</label>
         <select id="form-feed" name="feed_id">
         {{ range .feeds }}
             <option value="{{ .ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
@@ -31,7 +31,7 @@
         </select>
 
         <label for="form-content">{{ t "form.entry.label.content" }}</label>
-        <textarea name="content" id="form-content">{{ .form.Content }}</textarea>
+        <textarea name="content" id="form-content" required>{{ .form.Content }}</textarea>
         <label></label><input type="checkbox" name="readability" id="form-readability" checked> {{ t "form.entry.label.readability" }}</label>
 
         <div class="buttons">

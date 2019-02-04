@@ -48,7 +48,9 @@
                         >{{ t "entry.scraper.label" }}</a>
                 </li>
                 <li>
-                    <a href="{{ route "editEntry" "entryID" .entry.ID }}">{{ t "entry.edit.label" }}</a>
+                    <a href="{{ route "editEntry" "entryID" .entry.ID }}"
+                    title="{{ t "entry.edit.title" }}"
+                    >{{ t "entry.edit.label" }}</a>
                 </li>
                 {{ if .entry.CommentsURL }}
                     <li>

@@ -427,7 +427,7 @@ var templateViewsMap = map[string]string{
 
 {{ define "content"}}
 {{ if not .entry }}
-    <p class="alert alert-error">{{ t "page.edit_entry.no_feeds" }}</p>
+    <p class="alert alert-error">{{ t "page.categories.no_feed" }}</p>
 {{ else }}
     <form action="{{ route "updateEntry" "entryID" .entry.ID }}" method="post" autocomplete="off">
         <input type="hidden" name="csrf" value="{{ .csrf }}">
@@ -448,7 +448,7 @@ var templateViewsMap = map[string]string{
         <label for="form-comments-url">{{ t "form.entry.label.comments_url" }}</label>
         <input type="url" name="comments_url" id="form-comments-url" placeholder="https://domain.tld/" value="{{ .form.CommentsURL }}">
         
-        <label for="form-feed">{{ t "form.feed.label.feed" }}</label>
+        <label for="form-feed">{{ t "form.entry.label.feed" }}</label>
         <select id="form-feed" name="feed_id">
         {{ range .feeds }}
             <option value="{{ .ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
@@ -456,7 +456,7 @@ var templateViewsMap = map[string]string{
         </select>
 
         <label for="form-content">{{ t "form.entry.label.content" }}</label>
-        <textarea name="content" id="form-content">{{ .form.Content }}</textarea>
+        <textarea name="content" id="form-content" required>{{ .form.Content }}</textarea>
         <label></label><input type="checkbox" name="readability" id="form-readability" checked> {{ t "form.entry.label.readability" }}</label>
 
         <div class="buttons">
@@ -683,7 +683,9 @@ var templateViewsMap = map[string]string{
                         >{{ t "entry.scraper.label" }}</a>
                 </li>
                 <li>
-                    <a href="{{ route "editEntry" "entryID" .entry.ID }}">{{ t "entry.edit.label" }}</a>
+                    <a href="{{ route "editEntry" "entryID" .entry.ID }}"
+                    title="{{ t "entry.edit.title" }}"
+                    >{{ t "entry.edit.label" }}</a>
                 </li>
                 {{ if .entry.CommentsURL }}
                     <li>
@@ -1535,10 +1537,10 @@ var templateViewsMapChecksums = map[string]string{
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
 	"edit_category":       "daf073d2944a180ce5aaeb80b597eb69597a50dff55a9a1d6cf7938b48d768cb",
-	"edit_entry":          "ccca612192cf9e41416e58362aa9d1d0f7a359c8c7cfa7983c4d06214089db04",
+	"edit_entry":          "660c1a6da95ac1ab24fbdc68e107a2b2c371655c0afe6c3ed5f2b6179323f60a",
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
-	"entry":               "12032e5c28f523d3866f458619160f9d3fea4651b011d45876af70868dd92fbc",
+	"entry":               "7b79cf389076aa23660f935bad34f0253a1d7499d262d89ab9b55470bbd236a4",
 	"feed_entries":        "f460f5d3f3e66ebb28195197343140121f443d661d0feceab6e0c5c613bc1d8f",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
 	"history_entries":     "c418db61decb1d20503c54cecbe756fcfb718dbdac65c8f045c7560dfa96e5ef",

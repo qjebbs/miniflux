@@ -457,6 +457,7 @@ var templateViewsMap = map[string]string{
 
         <label for="form-content">{{ t "form.entry.label.content" }}</label>
         <textarea name="content" id="form-content">{{ .form.Content }}</textarea>
+        <label></label><input type="checkbox" name="readability" id="form-readability" checked> {{ t "form.entry.label.readability" }}</label>
 
         <div class="buttons">
             <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-history-go-back="true">{{ t "action.cancel" }}</a>
@@ -1534,7 +1535,7 @@ var templateViewsMapChecksums = map[string]string{
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
 	"edit_category":       "daf073d2944a180ce5aaeb80b597eb69597a50dff55a9a1d6cf7938b48d768cb",
-	"edit_entry":          "068ae1de59da990b87b5a96613b6aa2d2e8e6897609c779dc3eeff7e2b2ca3ed",
+	"edit_entry":          "ccca612192cf9e41416e58362aa9d1d0f7a359c8c7cfa7983c4d06214089db04",
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "12032e5c28f523d3866f458619160f9d3fea4651b011d45876af70868dd92fbc",

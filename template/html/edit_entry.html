@@ -32,6 +32,7 @@
 
         <label for="form-content">{{ t "form.entry.label.content" }}</label>
         <textarea name="content" id="form-content">{{ .form.Content }}</textarea>
+        <label></label><input type="checkbox" name="readability" id="form-readability" checked> {{ t "form.entry.label.readability" }}</label>
 
         <div class="buttons">
             <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-history-go-back="true">{{ t "action.cancel" }}</a>

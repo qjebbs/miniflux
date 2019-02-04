@@ -6,6 +6,9 @@ package ui // import "miniflux.app/ui"
 
 import (
 	"net/http"
+	"strings"
+
+	"miniflux.app/reader/readability"
 
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
@@ -61,7 +64,12 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 		html.OK(w, r, view.Render("edit_entry"))
 		return
 	}
-
+	if entryForm.Readability {
+		content, err := readability.ExtractContent(strings.NewReader(entryForm.Content))
+		if err == nil {
+			entryForm.Content = content
+		}
+	}
 	err = h.store.UpdateEntryByID(entryForm.Merge(entry))
 	if err != nil {
 		logger.Error("[UI:UpdateEntry] %v", err)

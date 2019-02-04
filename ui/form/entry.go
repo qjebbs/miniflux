@@ -19,6 +19,7 @@ type EntryForm struct {
 	URL         string
 	CommentsURL string
 	Content     string
+	Readability bool
 	Author      string
 }
 
@@ -55,6 +56,7 @@ func NewEntryForm(r *http.Request) *EntryForm {
 		URL:         r.FormValue("url"),
 		CommentsURL: r.FormValue("comments_url"),
 		Content:     r.FormValue("content"),
+		Readability: r.FormValue("readability") == "on",
 		Author:      r.FormValue("author"),
 	}
 }

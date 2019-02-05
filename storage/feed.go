@@ -223,7 +223,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 	for i := 0; i < len(feed.Entries); i++ {
 		feed.Entries[i].FeedID = feed.ID
 		feed.Entries[i].UserID = feed.UserID
-		err := s.createEntry(feed.Entries[i])
+		err := s.CreateEntry(feed.Entries[i])
 		if err != nil {
 			return err
 		}

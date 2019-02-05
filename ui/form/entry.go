@@ -21,6 +21,16 @@ type EntryForm struct {
 	Content     string
 	Readability bool
 	Author      string
+	UserAgent   string
+}
+
+// Validate makes sure the form values are valid.
+func (e *EntryForm) Validate() error {
+	if e.URL == "" || e.FeedID == 0 {
+		return errors.NewLocalizedError("error.entry_mandatory_fields")
+	}
+
+	return nil
 }
 
 // ValidateModification validates EntryForm fields
@@ -58,5 +68,6 @@ func NewEntryForm(r *http.Request) *EntryForm {
 		Content:     r.FormValue("content"),
 		Readability: r.FormValue("readability") == "on",
 		Author:      r.FormValue("author"),
+		UserAgent:   r.FormValue("user_agent"),
 	}
 }

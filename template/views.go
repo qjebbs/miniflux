@@ -423,6 +423,49 @@ var templateViewsMap = map[string]string{
 </form>
 {{ end }}
 `,
+	"edit_entry": `{{ define "title"}}{{ .entry.Title }}{{ end }}
+
+{{ define "content"}}
+{{ if not .entry }}
+    <p class="alert alert-error">{{ t "page.edit_entry.no_feeds" }}</p>
+{{ else }}
+    <form action="{{ route "updateEntry" "entryID" .entry.ID }}" method="post" autocomplete="off">
+        <input type="hidden" name="csrf" value="{{ .csrf }}">
+
+        {{ if .errorMessage }}
+            <div class="alert alert-error">{{ t .errorMessage }}</div>
+        {{ end }}
+
+        <label for="form-title">{{ t "form.entry.label.title" }}</label>
+        <input type="text" name="title" id="form-title" value="{{ .form.Title }}" required autofocus>
+
+        <label for="form-author">{{ t "form.entry.label.author" }}</label>
+        <input type="text" name="author" id="form-author" value="{{ .form.Author }}">
+
+        <label for="form-url">{{ t "form.entry.label.url" }}</label>
+        <input type="url" name="url" id="form-url" placeholder="https://domain.tld/" value="{{ .form.URL }}" required>
+        
+        <label for="form-comments-url">{{ t "form.entry.label.comments_url" }}</label>
+        <input type="url" name="comments_url" id="form-comments-url" placeholder="https://domain.tld/" value="{{ .form.CommentsURL }}">
+        
+        <label for="form-feed">{{ t "form.feed.label.feed" }}</label>
+        <select id="form-feed" name="feed_id">
+        {{ range .feeds }}
+            <option value="{{ .ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
+        {{ end }}
+        </select>
+
+        <label for="form-content">{{ t "form.entry.label.content" }}</label>
+        <textarea name="content" id="form-content">{{ .form.Content }}</textarea>
+
+        <div class="buttons">
+            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-history-go-back="true">{{ t "action.cancel" }}</a>
+        </div>
+    </form>
+{{ end }}
+
+{{ end }}
+`,
 	"edit_feed": `{{ define "title"}}{{ t "page.edit_feed.title" .feed.Title }}{{ end }}
 
 {{ define "content"}}
@@ -637,6 +680,9 @@ var templateViewsMap = map[string]string{
                         data-label-loading="{{ t "entry.state.loading" }}"
                         data-label-done="{{ t "entry.scraper.completed" }}"
                         >{{ t "entry.scraper.label" }}</a>
+                </li>
+                <li>
+                    <a href="{{ route "editEntry" "entryID" .entry.ID }}">{{ t "entry.edit.label" }}</a>
                 </li>
                 {{ if .entry.CommentsURL }}
                     <li>
@@ -1488,9 +1534,10 @@ var templateViewsMapChecksums = map[string]string{
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
 	"edit_category":       "daf073d2944a180ce5aaeb80b597eb69597a50dff55a9a1d6cf7938b48d768cb",
+	"edit_entry":          "068ae1de59da990b87b5a96613b6aa2d2e8e6897609c779dc3eeff7e2b2ca3ed",
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
-	"entry":               "b37129c4a449db6b9bc16944fd42f2bdda4b757515087b7c40c9a12acb3a89f0",
+	"entry":               "12032e5c28f523d3866f458619160f9d3fea4651b011d45876af70868dd92fbc",
 	"feed_entries":        "f460f5d3f3e66ebb28195197343140121f443d661d0feceab6e0c5c613bc1d8f",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
 	"history_entries":     "c418db61decb1d20503c54cecbe756fcfb718dbdac65c8f045c7560dfa96e5ef",

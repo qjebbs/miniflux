@@ -46,6 +46,10 @@ document.addEventListener("DOMContentLoaded", function () {
         EntryHandler.toggleCache(event.target);
     });
 
+    mouseHandler.onClick("a[data-history-go-back]", (event) => {
+        history.go(-1);
+    });
+    
     mouseHandler.onClick("a[data-toggle-status]", (event) => {
         let currentItem = DomHelper.findParent(event.target, "entry");
         if (!currentItem) {

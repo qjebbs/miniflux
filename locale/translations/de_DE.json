@@ -119,7 +119,7 @@
         "%d item, %s cached",
         "%d items, %s cached"
     ],
-    "page.add_entry.title": "Save article to feed",
+    "page.add_entry.title": "Save article",
     "page.add_entry.label.url": "URL",
     "page.add_entry.submit": "Save",
     "page.keyboard_shortcuts.title": "Tastenkürzel",
@@ -172,6 +172,8 @@
     "page.integration.bookmarklet.name": "Mit Miniflux abonnieren",
     "page.integration.bookmarklet.instructions": "Ziehen Sie diesen Link in Ihre Lesezeichen.",
     "page.integration.bookmarklet.help": "Dieser spezielle Link ermöglicht es, eine Webseite direkt über ein Lesezeichen im Browser zu abonnieren.",
+    "page.integration.bookmarklet.entry.name": "Save Article to Miniflux",
+    "page.integration.bookmarklet.entry.help": "This special link allows you to save an page as article directly by using a bookmark in your web browser.",
     "page.sessions.title": "Sitzungen",
     "page.sessions.table.date": "Datum",
     "page.sessions.table.ip": "IP Addresse",

@@ -157,5 +157,13 @@
 
     <p>{{ t "page.integration.bookmarklet.instructions" }}</p>
 </div>
+<div class="panel">
+    <p>{{ t "page.integration.bookmarklet.entry.help" }}</p>
 
+    <div class="bookmarklet">
+        <a href="javascript:location.href='{{ rootURL }}{{ route "bookmarkletEntry" }}?uri='+encodeURIComponent(window.location.href)">{{ t "page.integration.bookmarklet.entry.name" }}</a>
+    </div>
+
+    <p>{{ t "page.integration.bookmarklet.instructions" }}</p>
+</div>
 {{ end }}

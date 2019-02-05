@@ -1,3 +1,4 @@
+update entries set document_vectors = setweight(to_tsvector(substring(coalesce(title, '') for 1000000)), 'A') || setweight(to_tsvector(substring(coalesce(content, '') for 1000000)), 'B');
 create table medias (
 	id bigserial not null,
 	url text not null,

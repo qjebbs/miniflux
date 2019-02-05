@@ -145,7 +145,8 @@ create index users_extra_idx on users using gin(extra);
 update entries set document_vectors = setweight(to_tsvector(coalesce(title, '')), 'A') || setweight(to_tsvector(coalesce(content, '')), 'B');
 create index document_vectors_idx on entries using gin(document_vectors);`,
 	"schema_version_21": `alter table feeds add column user_agent text default '';`,
-	"schema_version_22": `create table medias (
+	"schema_version_22": `update entries set document_vectors = setweight(to_tsvector(substring(coalesce(title, '') for 1000000)), 'A') || setweight(to_tsvector(substring(coalesce(content, '') for 1000000)), 'B');
+create table medias (
 	id bigserial not null,
 	url text not null,
 	url_hash text not null unique,
@@ -215,7 +216,7 @@ var SqlMapChecksums = map[string]string{
 	"schema_version_2":  "e8e9ff32478df04fcddad10a34cba2e8bb1e67e7977b5bd6cdc4c31ec94282b4",
 	"schema_version_20": "44790faf5806cccc9b785faee4f852554ce4dc7d67f2281548f2004902e857fd",
 	"schema_version_21": "77da01ee38918ff4fe33985fbb20ed3276a717a7584c2ca9ebcf4d4ab6cb6910",
-	"schema_version_22": "bef7ab52ebb1a68325e1d1ca1f15923e3394b3e22cbdfa812c87a21f3cce89d6",
+	"schema_version_22": "86aec197fe69e2e1aee03c4114a5e93e04aca379a39513274a1611017d15d834",
 	"schema_version_3":  "a54745dbc1c51c000f74d4e5068f1e2f43e83309f023415b1749a47d5c1e0f12",
 	"schema_version_4":  "216ea3a7d3e1704e40c797b5dc47456517c27dbb6ca98bf88812f4f63d74b5d9",
 	"schema_version_5":  "46397e2f5f2c82116786127e9f6a403e975b14d2ca7b652a48cd1ba843e6a27c",

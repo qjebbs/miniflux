@@ -150,6 +150,37 @@ func (s *Storage) updateEntry(entry *model.Entry) error {
 	return s.UpdateEnclosures(entry.Enclosures)
 }
 
+// UpdateEntryByID updates an entry when an entry is edited.
+func (s *Storage) UpdateEntryByID(entry *model.Entry) error {
+	query := `
+		UPDATE entries SET
+		title=$1, url=$2, comments_url=$3, content=$4, author=$5, feed_id=$6,
+		document_vectors = setweight(to_tsvector(substring(coalesce($1, '') for 1000000)), 'A') || setweight(to_tsvector(substring(coalesce($4, '') for 1000000)), 'B')
+		WHERE user_id=$7 AND id=$8
+	`
+	_, err := s.db.Exec(
+		query,
+		entry.Title,
+		entry.URL,
+		entry.CommentsURL,
+		entry.Content,
+		entry.Author,
+		entry.FeedID,
+		entry.UserID,
+		entry.ID,
+	)
+
+	if err != nil {
+		return fmt.Errorf(`unable to update entry %d: %v`, entry.ID, err)
+	}
+
+	err = s.UpdateEntriesMedia(model.Entries{entry})
+	if err != nil {
+		return fmt.Errorf(`unable to update entry medias %d: %v`, entry.ID, err)
+	}
+	return nil
+}
+
 // entryExists checks if an entry already exists based on its hash when refreshing a feed.
 func (s *Storage) entryExists(entry *model.Entry) bool {
 	var result int

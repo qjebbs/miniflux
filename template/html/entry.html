@@ -47,6 +47,9 @@
                         data-label-done="{{ t "entry.scraper.completed" }}"
                         >{{ t "entry.scraper.label" }}</a>
                 </li>
+                <li>
+                    <a href="{{ route "editEntry" "entryID" .entry.ID }}">{{ t "entry.edit.label" }}</a>
+                </li>
                 {{ if .entry.CommentsURL }}
                     <li>
                         <a href="{{ .entry.CommentsURL }}" title="{{ t "entry.comments.title" }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ t "entry.comments.label" }}</a>

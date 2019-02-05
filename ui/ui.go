@@ -56,6 +56,12 @@ func Serve(router *mux.Router, cfg *config.Config, store *storage.Storage, pool 
 	uiRouter.HandleFunc("/search", handler.showSearchEntriesPage).Name("searchEntries").Methods("GET")
 	uiRouter.HandleFunc("/search/entry/{entryID}", handler.showSearchEntryPage).Name("searchEntry").Methods("GET")
 
+	// Entry editing pages.
+	// uiRouter.HandleFunc("/entry", handler.showEditEntryPage).Name("addEntry").Methods("GET")
+	// uiRouter.HandleFunc("/entry", handler.showEditEntryPage).Name("submitEntry").Methods("POST")
+	uiRouter.HandleFunc("/entry/{entryID}/edit", handler.showEditEntryPage).Name("editEntry").Methods("GET")
+	uiRouter.HandleFunc("/entry/{entryID}/update", handler.updateEntry).Name("updateEntry").Methods("POST")
+
 	// Feed listing pages.
 	uiRouter.HandleFunc("/feeds", handler.showFeedsPage).Name("feeds").Methods("GET")
 	uiRouter.HandleFunc("/feeds/refresh", handler.refreshAllFeeds).Name("refreshAllFeeds").Methods("GET")

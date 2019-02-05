@@ -119,6 +119,9 @@
         "%d item, %s cached",
         "%d items, %s cached"
     ],
+    "page.add_entry.title": "Save article to feed",
+    "page.add_entry.label.url": "URL",
+    "page.add_entry.submit": "Save",
     "page.keyboard_shortcuts.title": "Scorciatoie da tastiera",
     "page.keyboard_shortcuts.subtitle.sections": "Navigazione sezioni",
     "page.keyboard_shortcuts.subtitle.items": "Navigazione articoli",
@@ -211,6 +214,7 @@
     "error.settings_mandatory_fields": "Il nome utente, il tema, la lingua ed il fuso orario sono campi obbligatori.",
     "error.feed_mandatory_fields": "L'URL e la categoria sono obbligatori.",
     "error.user_mandatory_fields": "Il nome utente è obbligatorio.",
+    "error.entry_mandatory_fields": "The URL and the feed are mandatory.",
     "form.feed.label.title": "Titolo",
     "form.feed.label.site_url": "URL del sito",
     "form.feed.label.feed_url": "URL del feed",

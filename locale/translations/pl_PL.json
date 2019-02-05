@@ -121,6 +121,9 @@
         "%d item, %s cached",
         "%d items, %s cached"
     ],
+    "page.add_entry.title": "Save article to feed",
+    "page.add_entry.label.url": "URL",
+    "page.add_entry.submit": "Save",
     "page.keyboard_shortcuts.title": "Skróty klawiszowe",
     "page.keyboard_shortcuts.subtitle.sections": "Nawigacja między punktami menu",
     "page.keyboard_shortcuts.subtitle.items": "Nawigacja między artykułami",
@@ -213,6 +216,7 @@
     "error.settings_mandatory_fields": "Pola nazwy użytkownika, tematu, języka i strefy czasowej są obowiązkowe.",
     "error.feed_mandatory_fields": "URL i kategoria są obowiązkowe.",
     "error.user_mandatory_fields": "Nazwa użytkownika jest obowiązkowa.",
+    "error.entry_mandatory_fields": "The URL and the feed are mandatory.",
     "form.feed.label.title": "Tytuł",
     "form.feed.label.site_url": "URL strony",
     "form.feed.label.feed_url": "URL kanału",

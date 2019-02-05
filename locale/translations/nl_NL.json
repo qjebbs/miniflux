@@ -120,6 +120,9 @@
         "%d item, %s cached",
         "%d items, %s cached"
     ],
+    "page.add_entry.title": "Save article to feed",
+    "page.add_entry.label.url": "URL",
+    "page.add_entry.submit": "Save",
     "page.keyboard_shortcuts.title": "Sneltoetsen",
     "page.keyboard_shortcuts.subtitle.sections": "Naviguatie tussen menu's",
     "page.keyboard_shortcuts.subtitle.items": "Navigatie tussen items",
@@ -211,6 +214,7 @@
     "error.settings_mandatory_fields": "Gebruikersnaam, skin, taal en tijdzone zijn verplicht.",
     "error.feed_mandatory_fields": "The URL en de categorie zijn verplicht.",
     "error.user_mandatory_fields": "Gebruikersnaam is verplicht",
+    "error.entry_mandatory_fields": "The URL and the feed are mandatory.",
     "form.feed.label.title": "Naam",
     "form.feed.label.site_url": "Website URL",
     "form.feed.label.feed_url": "Feed URL",

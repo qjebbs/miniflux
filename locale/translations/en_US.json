@@ -119,6 +119,9 @@
         "%d item, %s cached",
         "%d items, %s cached"
     ],
+    "page.add_entry.title": "Save article to feed",
+    "page.add_entry.label.url": "URL",
+    "page.add_entry.submit": "Save",
     "page.keyboard_shortcuts.title": "Keyboard Shortcuts",
     "page.keyboard_shortcuts.subtitle.sections": "Sections Navigation",
     "page.keyboard_shortcuts.subtitle.items": "Items Navigation",
@@ -211,6 +214,7 @@
     "error.settings_mandatory_fields": "The username, theme, language and timezone fields are mandatory.",
     "error.feed_mandatory_fields": "The URL and the category are mandatory.",
     "error.user_mandatory_fields": "The username is mandatory.",
+    "error.entry_mandatory_fields": "The URL and the feed are mandatory.",
     "form.feed.label.title": "Title",
     "form.feed.label.site_url": "Site URL",
     "form.feed.label.feed_url": "Feed URL",

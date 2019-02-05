@@ -115,6 +115,9 @@
     "page.edit_feed.cache_statistics": [
         "已缓存 %d 个, %s"
     ],
+    "page.add_entry.title": "保存文章到源",
+    "page.add_entry.label.url": "网址",
+    "page.add_entry.submit": "保存",
     "page.keyboard_shortcuts.title": "快捷键",
     "page.keyboard_shortcuts.subtitle.sections": "分区导航",
     "page.keyboard_shortcuts.subtitle.items": "条目导航",
@@ -207,6 +210,7 @@
     "error.settings_mandatory_fields": "必须填写用户名、主题、语言以及时区",
     "error.feed_mandatory_fields": "必须填写 URL 和分类",
     "error.user_mandatory_fields": "必须填写用户名",
+    "error.entry_mandatory_fields": "必须填写网址和源",
     "form.feed.label.title": "标题",
     "form.feed.label.site_url": "站点 URL",
     "form.feed.label.feed_url": "源 URL",

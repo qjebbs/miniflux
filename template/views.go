@@ -44,6 +44,49 @@ var templateViewsMap = map[string]string{
 
 {{ end }}
 `,
+	"add_entry": `{{ define "title"}}{{ t "page.add_entry.title" }}{{ end }}
+
+{{ define "content"}}
+<section class="page-header">
+    <h1>{{ t "page.add_entry.title" }}</h1>
+</section>
+
+{{ if not .feeds }}
+    <p class="alert alert-error">{{ t "page.categories.no_feeds" }}</p>
+{{ else }}
+    <form action="{{ route "addEntry" }}" method="post" autocomplete="off">
+        <input type="hidden" name="csrf" value="{{ .csrf }}">
+
+        {{ if .errorMessage }}
+            <div class="alert alert-error">{{ t .errorMessage }}</div>
+        {{ end }}
+
+        <label for="form-url">{{ t "page.add_entry.label.url" }}</label>
+        <input type="url" name="url" id="form-url" placeholder="https://domain.tld/" value="{{ .form.URL }}" required autofocus>
+
+        <label for="form-feed">{{ t "form.entry.label.feed" }}</label>
+        <select id="form-feed" name="feed_id">
+            {{ range .feeds }}
+                <option value="{{ .ID }}" {{ if eq $.form.FeedID .ID }}selected="selected"{{ end }}>{{ .Title }}</option>
+            {{ end }}
+        </select>
+
+        <details>
+            <summary>{{ t "page.add_feed.legend.advanced_options" }}</summary>
+            <div class="details-content">
+                <label for="form-user-agent">{{ t "form.feed.label.user_agent" }}</label>
+                <input type="text" name="user_agent" id="form-user-agent" placeholder="{{ .defaultUserAgent }}" value="{{ .form.UserAgent }}" autocomplete="off">
+            </div>
+        </details>
+
+        <div class="buttons">
+            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.loading" }}">{{ t "page.add_entry.submit" }}</button> {{ t "action.or" }} <a href="#" data-history-go-back="true">{{ t "action.cancel" }}</a>
+        </div>
+    </form>
+{{ end }}
+
+{{ end }}
+`,
 	"add_subscription": `{{ define "title"}}{{ t "page.add_feed.title" }}{{ end }}
 
 {{ define "content"}}
@@ -1529,6 +1572,7 @@ var templateViewsMap = map[string]string{
 
 var templateViewsMapChecksums = map[string]string{
 	"about":               "844e3313c33ae31a74b904f6ef5d60299773620d8450da6f760f9f317217c51e",
+	"add_entry":           "e31b385afbc9e6d1e39e715ffddf5e5f04dc5a0440a876c2accc39dce2df27f4",
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
 	"bookmark_entries":    "62b60ec722ec1b1f851802cc6a06e1b9909cc529ace41505cddf340f2f640ca0",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",

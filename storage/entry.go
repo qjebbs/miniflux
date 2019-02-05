@@ -68,8 +68,8 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 	return tx.Commit()
 }
 
-// createEntry add a new entry.
-func (s *Storage) createEntry(entry *model.Entry) error {
+// CreateEntry add a new entry.
+func (s *Storage) CreateEntry(entry *model.Entry) error {
 	query := `
 		INSERT INTO entries
 		(title, hash, url, comments_url, published_at, content, author, user_id, feed_id, document_vectors)
@@ -181,8 +181,8 @@ func (s *Storage) UpdateEntryByID(entry *model.Entry) error {
 	return nil
 }
 
-// entryExists checks if an entry already exists based on its hash when refreshing a feed.
-func (s *Storage) entryExists(entry *model.Entry) bool {
+// EntryExists checks if an entry already exists based on its hash when refreshing a feed.
+func (s *Storage) EntryExists(entry *model.Entry) bool {
 	var result int
 	query := `SELECT count(*) as c FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`
 	s.db.QueryRow(query, entry.UserID, entry.FeedID, entry.Hash).Scan(&result)
@@ -210,12 +210,12 @@ func (s *Storage) UpdateEntries(userID, feedID int64, entries model.Entries, upd
 		entry.UserID = userID
 		entry.FeedID = feedID
 
-		if s.entryExists(entry) {
+		if s.EntryExists(entry) {
 			if updateExistingEntries {
 				err = s.updateEntry(entry)
 			}
 		} else {
-			err = s.createEntry(entry)
+			err = s.CreateEntry(entry)
 		}
 
 		if err != nil {

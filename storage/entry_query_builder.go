@@ -93,6 +93,15 @@ func (e *EntryQueryBuilder) WithEntryID(entryID int64) *EntryQueryBuilder {
 	return e
 }
 
+// WithEntryHash set the entryHash.
+func (e *EntryQueryBuilder) WithEntryHash(hash string) *EntryQueryBuilder {
+	if hash != "" {
+		e.conditions = append(e.conditions, fmt.Sprintf("e.hash = $%d", len(e.args)+1))
+		e.args = append(e.args, hash)
+	}
+	return e
+}
+
 // WithFeedID set the feedID.
 func (e *EntryQueryBuilder) WithFeedID(feedID int64) *EntryQueryBuilder {
 	if feedID != 0 {

@@ -115,7 +115,7 @@
     "page.edit_feed.cache_statistics": [
         "已缓存 %d 个, %s"
     ],
-    "page.add_entry.title": "保存文章到源",
+    "page.add_entry.title": "保存文章",
     "page.add_entry.label.url": "网址",
     "page.add_entry.submit": "保存",
     "page.keyboard_shortcuts.title": "快捷键",
@@ -165,9 +165,11 @@
     "page.integration.miniflux_api_password": "密码",
     "page.integration.miniflux_api_password_value": "您账户的密码",
     "page.integration.bookmarklet": "书签小应用",
-    "page.integration.bookmarklet.name": "新增到Miniflux",
+    "page.integration.bookmarklet.name": "新增订阅到 Miniflux",
     "page.integration.bookmarklet.instructions": "拖动这个链接到书签",
     "page.integration.bookmarklet.help": "你可以打开这个特殊的书签来直接订阅网站",
+    "page.integration.bookmarklet.entry.name": "保存文章到 Miniflux",
+    "page.integration.bookmarklet.entry.help": "你可以打开这个特殊的书签来直接将网页保存为文章",
     "page.sessions.title": "会话",
     "page.sessions.table.date": "日期",
     "page.sessions.table.ip": "IP 地址",

@@ -1227,7 +1227,15 @@ var templateViewsMap = map[string]string{
 
     <p>{{ t "page.integration.bookmarklet.instructions" }}</p>
 </div>
+<div class="panel">
+    <p>{{ t "page.integration.bookmarklet.entry.help" }}</p>
 
+    <div class="bookmarklet">
+        <a href="javascript:location.href='{{ rootURL }}{{ route "bookmarkletEntry" }}?uri='+encodeURIComponent(window.location.href)">{{ t "page.integration.bookmarklet.entry.name" }}</a>
+    </div>
+
+    <p>{{ t "page.integration.bookmarklet.instructions" }}</p>
+</div>
 {{ end }}
 `,
 	"login": `{{ define "title"}}{{ t "page.login.title" }}{{ end }}
@@ -1589,7 +1597,7 @@ var templateViewsMapChecksums = map[string]string{
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
 	"history_entries":     "c418db61decb1d20503c54cecbe756fcfb718dbdac65c8f045c7560dfa96e5ef",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",
-	"integrations":        "f85b4a48ab1fc13b8ca94bfbbc44bd5e8784f35b26a63ec32cbe82b96b45e008",
+	"integrations":        "d73ad06ca242f39f4575c30e4b357d9ee058973ccd82312a86955fe4a24b36cf",
 	"login":               "f9e6714d34fdce82266c8b23b0ff449d05ba71e474d26f711da66f8c4fdc076a",
 	"search_entries":      "8e674dae75e14fb0d13e1a90fb5bef3755a1599905a4c61be578adb9e8fdc370",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",

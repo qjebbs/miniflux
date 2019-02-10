@@ -115,6 +115,15 @@ textarea:focus {
     color: #9b9b9b;
 }
 
+/* Tabs */
+.tab-head li {
+    border-color: #333;
+}
+
+.tab-head .active {
+    background-color: #333;
+}
+
 /* Modals */
 .modal {
     background: #333;

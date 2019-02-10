@@ -230,6 +230,8 @@
     "form.entry.label.comments_url": "评论网址",
     "form.entry.label.feed": "源",
     "form.entry.label.content": "内容",
+    "form.entry.label.code": "代码",
+    "form.entry.label.preview": "预览",
     "form.entry.label.readability": "使用 Readability 解析",
     "form.category.label.title": "标题",
     "form.user.label.username": "用户名",

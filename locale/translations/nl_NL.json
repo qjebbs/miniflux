@@ -234,6 +234,8 @@
     "form.entry.label.comments_url": "Comments URL",
     "form.entry.label.feed": "Feed",
     "form.entry.label.content": "Content",
+    "form.entry.label.code": "Code",
+    "form.entry.label.preview": "Preview",
     "form.entry.label.readability": "Parse with Readability",
     "form.category.label.title": "Naam",
     "form.user.label.username": "Gebruikersnaam",

@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     FormHandler.handleSubmitButtons();
 
+    let tabHandler = new TabHandler();
+    tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);
+
     let touchHandler = new TouchHandler();
     touchHandler.listen();
 
@@ -49,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
     mouseHandler.onClick("a[data-history-go-back]", (event) => {
         history.go(-1);
     });
-    
+
     mouseHandler.onClick("a[data-toggle-status]", (event) => {
         let currentItem = DomHelper.findParent(event.target, "entry");
         if (!currentItem) {
@@ -84,6 +87,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     mouseHandler.onClick("a[data-action=search]", (event) => {
         navHandler.setFocusToSearchInput(event);
+    });
+
+    mouseHandler.onClick("button[data-action=submit-entry]", (event) => {
+        EntryEditorHandler.submitHandler(event);
     });
 
     mouseHandler.onClick("a[data-link-state=flip]", (event) => {

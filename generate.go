@@ -198,6 +198,8 @@ func main() {
 			"ui/static/js/confirm_handler.js",
 			"ui/static/js/menu_handler.js",
 			"ui/static/js/modal_handler.js",
+			"ui/static/js/tabs_handler.js",
+			"ui/static/js/entry_editor_handler.js",
 			"ui/static/js/nav_handler.js",
 			"ui/static/js/action_menu_handler.js",
 			"ui/static/js/link_state_handler.js",

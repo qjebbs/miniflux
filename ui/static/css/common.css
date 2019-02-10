@@ -94,7 +94,7 @@ a:hover {
 }
 
 .page-header ul,
-.page-footer ul, {
+.page-footer ul {
     margin-left: 25px;
 }
 
@@ -429,6 +429,7 @@ a.button {
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 10px;
+    margin-top: 5px;
     margin-bottom: 15px;
 }
 
@@ -487,6 +488,41 @@ a.button {
 body.modal-open {
     position: fixed;
     width: 100%;
+}
+
+/* Tabs */
+
+.tabs {
+    margin-bottom: 10px;
+    margin-top: 5px;
+}
+
+.tab-head li {
+    list-style: none;
+    border: solid #ddd 1px;
+    padding: 2px 8px;
+    margin: 0;
+    float: left;
+    text-align: center;
+    cursor: pointer;
+}
+
+.clearfix::after{
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.tab-head .active {
+    background-color: #ddd;
+}
+
+.tab-body .tab-content{
+    display: none;
+}
+
+.tab-body .tab-content.active{
+    display: block;
 }
 
 /* Keyboard Shortcuts */

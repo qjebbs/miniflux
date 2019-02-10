@@ -472,7 +472,7 @@ var templateViewsMap = map[string]string{
 {{ if not .entry }}
     <p class="alert alert-error">{{ t "page.categories.no_feed" }}</p>
 {{ else }}
-    <form action="{{ route "updateEntry" "entryID" .entry.ID }}" method="post" autocomplete="off">
+    <form id="entry-form" action="{{ route "updateEntry" "entryID" .entry.ID }}" method="post" autocomplete="off">
         <input type="hidden" name="csrf" value="{{ .csrf }}">
 
         {{ if .errorMessage }}
@@ -498,12 +498,28 @@ var templateViewsMap = map[string]string{
         {{ end }}
         </select>
 
-        <label for="form-content">{{ t "form.entry.label.content" }}</label>
-        <textarea name="content" id="form-content" required>{{ .form.Content }}</textarea>
-        <label></label><input type="checkbox" name="readability" id="form-readability" checked> {{ t "form.entry.label.readability" }}</label>
-
+        <label for="content-editor">{{ t "form.entry.label.content" }}</label>
+        <div class="tabs tabs-entry-edit" id="content-editor">
+            <div class="tab-head">
+                <ul>
+                    <li class="active">{{ t "form.entry.label.code" }}</li>
+                    <li>{{ t "form.entry.label.preview" }}</li>
+                    <div class="clearfix"></div>
+                </ul>
+            </div>
+            <div class="tab-body">
+                <div class="tab-content active">
+                    <textarea name="content" id="form-content" required>{{ .form.Content }}</textarea>
+                </div>
+                <div class="tab-content">
+                    <article id="preview-content" class="panel entry-content">
+                    </article>
+                </div>
+            </div>
+        </div>
+        <label></label><input type="checkbox" name="readability" id="form-readability"> {{ t "form.entry.label.readability" }}</label>
         <div class="buttons">
-            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-history-go-back="true">{{ t "action.cancel" }}</a>
+            <button class="button button-primary" data-action="submit-entry" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-history-go-back="true">{{ t "action.cancel" }}</a>
         </div>
     </form>
 {{ end }}
@@ -1589,7 +1605,7 @@ var templateViewsMapChecksums = map[string]string{
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
 	"edit_category":       "daf073d2944a180ce5aaeb80b597eb69597a50dff55a9a1d6cf7938b48d768cb",
-	"edit_entry":          "660c1a6da95ac1ab24fbdc68e107a2b2c371655c0afe6c3ed5f2b6179323f60a",
+	"edit_entry":          "cf5d1804a748e3b739dc308596e765247945b3c483cac49335284541c2dd6e22",
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "7b79cf389076aa23660f935bad34f0253a1d7499d262d89ab9b55470bbd236a4",

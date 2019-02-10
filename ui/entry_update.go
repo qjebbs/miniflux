@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"miniflux.app/reader/readability"
+	"miniflux.app/reader/sanitizer"
 
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
@@ -70,6 +71,8 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 			entryForm.Content = content
 		}
 	}
+	entryForm.Content = sanitizer.Sanitize(entryForm.URL, entryForm.Content)
+
 	err = h.store.UpdateEntryByID(entryForm.Merge(entry))
 	if err != nil {
 		logger.Error("[UI:UpdateEntry] %v", err)

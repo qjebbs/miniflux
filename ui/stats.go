@@ -52,8 +52,22 @@ func (h *handler) showStatPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	starredByFeed, err := h.store.StarredStatByFeed(user.ID)
+	if err != nil {
+		html.ServerError(w, r, err)
+		return
+	}
+
+	starredByCategory, err := h.store.StarredStatByCategory(user.ID)
+	if err != nil {
+		html.ServerError(w, r, err)
+		return
+	}
+
 	view.Set("unreadByFeed", unreadByFeed)
 	view.Set("unreadByCategory", unreadByCategory)
+	view.Set("starredByFeed", starredByFeed)
+	view.Set("starredByCategory", starredByCategory)
 	view.Set("menu", "unread")
 	view.Set("user", user)
 	view.Set("countUnread", countUnread)

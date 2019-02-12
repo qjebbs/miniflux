@@ -17,6 +17,9 @@
         <li>
             <a href="{{ route "feedEntries" "feedID" .feed.ID }}">{{ t "menu.show_only_unread_entries" }}</a>
         </li>
+        <li>
+            <a href="{{ route "feedEntriesStarred" "feedID" .feed.ID }}">{{ t "menu.show_only_starred_entries" }}</a>
+        </li>
         {{ end }}
         <li>
             <a href="{{ route "refreshFeed" "feedID" .feed.ID }}">{{ t "menu.refresh_feed" }}</a>

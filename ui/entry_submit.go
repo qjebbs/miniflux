@@ -82,5 +82,8 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	if !entry.Starred {
+		_ = h.store.ToggleBookmark(user.ID, entry.ID)
+	}
 	html.Redirect(w, r, route.Path(h.router, "editEntry", "entryID", entry.ID))
 }

@@ -58,7 +58,7 @@ static setEntriesAboveStatusRead(element){let currentItem=document.querySelector
 let targetItems=[];let entryIds=[];for(let i=0;i<items.length;i++){targetItems.push(items[i]);entryIds.push(parseInt(items[i].dataset.id,10));if(items[i].classList.contains("current-item")){break;}}
 this.updateEntriesStatus(entryIds,"read",()=>{targetItems.map(item=>{let link=item.querySelector("a[data-toggle-status]");if(link&&link.dataset.value==="unread"){link.innerHTML=link.dataset.labelUnread;link.dataset.value="read";}
 if(item&&item.classList.contains("item-status-unread")){item.classList.remove("item-status-unread");item.classList.add("item-status-read");UnreadCounterHandler.decrement(1);}});});}
-static toggleBookmark(element){element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.bookmarkUrl);request.withCallback(()=>{if(element.dataset.value==="star"){element.innerHTML=element.dataset.labelStar;element.dataset.value="unstar";}else{element.innerHTML=element.dataset.labelUnstar;element.dataset.value="star";}});request.execute();}
+static toggleBookmark(element){element.innerHTML=element.dataset.labelLoading;let item=DomHelper.findParent(element,'item');let request=new RequestBuilder(element.dataset.bookmarkUrl);request.withCallback(()=>{if(element.dataset.value==="star"){element.innerHTML=element.dataset.labelStar;element.dataset.value="unstar";if(item)item.classList.remove("item-starred");}else{element.innerHTML=element.dataset.labelUnstar;element.dataset.value="star";if(item)item.classList.add("item-starred");}});request.execute();}
 static toggleCache(element){element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.cacheUrl);request.withCallback(()=>{if(element.dataset.value==="cached"){element.innerHTML=element.dataset.labelCached;element.dataset.value="uncached";}else{element.innerHTML=element.dataset.labelUncached;element.dataset.value="cached";}});request.execute();}
 static markEntryAsRead(element){if(element.classList.contains("item-status-unread")){element.classList.remove("item-status-unread");element.classList.add("item-status-read");let entryID=parseInt(element.dataset.id,10);this.updateEntriesStatus([entryID],"read");UnreadCounterHandler.decrement(1);}}
 static saveEntry(element){if(element.dataset.completed){return;}
@@ -146,6 +146,6 @@ imagesLoaded('.masonry .item').on('progress',callback);LazyloadHandler.add(".ite
 }
 
 var JavascriptsChecksums = map[string]string{
-	"app": "94aba81e627c3cb1729eed505955910923558bb8dd0ede5109c89b2ad285baa2",
+	"app": "7cd363bcda9020a55cd8f44993b17e2f9f52067c4baf41ab68ea0381e9655615",
 	"sw":  "55fffa223919cc18572788fb9c62fccf92166c0eb5d3a1d6f91c31f24d020be9",
 }

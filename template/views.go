@@ -169,7 +169,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
+        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -284,7 +284,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
+        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -897,7 +897,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
+        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1030,7 +1030,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
+        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1303,7 +1303,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
+        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1611,7 +1611,7 @@ var templateViewsMap = map[string]string{
     <div class='{{ if eq .view "masonry" }}items masonry{{ else }}items hide-read-items{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
+        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1715,9 +1715,9 @@ var templateViewsMapChecksums = map[string]string{
 	"about":               "844e3313c33ae31a74b904f6ef5d60299773620d8450da6f760f9f317217c51e",
 	"add_entry":           "e31b385afbc9e6d1e39e715ffddf5e5f04dc5a0440a876c2accc39dce2df27f4",
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
-	"bookmark_entries":    "62b60ec722ec1b1f851802cc6a06e1b9909cc529ace41505cddf340f2f640ca0",
+	"bookmark_entries":    "06428679466caed2f503849df9ec17c599f21fb75b3cb48a862310068fc83353",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "f7f78934ccec63a53012b0f5820bed633d18a40684fa627c9130b588c632e904",
+	"category_entries":    "48cad9d147683c940abb77b3ba5733c5976e95ddc0e96d1ddd510cb93d19dcf7",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
@@ -1726,16 +1726,16 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "7b79cf389076aa23660f935bad34f0253a1d7499d262d89ab9b55470bbd236a4",
-	"feed_entries":        "6992a230a925c76feefad0d00a45722e9e302fc840999d8aff2a0100e531895f",
+	"feed_entries":        "2f00ed39e51d7875f7614af4aa641af41f67143d1dc21b48334b013f80a8726b",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
-	"history_entries":     "c418db61decb1d20503c54cecbe756fcfb718dbdac65c8f045c7560dfa96e5ef",
+	"history_entries":     "f3f23b7e3cdfbb99ba8ce3b939bab9efb87eb8a139707d231b9df935f933dcff",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",
 	"integrations":        "d73ad06ca242f39f4575c30e4b357d9ee058973ccd82312a86955fe4a24b36cf",
 	"login":               "f9e6714d34fdce82266c8b23b0ff449d05ba71e474d26f711da66f8c4fdc076a",
-	"search_entries":      "8e674dae75e14fb0d13e1a90fb5bef3755a1599905a4c61be578adb9e8fdc370",
+	"search_entries":      "7df4a0be36446e23549ca50c9c2a388cab20586391c65baeed98253b0ed56319",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "1209b97876ca12a8fe3cc2f3f99505725dbccf4966a94e57c2c9478c5a276bff",
 	"stat":                "031ac076d9dc17452140d53030afa945838e5958064294cbcaded07a1394bd82",
-	"unread_entries":      "9794d48d14e5facf67178b66740bf6270b535fe1e94a898c097b2027823ff188",
+	"unread_entries":      "e00d0c6cf43dd6d40867264d6f5c84f94ab7c606cbda5d9feaff26179143022a",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

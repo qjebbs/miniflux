@@ -1,0 +1,67 @@
+{{ define "title"}}{{ t "page.stat.title" }}{{ end }}
+
+{{ define "content"}}
+<section class="page-header">
+    <h1>{{ t "page.stat.title" }}</h1>
+</section>
+
+<div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
+    <div class="item-sizer"></div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.articles" }}
+            </span>
+        </div>
+        <li class="list-body">
+            <ul class="list-item">
+                <a href="{{ route "unread" }}">
+                    <span class="title">{{ t "page.stat.articles.unread" }}</span>
+                    <span class="count">{{ .countUnread }}</span>
+                </a>
+            </ul>
+            <ul class="list-item">
+                    <a href="{{ route "starred" }}">
+                    <span class="title">{{ t "page.stat.articles.starred" }}</span>
+                    <span class="count">{{ .countStarred }}</span>
+                </a>
+            </ul>
+        </li>
+    </div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.categories.unread" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .unreadByCategory }}
+            <ul class="list-item">
+                    <a href="{{ route "categoryEntries" "categoryID" .Category.ID }}">
+                        <span class="title">{{ .Category.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.feeds.unread" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .unreadByFeed }}
+            <ul class="list-item">
+                <a href="{{ route "feedEntries" "feedID" .Feed.ID }}">
+                    <span class="title">{{ .Feed.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
+</div>
+
+{{ end }}

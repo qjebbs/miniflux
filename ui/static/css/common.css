@@ -734,6 +734,40 @@ article.feed-parsing-error {
     color: #333;
 }
 
+/* List */
+.list ul,
+.list li {
+    list-style-type: none;
+}
+
+.list .list-header {
+    margin-bottom: 0.5em;
+}
+
+.list .list-item {
+    border: solid #ddd;
+    border-width: 0 0 1px 0;
+    padding: 0.5em;
+}
+
+.list .list-item:last-child {
+    border-width: 0;
+}
+
+.list .list-item .title {
+    display: inline-block;
+    width: 80%;
+    color: #444;
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+}
+
+.list .list-item .count {
+    float: right;
+    color: #999;
+}
+
 .parsing-error-count {
     cursor: pointer;
 }

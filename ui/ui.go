@@ -42,6 +42,7 @@ func Serve(router *mux.Router, cfg *config.Config, store *storage.Storage, pool 
 	uiRouter.HandleFunc("/mark-all-as-read", handler.markAllAsRead).Name("markAllAsRead").Methods("GET")
 	uiRouter.HandleFunc("/unread", handler.showUnreadPage).Name("unread").Methods("GET")
 	uiRouter.HandleFunc("/unread/entry/{entryID}", handler.showUnreadEntryPage).Name("unreadEntry").Methods("GET")
+	uiRouter.HandleFunc("/stat", handler.showStatPage).Name("stat").Methods("GET")
 
 	// History pages.
 	uiRouter.HandleFunc("/history", handler.showHistoryPage).Name("history").Methods("GET")

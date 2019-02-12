@@ -18,6 +18,7 @@
     "action.mark_above_read": "Mark above as read",
     "tooltip.keyboard_shortcuts": "Scorciatoia da tastiera: %s",
     "tooltip.logged_user": "Autenticato come %s",
+    "menu.home": "Home",
     "menu.unread": "Da leggere",
     "menu.starred": "Preferiti",
     "menu.history": "Cronologia",

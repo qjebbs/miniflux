@@ -9,19 +9,27 @@ class MenuHandler {
         }
     }
 
+    logoClickHandler(event) {
+        if (document.documentElement.clientWidth < 600)
+            this.toggleMainMenu();
+        else
+            this.clickMenuListItem(event);
+    }
+
+
     toggleMainMenu() {
         let menu = document.querySelector(".header nav ul");
         if (DomHelper.isVisible(menu)) {
-            menu.style.display = "none";
+            menu.classList.remove("show");
         } else {
-            menu.style.display = "block";
+            menu.classList.add("show");
         }
 
         let searchElement = document.querySelector(".header .search");
         if (DomHelper.isVisible(searchElement)) {
-            searchElement.style.display = "none";
+            searchElement.classList.remove("show");
         } else {
-            searchElement.style.display = "block";
+            searchElement.classList.add("show");
         }
     }
 }

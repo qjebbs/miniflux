@@ -51,6 +51,10 @@ a:hover {
     display: none;
 }
 
+.header nav ul.show {
+    display: block;
+}
+
 .header li {
     cursor: pointer;
     padding-left: 10px;
@@ -131,6 +135,10 @@ a:hover {
 .search {
     text-align: center;
     display: none;
+}
+
+.search.show {
+    display: block;
 }
 
 .search-toggle-switch {

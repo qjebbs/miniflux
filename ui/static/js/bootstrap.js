@@ -97,11 +97,8 @@ document.addEventListener("DOMContentLoaded", function () {
         LinkStateHandler.flip(event.target);
     }, true);
 
-    if (document.documentElement.clientWidth < 600) {
-        let menuHandler = new MenuHandler();
-        mouseHandler.onClick(".logo", () => menuHandler.toggleMainMenu());
-        mouseHandler.onClick(".header nav li", (event) => menuHandler.clickMenuListItem(event));
-    }
+    let menuHandler = new MenuHandler();
+    mouseHandler.onClick(".logo", (event) => menuHandler.logoClickHandler(event));
 
     if ("serviceWorker" in navigator) {
         let scriptElement = document.getElementById("service-worker-script");

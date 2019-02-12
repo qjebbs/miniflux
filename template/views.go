@@ -1506,6 +1506,7 @@ var templateViewsMap = map[string]string{
             </ul>
         </li>
     </div>
+    {{ if gt (len .unreadByCategory) 0 }}
     <div class="item list">
         <div class="list-header">
             <span class="item-title">
@@ -1523,6 +1524,8 @@ var templateViewsMap = map[string]string{
             {{ end }}
         </li>
     </div>
+    {{ end }}
+    {{ if gt (len .unreadByFeed) 0 }}
     <div class="item list">
         <div class="list-header">
             <span class="item-title">
@@ -1540,6 +1543,8 @@ var templateViewsMap = map[string]string{
             {{ end }}
         </li>
     </div>
+    {{ end }}
+    {{ if gt (len .starredByCategory) 0 }}
     <div class="item list">
         <div class="list-header">
             <span class="item-title">
@@ -1557,6 +1562,8 @@ var templateViewsMap = map[string]string{
             {{ end }}
         </li>
     </div>
+    {{ end }}
+    {{ if gt (len .starredByFeed) 0 }}
     <div class="item list">
         <div class="list-header">
             <span class="item-title">
@@ -1574,6 +1581,7 @@ var templateViewsMap = map[string]string{
             {{ end }}
         </li>
     </div>
+    {{ end }}
 </div>
 
 {{ end }}
@@ -1727,7 +1735,7 @@ var templateViewsMapChecksums = map[string]string{
 	"search_entries":      "8e674dae75e14fb0d13e1a90fb5bef3755a1599905a4c61be578adb9e8fdc370",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "1209b97876ca12a8fe3cc2f3f99505725dbccf4966a94e57c2c9478c5a276bff",
-	"stat":                "79f9a25eacf16e1dc7e3d73fd8178181b23bde245b070ab5bb44bcd0caec1e53",
+	"stat":                "031ac076d9dc17452140d53030afa945838e5958064294cbcaded07a1394bd82",
 	"unread_entries":      "9794d48d14e5facf67178b66740bf6270b535fe1e94a898c097b2027823ff188",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

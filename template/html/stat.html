@@ -28,6 +28,7 @@
             </ul>
         </li>
     </div>
+    {{ if gt (len .unreadByCategory) 0 }}
     <div class="item list">
         <div class="list-header">
             <span class="item-title">
@@ -45,6 +46,8 @@
             {{ end }}
         </li>
     </div>
+    {{ end }}
+    {{ if gt (len .unreadByFeed) 0 }}
     <div class="item list">
         <div class="list-header">
             <span class="item-title">
@@ -62,6 +65,8 @@
             {{ end }}
         </li>
     </div>
+    {{ end }}
+    {{ if gt (len .starredByCategory) 0 }}
     <div class="item list">
         <div class="list-header">
             <span class="item-title">
@@ -79,6 +84,8 @@
             {{ end }}
         </li>
     </div>
+    {{ end }}
+    {{ if gt (len .starredByFeed) 0 }}
     <div class="item list">
         <div class="list-header">
             <span class="item-title">
@@ -96,6 +103,7 @@
             {{ end }}
         </li>
     </div>
+    {{ end }}
 </div>
 
 {{ end }}

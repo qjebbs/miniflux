@@ -1469,6 +1469,74 @@ var templateViewsMap = map[string]string{
 
 {{ end }}
 `,
+	"stat": `{{ define "title"}}{{ t "page.stat.title" }}{{ end }}
+
+{{ define "content"}}
+<section class="page-header">
+    <h1>{{ t "page.stat.title" }}</h1>
+</section>
+
+<div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
+    <div class="item-sizer"></div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.articles" }}
+            </span>
+        </div>
+        <li class="list-body">
+            <ul class="list-item">
+                <a href="{{ route "unread" }}">
+                    <span class="title">{{ t "page.stat.articles.unread" }}</span>
+                    <span class="count">{{ .countUnread }}</span>
+                </a>
+            </ul>
+            <ul class="list-item">
+                    <a href="{{ route "starred" }}">
+                    <span class="title">{{ t "page.stat.articles.starred" }}</span>
+                    <span class="count">{{ .countStarred }}</span>
+                </a>
+            </ul>
+        </li>
+    </div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.categories.unread" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .unreadByCategory }}
+            <ul class="list-item">
+                    <a href="{{ route "categoryEntries" "categoryID" .Category.ID }}">
+                        <span class="title">{{ .Category.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.feeds.unread" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .unreadByFeed }}
+            <ul class="list-item">
+                <a href="{{ route "feedEntries" "feedID" .Feed.ID }}">
+                    <span class="title">{{ .Feed.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
+</div>
+
+{{ end }}
+`,
 	"unread_entries": `{{ define "title"}}{{ t "page.unread.title" }} {{ if gt .countUnread 0 }}({{ .countUnread }}){{ end }} {{ end }}
 
 {{ define "content"}}
@@ -1618,6 +1686,7 @@ var templateViewsMapChecksums = map[string]string{
 	"search_entries":      "8e674dae75e14fb0d13e1a90fb5bef3755a1599905a4c61be578adb9e8fdc370",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "1209b97876ca12a8fe3cc2f3f99505725dbccf4966a94e57c2c9478c5a276bff",
+	"stat":                "67f362afb342be3dd492f73b93181e91b34807afec331aebdb1649ff54241970",
 	"unread_entries":      "9794d48d14e5facf67178b66740bf6270b535fe1e94a898c097b2027823ff188",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

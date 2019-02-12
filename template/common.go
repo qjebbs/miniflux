@@ -117,7 +117,7 @@ var templateCommonMap = map[string]string{
     <header class="header">
         <nav>
             <div class="logo">
-                <a href="{{ route "unread" }}">Mini<span>flux</span></a>
+                <a href="{{ route "stat" }}">Mini<span>flux</span></a>
             </div>
             <ul>
                 <li {{ if eq .menu "unread" }}class="active"{{ end }} title="{{ t "tooltip.keyboard_shortcuts" "g u" }}">
@@ -259,6 +259,6 @@ var templateCommonMap = map[string]string{
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "4faa91e2eae150c5e4eab4d258e039dfdd413bab7602f0009360e6d52898e353",
 	"item_meta":        "34deb081a054f2948ad808bdb2c8603d6ab00c58f2f50c4ead0b47ae092888eb",
-	"layout":           "7bd2017304aafd11271e0c700606faee39e85f8eb322cefdd242ca408a746db4",
+	"layout":           "15746cb25c6ca4cb505ebb609608a715b105d7bdbd2802032f8c1cd345e04752",
 	"pagination":       "3386e90c6e1230311459e9a484629bc5d5bf39514a75ef2e73bbbc61142f7abb",
 }

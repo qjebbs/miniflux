@@ -271,6 +271,9 @@ var templateViewsMap = map[string]string{
         <li>
             <a href="{{ route "categoryEntries" "categoryID" .category.ID }}">{{ t "menu.show_only_unread_entries" }}</a>
         </li>
+        <li>
+            <a href="{{ route "categoryEntriesStarred" "categoryID" .category.ID }}">{{ t "menu.show_only_starred_entries" }}</a>
+        </li>
     {{ end }}
     </ul>
 </section>
@@ -853,6 +856,9 @@ var templateViewsMap = map[string]string{
         {{ else }}
         <li>
             <a href="{{ route "feedEntries" "feedID" .feed.ID }}">{{ t "menu.show_only_unread_entries" }}</a>
+        </li>
+        <li>
+            <a href="{{ route "feedEntriesStarred" "feedID" .feed.ID }}">{{ t "menu.show_only_starred_entries" }}</a>
         </li>
         {{ end }}
         <li>
@@ -1533,6 +1539,40 @@ var templateViewsMap = map[string]string{
             {{ end }}
         </li>
     </div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.categories.starred" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .starredByCategory }}
+            <ul class="list-item">
+                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
+                        <span class="title">{{ .Category.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.feeds.starred" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .starredByFeed }}
+            <ul class="list-item">
+                <a href="{{ route "feedEntriesStarred" "feedID" .Feed.ID }}">
+                    <span class="title">{{ .Feed.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
 </div>
 
 {{ end }}
@@ -1668,7 +1708,7 @@ var templateViewsMapChecksums = map[string]string{
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
 	"bookmark_entries":    "62b60ec722ec1b1f851802cc6a06e1b9909cc529ace41505cddf340f2f640ca0",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "89bd1c239dcad5ec78f095e74badd62eff93632a1df555dc87f9069c10445bf1",
+	"category_entries":    "f7f78934ccec63a53012b0f5820bed633d18a40684fa627c9130b588c632e904",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
@@ -1677,7 +1717,7 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "7b79cf389076aa23660f935bad34f0253a1d7499d262d89ab9b55470bbd236a4",
-	"feed_entries":        "f460f5d3f3e66ebb28195197343140121f443d661d0feceab6e0c5c613bc1d8f",
+	"feed_entries":        "8c0d4c620eabecfec976cc4b3a9c55b71cbeb10bc827d1dc7a66de46ec5d587f",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
 	"history_entries":     "c418db61decb1d20503c54cecbe756fcfb718dbdac65c8f045c7560dfa96e5ef",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",
@@ -1686,7 +1726,7 @@ var templateViewsMapChecksums = map[string]string{
 	"search_entries":      "8e674dae75e14fb0d13e1a90fb5bef3755a1599905a4c61be578adb9e8fdc370",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "1209b97876ca12a8fe3cc2f3f99505725dbccf4966a94e57c2c9478c5a276bff",
-	"stat":                "67f362afb342be3dd492f73b93181e91b34807afec331aebdb1649ff54241970",
+	"stat":                "79f9a25eacf16e1dc7e3d73fd8178181b23bde245b070ab5bb44bcd0caec1e53",
 	"unread_entries":      "9794d48d14e5facf67178b66740bf6270b535fe1e94a898c097b2027823ff188",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

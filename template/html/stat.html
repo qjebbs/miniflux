@@ -62,6 +62,40 @@
             {{ end }}
         </li>
     </div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.categories.starred" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .starredByCategory }}
+            <ul class="list-item">
+                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
+                        <span class="title">{{ .Category.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.feeds.starred" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .starredByFeed }}
+            <ul class="list-item">
+                <a href="{{ route "feedEntriesStarred" "feedID" .Feed.ID }}">
+                    <span class="title">{{ .Feed.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
 </div>
 
 {{ end }}

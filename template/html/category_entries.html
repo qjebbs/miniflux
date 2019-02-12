@@ -17,6 +17,9 @@
         <li>
             <a href="{{ route "categoryEntries" "categoryID" .category.ID }}">{{ t "menu.show_only_unread_entries" }}</a>
         </li>
+        <li>
+            <a href="{{ route "categoryEntriesStarred" "categoryID" .category.ID }}">{{ t "menu.show_only_starred_entries" }}</a>
+        </li>
     {{ end }}
     </ul>
 </section>

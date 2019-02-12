@@ -87,14 +87,17 @@ class EntryHandler {
     static toggleBookmark(element) {
         element.innerHTML = element.dataset.labelLoading;
 
+        let item = DomHelper.findParent(element, 'item');
         let request = new RequestBuilder(element.dataset.bookmarkUrl);
         request.withCallback(() => {
             if (element.dataset.value === "star") {
                 element.innerHTML = element.dataset.labelStar;
                 element.dataset.value = "unstar";
+                if (item) item.classList.remove("item-starred");
             } else {
                 element.innerHTML = element.dataset.labelUnstar;
                 element.dataset.value = "star";
+                if (item) item.classList.add("item-starred");
             }
         });
         request.execute();

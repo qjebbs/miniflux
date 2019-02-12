@@ -658,7 +658,7 @@ body.modal-open {
     font-weight: 600;
 }
 
-.item-status-read .item-title a {
+.item-status-read:not(.item-starred) .item-title a {
     color: #777;
 }
 
@@ -726,7 +726,7 @@ body.modal-open {
     padding-top: 10px;
 }
 
-.masonry .item-status-read .thumbnail{
+.masonry .item-status-read:not(.item-starred) .thumbnail{
     opacity: 0.2;
 }
 

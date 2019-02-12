@@ -199,12 +199,12 @@ textarea:focus {
     font-weight: 400;
 }
 
-.item-status-read .item-title a {
+.item-status-read:not(.item-starred) .item-title a {
     color: #666;
 }
 
-.item-status-read .item-title a:focus,
-.item-status-read .item-title a:hover {
+.item-status-read:not(.item-starred) .item-title a:focus,
+.item-status-read:not(.item-starred) .item-title a:hover {
     color: rgba(82, 168, 236, 0.6);
 }
 

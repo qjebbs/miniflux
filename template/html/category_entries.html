@@ -30,7 +30,7 @@
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
+        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}

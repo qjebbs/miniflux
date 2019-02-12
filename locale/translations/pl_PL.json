@@ -18,6 +18,7 @@
     "action.mark_above_read": "Mark above as read",
     "tooltip.keyboard_shortcuts": "Skróty klawiszowe: %s",
     "tooltip.logged_user": "Zalogowany jako %s",
+    "menu.home": "Home",
     "menu.unread": "Nieprzeczytane",
     "menu.starred": "Ulubione",
     "menu.history": "Historia",

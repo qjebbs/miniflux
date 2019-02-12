@@ -68,7 +68,7 @@ func (h *handler) showStatPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("unreadByCategory", unreadByCategory)
 	view.Set("starredByFeed", starredByFeed)
 	view.Set("starredByCategory", starredByCategory)
-	view.Set("menu", "unread")
+	view.Set("menu", "home")
 	view.Set("user", user)
 	view.Set("countUnread", countUnread)
 	view.Set("countStarred", countStarred)

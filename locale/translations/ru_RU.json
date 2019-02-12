@@ -18,6 +18,7 @@
     "action.mark_above_read": "Mark above as read",
     "tooltip.keyboard_shortcuts": "Сочетания клавиш: %s",
     "tooltip.logged_user": "Авторизован как %s",
+    "menu.home": "Home",
     "menu.unread": "Непрочитанное",
     "menu.starred": "Избранное",
     "menu.history": "История",

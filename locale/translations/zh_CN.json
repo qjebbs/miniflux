@@ -18,6 +18,7 @@
     "action.mark_above_read": "标记之前条目已读",
     "tooltip.keyboard_shortcuts": "快捷键: %s",
     "tooltip.logged_user": "当前登录 %s",
+    "menu.home": "首页",
     "menu.unread": "未读",
     "menu.starred": "星标",
     "menu.history": "历史",

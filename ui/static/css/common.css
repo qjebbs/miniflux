@@ -780,6 +780,8 @@ article.feed-parsing-error {
 .list .list-item .count {
     float: right;
     color: #999;
+    width: 20%;
+    text-align: right;
 }
 
 .parsing-error-count {

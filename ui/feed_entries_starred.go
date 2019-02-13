@@ -66,7 +66,7 @@ func (h *handler) showFeedEntriesStarredPage(w http.ResponseWriter, r *http.Requ
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
-	view.Set("showOnlyUnreadEntries", true)
+	view.Set("showOnlyStarredEntries", true)
 
 	html.OK(w, r, view.Render("feed_entries"))
 }

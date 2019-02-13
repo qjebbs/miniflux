@@ -258,29 +258,34 @@ var templateViewsMap = map[string]string{
 <section class="page-header">
     <h1>{{ .category.Title }} ({{ .total }})</h1>
     <ul>
-    {{ if .entries }}
         <li>
-            <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
-        </li>
-    {{ end }}
-    {{ if .showOnlyUnreadEntries }}
-        <li>
-            <a href="{{ route "categoryEntriesAll" "categoryID" .category.ID }}">{{ t "menu.show_all_entries" }}</a>
-        </li>
-    {{ else }}
-        <li>
-            <a href="{{ route "categoryEntries" "categoryID" .category.ID }}">{{ t "menu.show_only_unread_entries" }}</a>
+            <a href="{{ route "categoryEntries" "categoryID" .category.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ t "menu.show_only_unread_entries" }}</a>
         </li>
         <li>
-            <a href="{{ route "categoryEntriesStarred" "categoryID" .category.ID }}">{{ t "menu.show_only_starred_entries" }}</a>
+            <a href="{{ route "categoryEntriesStarred" "categoryID" .category.ID }}" {{ if .showOnlyStarredEntries }}class="disabled"{{ end }}>{{ t "menu.show_only_starred_entries" }}</a>
         </li>
-    {{ end }}
+        <li>
+            <a href="{{ route "categoryEntriesAll" "categoryID" .category.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ t "menu.show_all_entries" }}</a>
+        </li>
     </ul>
 </section>
 
 {{ if not .entries }}
+    {{ if .showOnlyUnreadEntries }}
+    <p class="alert">{{ t "alert.no_unread_category_entry" }}</p>
+    {{ else if .showOnlyStarredEntries }}
+    <p class="alert">{{ t "alert.no_starred_category_entry" }}</p>
+    {{ else }}
     <p class="alert">{{ t "alert.no_category_entry" }}</p>
+    {{ end }}
 {{ else }}
+    <section class="page-footer">
+        <ul>
+            <li>
+                <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
+            </li>
+        </ul>
+    </section>
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
@@ -306,13 +311,11 @@ var templateViewsMap = map[string]string{
         {{ end }}
     </div>
     <section class="page-footer">
-        {{ if .entries }}
         <ul>
             <li>
                 <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
             </li>
         </ul>
-        {{ end }}
     </section>
     {{ template "pagination" .pagination }}
 {{ end }}
@@ -844,23 +847,15 @@ var templateViewsMap = map[string]string{
 <section class="page-header">
     <h1>{{ .feed.Title }} ({{ .total }})</h1>
     <ul>
-        {{ if .entries }}
         <li>
-            <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
-        </li>
-        {{ end }}
-        {{ if .showOnlyUnreadEntries }}
-        <li>
-            <a href="{{ route "feedEntriesAll" "feedID" .feed.ID }}">{{ t "menu.show_all_entries" }}</a>
-        </li>
-        {{ else }}
-        <li>
-            <a href="{{ route "feedEntries" "feedID" .feed.ID }}">{{ t "menu.show_only_unread_entries" }}</a>
+            <a href="{{ route "feedEntries" "feedID" .feed.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ t "menu.show_only_unread_entries" }}</a>
         </li>
         <li>
-            <a href="{{ route "feedEntriesStarred" "feedID" .feed.ID }}">{{ t "menu.show_only_starred_entries" }}</a>
+            <a href="{{ route "feedEntriesStarred" "feedID" .feed.ID }}" {{ if .showOnlyStarredEntries }}class="disabled"{{ end }}>{{ t "menu.show_only_starred_entries" }}</a>
         </li>
-        {{ end }}
+        <li>
+            <a href="{{ route "feedEntriesAll" "feedID" .feed.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ t "menu.show_all_entries" }}</a>
+        </li>
         <li>
             <a href="{{ route "refreshFeed" "feedID" .feed.ID }}">{{ t "menu.refresh_feed" }}</a>
         </li>
@@ -889,11 +884,20 @@ var templateViewsMap = map[string]string{
 {{ end }}
 {{ if not .entries }}
     {{ if .showOnlyUnreadEntries }}
-        <p class="alert">{{ t "alert.no_unread_entry" }}</p>
+        <p class="alert">{{ t "alert.no_unread_feed_entry" }}</p>
+    {{ else if .showOnlyStarredEntries }}
+        <p class="alert">{{ t "alert.no_starred_feed_entry" }}</p>
     {{ else }}
         <p class="alert">{{ t "alert.no_feed_entry" }}</p>
     {{ end }}
 {{ else }}
+    <section class="page-footer">
+        <ul>
+            <li>
+                <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
+            </li>
+        </ul>
+    </section>
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
@@ -919,13 +923,11 @@ var templateViewsMap = map[string]string{
         {{ end }}
     </div>
     <section class="page-footer">
-        {{ if .entries }}
         <ul>
             <li>
                 <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
             </li>
         </ul>
-        {{ end }}
     </section>
     {{ template "pagination" .pagination }}
 {{ end }}
@@ -1717,7 +1719,7 @@ var templateViewsMapChecksums = map[string]string{
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
 	"bookmark_entries":    "06428679466caed2f503849df9ec17c599f21fb75b3cb48a862310068fc83353",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "48cad9d147683c940abb77b3ba5733c5976e95ddc0e96d1ddd510cb93d19dcf7",
+	"category_entries":    "da4c85ebd4b81e0077959f6180c58a52f0a5df1c4e18d4eb15142570e8c75a54",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
@@ -1726,7 +1728,7 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "7b79cf389076aa23660f935bad34f0253a1d7499d262d89ab9b55470bbd236a4",
-	"feed_entries":        "2f00ed39e51d7875f7614af4aa641af41f67143d1dc21b48334b013f80a8726b",
+	"feed_entries":        "c6d095c33f689218c8d3dc66c6b211ecbfd07f39d36447c258358bf5b9ccd314",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
 	"history_entries":     "f3f23b7e3cdfbb99ba8ce3b939bab9efb87eb8a139707d231b9df935f933dcff",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",

@@ -9,7 +9,6 @@ import (
 
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
-	"miniflux.app/model"
 	"miniflux.app/ui/form"
 	"miniflux.app/ui/session"
 	"miniflux.app/ui/view"
@@ -28,7 +27,6 @@ func (h *handler) showEditEntryPage(w http.ResponseWriter, r *http.Request) {
 	entryID := request.RouteInt64Param(r, "entryID")
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithEntryID(entryID)
-	builder.WithoutStatus(model.EntryStatusRemoved)
 	entry, err := builder.GetEntry()
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -47,6 +45,7 @@ func (h *handler) showEditEntryPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	entryForm := form.EntryForm{
+		EntryID:     entry.ID,
 		FeedID:      entry.FeedID,
 		Title:       entry.Title,
 		URL:         entry.URL,
@@ -56,7 +55,6 @@ func (h *handler) showEditEntryPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	view.Set("form", entryForm)
-	view.Set("entry", entry)
 	view.Set("feeds", feeds)
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))

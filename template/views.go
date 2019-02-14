@@ -466,17 +466,23 @@ var templateViewsMap = map[string]string{
 </form>
 {{ end }}
 `,
-	"edit_entry": `{{ define "title"}}{{ .entry.Title }}{{ end }}
+	"edit_entry": `{{ define "title"}}{{ .form.Title }}{{ end }}
 
 {{ define "content"}}
-{{ if not .entry }}
-    <p class="alert alert-error">{{ t "page.categories.no_feed" }}</p>
+{{ if not .feeds }}
+    <p class="alert alert-error">{{ t "alert.no_feed" }}</p>
 {{ else }}
-    <form id="entry-form" action="{{ route "updateEntry" "entryID" .entry.ID }}" method="post" autocomplete="off">
+    <form id="entry-form" action="{{ route "updateEntry" }}" method="post" autocomplete="off">
         <input type="hidden" name="csrf" value="{{ .csrf }}">
+        <input type="hidden" name="entry_id" value="{{ .form.EntryID }}">
 
         {{ if .errorMessage }}
-            <div class="alert alert-error">{{ t .errorMessage }}</div>
+            <div class="alert alert-error">
+                {{ t .errorMessage }}
+                {{ if .errorAction }}
+                    <a href="{{ .errorAction }}" target="_blank">{{ t "action.edit_existing" }}</a>
+                {{ end }}
+            </div>
         {{ end }}
 
         <label for="form-title">{{ t "form.entry.label.title" }}</label>
@@ -1605,7 +1611,7 @@ var templateViewsMapChecksums = map[string]string{
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
 	"edit_category":       "daf073d2944a180ce5aaeb80b597eb69597a50dff55a9a1d6cf7938b48d768cb",
-	"edit_entry":          "cf5d1804a748e3b739dc308596e765247945b3c483cac49335284541c2dd6e22",
+	"edit_entry":          "26f893c5013fac746cc9beb66a714722dc2f9e1d4ae86674984d1ef178b933ad",
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "7b79cf389076aa23660f935bad34f0253a1d7499d262d89ab9b55470bbd236a4",

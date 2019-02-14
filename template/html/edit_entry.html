@@ -1,14 +1,20 @@
-{{ define "title"}}{{ .entry.Title }}{{ end }}
+{{ define "title"}}{{ .form.Title }}{{ end }}
 
 {{ define "content"}}
-{{ if not .entry }}
-    <p class="alert alert-error">{{ t "page.categories.no_feed" }}</p>
+{{ if not .feeds }}
+    <p class="alert alert-error">{{ t "alert.no_feed" }}</p>
 {{ else }}
-    <form id="entry-form" action="{{ route "updateEntry" "entryID" .entry.ID }}" method="post" autocomplete="off">
+    <form id="entry-form" action="{{ route "updateEntry" }}" method="post" autocomplete="off">
         <input type="hidden" name="csrf" value="{{ .csrf }}">
+        <input type="hidden" name="entry_id" value="{{ .form.EntryID }}">
 
         {{ if .errorMessage }}
-            <div class="alert alert-error">{{ t .errorMessage }}</div>
+            <div class="alert alert-error">
+                {{ t .errorMessage }}
+                {{ if .errorAction }}
+                    <a href="{{ .errorAction }}" target="_blank">{{ t "action.edit_existing" }}</a>
+                {{ end }}
+            </div>
         {{ end }}
 
         <label for="form-title">{{ t "form.entry.label.title" }}</label>

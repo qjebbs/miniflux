@@ -12,7 +12,6 @@ import (
 	"miniflux.app/http/client"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
-	"miniflux.app/http/route"
 	"miniflux.app/logger"
 	"miniflux.app/ui/form"
 	"miniflux.app/ui/session"
@@ -35,55 +34,30 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	entryForm := form.NewEntryForm(r)
+
+	v.Set("form", entryForm)
 	v.Set("feeds", feeds)
 	v.Set("user", user)
 	v.Set("countUnread", h.store.CountUnreadEntries(user.ID))
 	v.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	v.Set("defaultUserAgent", client.DefaultUserAgent)
 
-	entryForm := form.NewEntryForm(r)
 	if err := entryForm.Validate(); err != nil {
-		v.Set("form", entryForm)
 		v.Set("errorMessage", err.Error())
 		html.OK(w, r, v.Render("add_entry"))
 		return
 	}
 
 	entry, err := scraper.FetchEntry(entryForm.URL, "", entryForm.UserAgent)
-	entry.UserID = user.ID
-	entry.FeedID = entryForm.FeedID
-
 	if err != nil {
 		logger.Error("[UI:ProcessEntryWebPage] %s", err)
-		v.Set("form", entryForm)
 		v.Set("errorMessage", err)
 		html.OK(w, r, v.Render("add_entry"))
 		return
 	}
-	if !h.store.EntryExists(entry) {
-		err = h.store.CreateEntry(entry)
-		if err != nil {
-			v.Set("form", entryForm)
-			v.Set("errorMessage", err)
-			html.OK(w, r, v.Render("add_entry"))
-			return
-		}
-	} else {
-		builder := h.store.NewEntryQueryBuilder(user.ID)
-		builder.WithEntryHash(entry.Hash)
-		builder.WithFeedID(entry.FeedID)
-		entry, err = builder.GetEntry()
-		if err != nil {
-			if err != nil {
-				v.Set("form", entryForm)
-				v.Set("errorMessage", err)
-				html.OK(w, r, v.Render("add_entry"))
-				return
-			}
-		}
-	}
-	if !entry.Starred {
-		_ = h.store.ToggleBookmark(user.ID, entry.ID)
-	}
-	html.Redirect(w, r, route.Path(h.router, "editEntry", "entryID", entry.ID))
+
+	entryForm.Title = entry.Title
+	entryForm.Content = entry.Content
+	html.OK(w, r, v.Render("edit_entry"))
 }

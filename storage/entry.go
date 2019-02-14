@@ -154,9 +154,9 @@ func (s *Storage) updateEntry(entry *model.Entry) error {
 func (s *Storage) UpdateEntryByID(entry *model.Entry) error {
 	query := `
 		UPDATE entries SET
-		title=$1, url=$2, comments_url=$3, content=$4, author=$5, feed_id=$6,
+		title=$1, url=$2, comments_url=$3, content=$4, author=$5, status=$6, starred=$7, feed_id=$8,
 		document_vectors = setweight(to_tsvector(substring(coalesce($1, '') for 1000000)), 'A') || setweight(to_tsvector(substring(coalesce($4, '') for 1000000)), 'B')
-		WHERE user_id=$7 AND id=$8
+		WHERE user_id=$9 AND id=$10
 	`
 	_, err := s.db.Exec(
 		query,
@@ -165,6 +165,8 @@ func (s *Storage) UpdateEntryByID(entry *model.Entry) error {
 		entry.CommentsURL,
 		entry.Content,
 		entry.Author,
+		entry.Status,
+		entry.Starred,
 		entry.FeedID,
 		entry.UserID,
 		entry.ID,

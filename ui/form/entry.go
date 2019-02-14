@@ -14,6 +14,7 @@ import (
 
 // EntryForm represents a feed form in the UI
 type EntryForm struct {
+	EntryID     int64
 	FeedID      int64
 	Title       string
 	URL         string
@@ -55,12 +56,18 @@ func (e EntryForm) Merge(entry *model.Entry) *model.Entry {
 
 // NewEntryForm parses the HTTP request and returns a EntryForm
 func NewEntryForm(r *http.Request) *EntryForm {
+	EntryID, err := strconv.Atoi(r.FormValue("entry_id"))
+	if err != nil {
+		EntryID = 0
+	}
+
 	FeedID, err := strconv.Atoi(r.FormValue("feed_id"))
 	if err != nil {
 		FeedID = 0
 	}
 
 	return &EntryForm{
+		EntryID:     int64(EntryID),
 		FeedID:      int64(FeedID),
 		Title:       r.FormValue("title"),
 		URL:         r.FormValue("url"),

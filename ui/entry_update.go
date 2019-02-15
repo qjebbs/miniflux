@@ -81,6 +81,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 				html.OK(w, r, view.Render("edit_entry"))
 				return
 			}
+			_ = h.store.ToggleBookmark(entry.UserID, entry.ID)
 		} else {
 			builder := h.store.NewEntryQueryBuilder(user.ID)
 			builder.WithEntryHash(entry.Hash)
@@ -113,6 +114,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	entry.Starred = true
 	entry.Status = model.EntryStatusUnread
 
 	err = h.store.UpdateEntryByID(entryForm.Merge(entry))

@@ -179,7 +179,7 @@ var templateViewsMap = map[string]string{
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
-            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry }}
+            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
             <div class="thumbnail">
                 <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "starredEntry" "entryID" .ID }}">
@@ -299,7 +299,7 @@ var templateViewsMap = map[string]string{
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
-            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry  }}
+            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
             <div class="thumbnail">
                 <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "categoryEntry" "categoryID" .Feed.Category.ID "entryID" .ID }}">
@@ -911,7 +911,7 @@ var templateViewsMap = map[string]string{
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
-            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry }}
+            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
             <div class="thumbnail">
                 <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "feedEntry" "feedID" .Feed.ID "entryID" .ID }}">
@@ -1042,7 +1042,7 @@ var templateViewsMap = map[string]string{
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
-            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry  }}
+            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
             <div class="thumbnail">
                 <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "readEntry" "entryID" .ID }}">
@@ -1315,7 +1315,7 @@ var templateViewsMap = map[string]string{
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
-            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry  }}
+            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
             <div class="thumbnail">
                 <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "searchEntry" "entryID" .ID }}?q={{ $.searchQuery }}">
@@ -1623,7 +1623,7 @@ var templateViewsMap = map[string]string{
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
-            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry }}
+            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
             <div class="thumbnail">
                 <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "unreadEntry" "entryID" .ID }}">
@@ -1717,9 +1717,9 @@ var templateViewsMapChecksums = map[string]string{
 	"about":               "844e3313c33ae31a74b904f6ef5d60299773620d8450da6f760f9f317217c51e",
 	"add_entry":           "e31b385afbc9e6d1e39e715ffddf5e5f04dc5a0440a876c2accc39dce2df27f4",
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
-	"bookmark_entries":    "06428679466caed2f503849df9ec17c599f21fb75b3cb48a862310068fc83353",
+	"bookmark_entries":    "799a8049d2b241807a0d7ae95360e475f1cbc83ce5704b9bdaa511502a9a1b56",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "da4c85ebd4b81e0077959f6180c58a52f0a5df1c4e18d4eb15142570e8c75a54",
+	"category_entries":    "a6976586b79452d4297441badd03814df5d148a82e563f84d421f105ebbf4d79",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
@@ -1728,16 +1728,16 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "7b79cf389076aa23660f935bad34f0253a1d7499d262d89ab9b55470bbd236a4",
-	"feed_entries":        "c6d095c33f689218c8d3dc66c6b211ecbfd07f39d36447c258358bf5b9ccd314",
+	"feed_entries":        "a39a2482f59233e1c3b053691d59d2437eaeba44e97363030936dc38e0b7fbd1",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
-	"history_entries":     "f3f23b7e3cdfbb99ba8ce3b939bab9efb87eb8a139707d231b9df935f933dcff",
+	"history_entries":     "ca320df0f2dfc5509087282f2f175dbd9d0dbbd1c95c6705a45f24c0b5d8eb9e",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",
 	"integrations":        "d73ad06ca242f39f4575c30e4b357d9ee058973ccd82312a86955fe4a24b36cf",
 	"login":               "f9e6714d34fdce82266c8b23b0ff449d05ba71e474d26f711da66f8c4fdc076a",
-	"search_entries":      "7df4a0be36446e23549ca50c9c2a388cab20586391c65baeed98253b0ed56319",
+	"search_entries":      "10caeb5a12ab111ff965c61b512a4ece45f847d367a0074af8a57276d5713936",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "1209b97876ca12a8fe3cc2f3f99505725dbccf4966a94e57c2c9478c5a276bff",
 	"stat":                "031ac076d9dc17452140d53030afa945838e5958064294cbcaded07a1394bd82",
-	"unread_entries":      "e00d0c6cf43dd6d40867264d6f5c84f94ab7c606cbda5d9feaff26179143022a",
+	"unread_entries":      "6c7f79b518e896c7723b90d3033ae884e5116c00348e4f66ea092542ee0f3bae",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

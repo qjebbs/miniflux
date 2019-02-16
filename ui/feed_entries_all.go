@@ -67,6 +67,7 @@ func (h *handler) showFeedEntriesAllPage(w http.ResponseWriter, r *http.Request)
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("showOnlyUnreadEntries", false)
+	view.Set("pageEntriesType", "all")
 
 	html.OK(w, r, view.Render("feed_entries"))
 }

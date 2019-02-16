@@ -67,6 +67,7 @@ func (h *handler) showCategoryEntriesStarredPage(w http.ResponseWriter, r *http.
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("showOnlyStarredEntries", true)
+	view.Set("pageEntriesType", "starred")
 
 	html.OK(w, r, view.Render("category_entries"))
 }

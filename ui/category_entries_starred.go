@@ -60,7 +60,7 @@ func (h *handler) showCategoryEntriesStarredPage(w http.ResponseWriter, r *http.
 	view.Set("category", category)
 	view.Set("total", count)
 	view.Set("entries", entries)
-	view.Set("pagination", getPagination(route.Path(h.router, "categoryEntriesAll", "categoryID", category.ID), count, offset))
+	view.Set("pagination", getPagination(route.Path(h.router, "categoryEntriesStarred", "categoryID", category.ID), count, offset))
 	view.Set("menu", "categories")
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))

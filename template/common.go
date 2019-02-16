@@ -26,7 +26,17 @@ var templateCommonMap = map[string]string{
 <div class="item-meta">
     <ul>
         <li>
+            {{ if .pageEntriesType}}
+                {{ if eq .pageEntriesType "all" }}
+                <a href="{{ route "feedEntriesAll" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+                {{ else if eq .pageEntriesType "starred" }}
+                <a href="{{ route "feedEntriesStarred" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+                {{ else }}
+                <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+                {{ end }}
+            {{ else }}
             <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+            {{ end }}
         </li>
         <li>
             <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed .user.Timezone .entry.Date }}</time>
@@ -261,7 +271,7 @@ var templateCommonMap = map[string]string{
 
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "4faa91e2eae150c5e4eab4d258e039dfdd413bab7602f0009360e6d52898e353",
-	"item_meta":        "34deb081a054f2948ad808bdb2c8603d6ab00c58f2f50c4ead0b47ae092888eb",
+	"item_meta":        "e2d3908c2cb933dd196b37da5ecb65133986bb8db53ccc57e109e64749f873fa",
 	"layout":           "e9671320cd7b9f4282c266944d3b883e40d06b11edf77cd8f9f7e9a48bc0f6d9",
 	"pagination":       "3386e90c6e1230311459e9a484629bc5d5bf39514a75ef2e73bbbc61142f7abb",
 }

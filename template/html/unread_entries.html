@@ -33,7 +33,7 @@
                 </span>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
             </div>
-            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry }}
+            {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
             <div class="thumbnail">
                 <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "unreadEntry" "entryID" .ID }}">

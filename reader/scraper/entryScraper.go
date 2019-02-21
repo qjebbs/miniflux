@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 	"time"
 
@@ -24,10 +25,14 @@ import (
 )
 
 // FetchEntry downloads a web page and returns an Entry.
-func FetchEntry(websiteURL, rules, userAgent string) (*model.Entry, error) {
+func FetchEntry(websiteURL, rules, userAgent string, cookies []*http.Cookie) (*model.Entry, error) {
 	clt := client.New(websiteURL)
 	if userAgent != "" {
 		clt.WithUserAgent(userAgent)
+	}
+
+	if cookies != nil {
+		clt.WithCookies(cookies)
 	}
 
 	response, err := clt.Get()

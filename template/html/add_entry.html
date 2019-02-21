@@ -30,6 +30,8 @@
             <div class="details-content">
                 <label for="form-user-agent">{{ t "form.feed.label.user_agent" }}</label>
                 <input type="text" name="user_agent" id="form-user-agent" placeholder="{{ .defaultUserAgent }}" value="{{ .form.UserAgent }}" autocomplete="off">
+                <label for="form-cookies">{{ t "form.entry.label.cookies" }}</label>
+                <textarea class="small" name="cookies" id="form-cookies" placeholder="{{ t "form.entry.label.cookies_placeholder" }}" autocomplete="off">{{ .form.Cookies }}</textarea>
             </div>
         </details>
 

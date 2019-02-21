@@ -301,6 +301,11 @@ textarea {
     min-height: 400px;
 }
 
+textarea.small {
+    min-width: 100%;
+    min-height: 100px;
+}
+
 input[type="checkbox"] {
     margin-bottom: 15px;
 }

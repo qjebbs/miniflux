@@ -51,6 +51,7 @@ type Client struct {
 	username            string
 	password            string
 	userAgent           string
+	cookies             []*http.Cookie
 	Insecure            bool
 }
 
@@ -81,6 +82,26 @@ func (c *Client) WithUserAgent(userAgent string) *Client {
 	if userAgent != "" {
 		c.userAgent = userAgent
 	}
+	return c
+}
+
+// WithCookie add a cookies for outgoing requests.
+func (c *Client) WithCookie(cookie *http.Cookie) *Client {
+
+	if c.cookies == nil {
+		c.cookies = make([]*http.Cookie, 0)
+	}
+	c.cookies = append(c.cookies, cookie)
+	return c
+}
+
+// WithCookies add multiple cookies for outgoing requests.
+func (c *Client) WithCookies(cookies []*http.Cookie) *Client {
+
+	if c.cookies == nil {
+		c.cookies = make([]*http.Cookie, 0)
+	}
+	c.cookies = append(c.cookies, cookies...)
 	return c
 }
 
@@ -203,6 +224,12 @@ func (c *Client) buildRequest(method string, body io.Reader) (*http.Request, err
 	}
 
 	request.Header = c.buildHeaders()
+
+	if c.cookies != nil {
+		for _, cookie := range c.cookies {
+			request.AddCookie(cookie)
+		}
+	}
 
 	if c.username != "" && c.password != "" {
 		request.SetBasicAuth(c.username, c.password)

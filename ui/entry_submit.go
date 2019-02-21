@@ -5,7 +5,10 @@
 package ui // import "miniflux.app/ui"
 
 import (
+	"bufio"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"miniflux.app/reader/scraper"
 
@@ -49,7 +52,7 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entry, err := scraper.FetchEntry(entryForm.URL, "", entryForm.UserAgent)
+	entry, err := scraper.FetchEntry(entryForm.URL, "", entryForm.UserAgent, parseCookies(entryForm.Cookies))
 	if err != nil {
 		logger.Error("[UI:ProcessEntryWebPage] %s", err)
 		v.Set("errorMessage", err)
@@ -60,4 +63,25 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 	entryForm.Title = entry.Title
 	entryForm.Content = entry.Content
 	html.OK(w, r, v.Render("edit_entry"))
+}
+
+func parseCookies(value string) []*http.Cookie {
+	cookies := make([]*http.Cookie, 0)
+	scanner := bufio.NewScanner(strings.NewReader(value))
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+		cols := strings.Split(scanner.Text(), "\t")
+		if len(cols) < 2 {
+			continue
+		}
+		name := strings.TrimSpace(cols[0])
+		value := strings.TrimSpace(cols[1])
+		if name != "" && value != "" {
+			cookies = append(cookies, &http.Cookie{
+				Name:  name,
+				Value: value,
+			})
+		}
+	}
+	return cookies
 }

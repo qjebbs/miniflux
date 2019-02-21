@@ -23,6 +23,7 @@ type EntryForm struct {
 	Readability bool
 	Author      string
 	UserAgent   string
+	Cookies     string
 }
 
 // Validate makes sure the form values are valid.
@@ -76,5 +77,6 @@ func NewEntryForm(r *http.Request) *EntryForm {
 		Readability: r.FormValue("readability") == "on",
 		Author:      r.FormValue("author"),
 		UserAgent:   r.FormValue("user_agent"),
+		Cookies:     r.FormValue("cookies"),
 	}
 }

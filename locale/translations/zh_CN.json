@@ -249,6 +249,8 @@
     "form.entry.label.code": "代码",
     "form.entry.label.preview": "预览",
     "form.entry.label.readability": "使用 Readability 解析",
+    "form.entry.label.cookies": "Cookies",
+    "form.entry.label.cookies_placeholder":"以制表符分隔的“名称-值”表格，如：“name\tvalue”",
     "form.category.label.title": "标题",
     "form.user.label.username": "用户名",
     "form.user.label.password": "密码",

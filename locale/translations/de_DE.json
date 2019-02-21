@@ -253,6 +253,8 @@
     "form.entry.label.code": "Code",
     "form.entry.label.preview": "Preview",
     "form.entry.label.readability": "Parse with Readability",
+    "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
+    "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
     "form.category.label.title": "Titel",
     "form.user.label.username": "Benutzername",
     "form.user.label.password": "Passwort",

@@ -179,7 +179,17 @@ var templateViewsMap = map[string]string{
                     {{ end }}
                     <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "starredEntry" "entryID" .ID }}">{{ .Title }}</a>
                 </span>
+                {{ if  $.pageEntriesType}}
+                    {{ if eq  $.pageEntriesType "all" }}
+                    <span class="category"><a href="{{ route "categoryEntriesAll" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else if eq  $.pageEntriesType "starred" }}
+                    <span class="category"><a href="{{ route "categoryEntriesStarred" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else }}
+                    <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ end }}
+                {{ else }}
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                {{ end }}
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
@@ -299,7 +309,17 @@ var templateViewsMap = map[string]string{
                     {{ end }}
                     <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "categoryEntry" "categoryID" .Feed.Category.ID "entryID" .ID }}">{{ .Title }}</a>
                 </span>
+                {{ if  $.pageEntriesType}}
+                    {{ if eq  $.pageEntriesType "all" }}
+                    <span class="category"><a href="{{ route "categoryEntriesAll" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else if eq  $.pageEntriesType "starred" }}
+                    <span class="category"><a href="{{ route "categoryEntriesStarred" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else }}
+                    <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ end }}
+                {{ else }}
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                {{ end }}
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
@@ -917,7 +937,17 @@ var templateViewsMap = map[string]string{
                     {{ end }}
                     <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "feedEntry" "feedID" .Feed.ID "entryID" .ID }}">{{ .Title }}</a>
                 </span>
+                {{ if  $.pageEntriesType}}
+                    {{ if eq  $.pageEntriesType "all" }}
+                    <span class="category"><a href="{{ route "categoryEntriesAll" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else if eq  $.pageEntriesType "starred" }}
+                    <span class="category"><a href="{{ route "categoryEntriesStarred" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else }}
+                    <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ end }}
+                {{ else }}
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                {{ end }}
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
@@ -1048,7 +1078,17 @@ var templateViewsMap = map[string]string{
                     {{ end }}
                     <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "readEntry" "entryID" .ID }}">{{ .Title }}</a>
                 </span>
+                {{ if  $.pageEntriesType}}
+                    {{ if eq  $.pageEntriesType "all" }}
+                    <span class="category"><a href="{{ route "categoryEntriesAll" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else if eq  $.pageEntriesType "starred" }}
+                    <span class="category"><a href="{{ route "categoryEntriesStarred" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else }}
+                    <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ end }}
+                {{ else }}
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                {{ end }}
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
@@ -1321,7 +1361,17 @@ var templateViewsMap = map[string]string{
                     {{ end }}
                     <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "searchEntry" "entryID" .ID }}?q={{ $.searchQuery }}">{{ .Title }}</a>
                 </span>
+                {{ if  $.pageEntriesType}}
+                    {{ if eq  $.pageEntriesType "all" }}
+                    <span class="category"><a href="{{ route "categoryEntriesAll" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else if eq  $.pageEntriesType "starred" }}
+                    <span class="category"><a href="{{ route "categoryEntriesStarred" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else }}
+                    <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ end }}
+                {{ else }}
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                {{ end }}
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
@@ -1629,7 +1679,17 @@ var templateViewsMap = map[string]string{
                     {{ end }}
                     <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "unreadEntry" "entryID" .ID }}">{{ .Title }}</a>
                 </span>
+                {{ if $.pageEntriesType}}
+                    {{ if eq $.pageEntriesType "all" }}
+                    <span class="category"><a href="{{ route "categoryEntriesAll" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else if eq $.pageEntriesType "starred" }}
+                    <span class="category"><a href="{{ route "categoryEntriesStarred" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else }}
+                    <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ end }}
+                {{ else }}
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                {{ end }}
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}
@@ -1725,9 +1785,9 @@ var templateViewsMapChecksums = map[string]string{
 	"about":               "844e3313c33ae31a74b904f6ef5d60299773620d8450da6f760f9f317217c51e",
 	"add_entry":           "9e7299bc8e6c54918f065b46a2d82407f6b825321d95c80cbdc023c89dfc9f8f",
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
-	"bookmark_entries":    "799a8049d2b241807a0d7ae95360e475f1cbc83ce5704b9bdaa511502a9a1b56",
+	"bookmark_entries":    "aa28e4418b6f4cced4be47822067abaa6e2ef0f466818317e701e39c85e308fb",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "a6976586b79452d4297441badd03814df5d148a82e563f84d421f105ebbf4d79",
+	"category_entries":    "11012192d9c3c296b4eef775c2ffee9eb2e76cfe5843fb98e0d6f948a303cc88",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
@@ -1736,16 +1796,16 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "7b79cf389076aa23660f935bad34f0253a1d7499d262d89ab9b55470bbd236a4",
-	"feed_entries":        "a39a2482f59233e1c3b053691d59d2437eaeba44e97363030936dc38e0b7fbd1",
+	"feed_entries":        "028d6a238138ba7f24ad47da08d2e138b3324b80e1314e1800ab98ab17aceb24",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
-	"history_entries":     "ca320df0f2dfc5509087282f2f175dbd9d0dbbd1c95c6705a45f24c0b5d8eb9e",
+	"history_entries":     "3e2ad4478cc03fdbc71a037edd2f9c10a1fcc72e721ad7ebb6166ec841a7e995",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",
 	"integrations":        "d73ad06ca242f39f4575c30e4b357d9ee058973ccd82312a86955fe4a24b36cf",
 	"login":               "f9e6714d34fdce82266c8b23b0ff449d05ba71e474d26f711da66f8c4fdc076a",
-	"search_entries":      "10caeb5a12ab111ff965c61b512a4ece45f847d367a0074af8a57276d5713936",
+	"search_entries":      "34941bef77b8009898bfdfdfb9ebc7064e8b8b459d101680efb359d5c8df6753",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "1209b97876ca12a8fe3cc2f3f99505725dbccf4966a94e57c2c9478c5a276bff",
 	"stat":                "031ac076d9dc17452140d53030afa945838e5958064294cbcaded07a1394bd82",
-	"unread_entries":      "6c7f79b518e896c7723b90d3033ae884e5116c00348e4f66ea092542ee0f3bae",
+	"unread_entries":      "ef75b90acb6c028ab0062127512750ca6c3ce9c46e9d014dc1d6dee5582ab300",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

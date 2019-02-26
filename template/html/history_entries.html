@@ -26,7 +26,17 @@
                     {{ end }}
                     <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "readEntry" "entryID" .ID }}">{{ .Title }}</a>
                 </span>
+                {{ if  $.pageEntriesType}}
+                    {{ if eq  $.pageEntriesType "all" }}
+                    <span class="category"><a href="{{ route "categoryEntriesAll" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else if eq  $.pageEntriesType "starred" }}
+                    <span class="category"><a href="{{ route "categoryEntriesStarred" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ else }}
+                    <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                    {{ end }}
+                {{ else }}
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+                {{ end }}
             </div>
             {{ template "item_meta" dict "user" $.user "entry" . "hasSaveEntry" $.hasSaveEntry "pageEntriesType" $.pageEntriesType }}
             {{ if and (eq $.view "masonry") (ne .Thumbnail "") }}

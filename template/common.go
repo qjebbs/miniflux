@@ -79,6 +79,9 @@ var templateCommonMap = map[string]string{
                 data-value="{{ if eq .entry.Status "read" }}read{{ else }}unread{{ end }}"
                 >{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&#xfe0e;&nbsp;{{ t "entry.status.read" }}{{ end }}</a>
         </li>
+        <li>
+            <a href="#" data-on-click="showActionMenu" data-action-menu-excluded title="{{ t "entry.actions.title" }}">{{ t "entry.actions.label" }}</a>
+        </li>
     </ul>
 </div>
 {{ end }}`,
@@ -271,7 +274,7 @@ var templateCommonMap = map[string]string{
 
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "4faa91e2eae150c5e4eab4d258e039dfdd413bab7602f0009360e6d52898e353",
-	"item_meta":        "e2d3908c2cb933dd196b37da5ecb65133986bb8db53ccc57e109e64749f873fa",
+	"item_meta":        "3fcf5aa5ddeb140c3b721aa929fffbc1c45d1bf9ef93a91e188208a816d75df8",
 	"layout":           "e9671320cd7b9f4282c266944d3b883e40d06b11edf77cd8f9f7e9a48bc0f6d9",
 	"pagination":       "3386e90c6e1230311459e9a484629bc5d5bf39514a75ef2e73bbbc61142f7abb",
 }

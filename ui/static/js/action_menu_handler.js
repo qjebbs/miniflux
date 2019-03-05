@@ -6,6 +6,7 @@ class ActionMenuHandler {
         this.element.classList.add("current-item");
     }
     show() {
+        ModalHandler.close();
         let template = document.getElementById("action-menus");
         if (template === null) return;
 
@@ -37,6 +38,7 @@ class ActionMenuHandler {
 
             links.forEach(
                 link => {
+                    if (link.dataset.actionMenuExcluded !== undefined) return;
                     let menu = document.createElement("li");
                     menu.innerText = link.innerText;
                     menu.addEventListener("click", () => {

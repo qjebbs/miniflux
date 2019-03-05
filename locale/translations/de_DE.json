@@ -72,6 +72,8 @@
     "entry.original.label": "Original-Artikel",
     "entry.comments.label": "Kommentare",
     "entry.comments.title": "Kommentare anzeigen",
+    "entry.actions.label": "All Actions",
+    "entry.actions.title": "Show all actions available to this entry",
     "page.stat.title": "Miniflux Reader",
     "page.stat.articles": "Articles",
     "page.stat.articles.unread": "Unread Articles",

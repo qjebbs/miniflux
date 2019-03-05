@@ -575,6 +575,7 @@ body.modal-open {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    cursor: pointer;
 }
 
 /* Login form */

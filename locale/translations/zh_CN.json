@@ -72,6 +72,8 @@
     "entry.original.label": "原始内容",
     "entry.comments.label": "评论",
     "entry.comments.title": "查看评论",
+    "entry.actions.label": "全部操作",
+    "entry.actions.title": "显示适用于此文章的全部操作",
     "page.stat.title": "Miniflux 阅读器",
     "page.stat.articles": "文章",
     "page.stat.articles.unread": "未读文章",

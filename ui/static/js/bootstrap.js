@@ -80,6 +80,15 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     mouseHandler.onClick("a[data-on-click=markPageAsRead]", () => navHandler.markPageAsRead());
+    mouseHandler.onClick("a[data-on-click=showActionMenu]", (event) => {
+        let currentItem = DomHelper.findParent(event.target, "entry");
+        if (!currentItem) {
+            currentItem = DomHelper.findParent(event.target, "item");
+        }
+        if (currentItem) {
+            new ActionMenuHandler(currentItem).show();
+        }
+    });
 
     mouseHandler.onClick("a[data-confirm]", (event) => {
         (new ConfirmHandler()).handle(event);

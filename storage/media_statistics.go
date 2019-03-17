@@ -7,7 +7,7 @@ import (
 	"miniflux.app/timer"
 )
 
-// MediaStatisticsAll returns media count and size of specified feed.
+// MediaStatisticsAll returns media count and cached size of the whole miniflux service.
 func (s *Storage) MediaStatisticsAll() (count int, cacheCount int, cacheSize int, err error) {
 	defer timer.ExecutionTime(time.Now(), "[Storage:MediaStatisticsAll]")
 
@@ -26,7 +26,7 @@ func (s *Storage) MediaStatisticsAll() (count int, cacheCount int, cacheSize int
 	return
 }
 
-// MediaStatisticsByFeed returns media count and size of specified feed.
+// MediaStatisticsByFeed returns media count and cached size of a feed.
 func (s *Storage) MediaStatisticsByFeed(feedID int64) (count int, cacheCount int, cacheSize int, err error) {
 	defer timer.ExecutionTime(time.Now(), "[Storage:MediaStatisticsByFeed]")
 
@@ -34,7 +34,7 @@ func (s *Storage) MediaStatisticsByFeed(feedID int64) (count int, cacheCount int
 	return s.mediaStatisticsByCond(cond)
 }
 
-// MediaStatisticsByUser returns media count and size of specified feed.
+// MediaStatisticsByUser returns media count and cached size of a user.
 func (s *Storage) MediaStatisticsByUser(userID int64) (count int, cacheCount int, cacheSize int, err error) {
 	defer timer.ExecutionTime(time.Now(), "[Storage:MediaStatisticsByUser]")
 
@@ -42,7 +42,7 @@ func (s *Storage) MediaStatisticsByUser(userID int64) (count int, cacheCount int
 	return s.mediaStatisticsByCond(cond)
 }
 
-// MediaStatisticsByEntry returns media count and size of specified feed.
+// MediaStatisticsByEntry returns media count and cached size of an entry.
 func (s *Storage) MediaStatisticsByEntry(entryID int64) (count int, cacheCount int, cacheSize int, err error) {
 	defer timer.ExecutionTime(time.Now(), "[Storage:MediaStatisticsByEntry]")
 
@@ -50,7 +50,6 @@ func (s *Storage) MediaStatisticsByEntry(entryID int64) (count int, cacheCount i
 	return s.mediaStatisticsByCond(cond)
 }
 
-// MediaStatisticsByUser returns media count and size of specified feed.
 func (s *Storage) mediaStatisticsByCond(cond string) (count int, cacheCount int, cacheSize int, err error) {
 
 	query := fmt.Sprintf(`

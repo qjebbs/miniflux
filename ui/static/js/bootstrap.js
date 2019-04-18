@@ -4,9 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let tabHandler = new TabHandler();
     tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);
 
-    let touchHandler = new TouchHandler();
-    touchHandler.listen();
-
     let navHandler = new NavHandler();
     let keyboardHandler = new KeyboardHandler();
     keyboardHandler.on("g u", () => navHandler.goToPage("unread"));
@@ -26,7 +23,10 @@ document.addEventListener("DOMContentLoaded", function () {
     keyboardHandler.on("o", () => navHandler.openSelectedItem());
     keyboardHandler.on("v", () => navHandler.openOriginalLink());
     keyboardHandler.on("m", () => navHandler.toggleEntryStatus());
-    keyboardHandler.on("A", () => navHandler.markPageAsRead());
+    keyboardHandler.on("A", () => {
+        let element = document.querySelector("a[data-on-click=markPageAsRead]");
+        navHandler.markPageAsRead(element.dataset.showOnlyUnread || false);
+    });
     keyboardHandler.on("s", () => navHandler.saveEntry());
     keyboardHandler.on("d", () => navHandler.fetchOriginalContent());
     keyboardHandler.on("f", () => navHandler.toggleBookmark());
@@ -35,6 +35,9 @@ document.addEventListener("DOMContentLoaded", function () {
     keyboardHandler.on("/", (e) => navHandler.setFocusToSearchInput(e));
     keyboardHandler.on("Escape", () => ModalHandler.close());
     keyboardHandler.listen();
+
+    let touchHandler = new TouchHandler(navHandler);
+    touchHandler.listen();
 
     let mouseHandler = new MouseHandler();
     mouseHandler.onClick("a[data-save-entry]", (event) => {
@@ -79,7 +82,6 @@ document.addEventListener("DOMContentLoaded", function () {
         EntryHandler.fetchOriginalContent(event.target);
     });
 
-    mouseHandler.onClick("a[data-on-click=markPageAsRead]", () => navHandler.markPageAsRead());
     mouseHandler.onClick("a[data-on-click=showActionMenu]", (event) => {
         let currentItem = DomHelper.findParent(event.target, "entry");
         if (!currentItem) {
@@ -88,6 +90,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (currentItem) {
             new ActionMenuHandler(currentItem).show();
         }
+    })
+
+    mouseHandler.onClick("a[data-on-click=markPageAsRead]", (event) => {
+        navHandler.markPageAsRead(event.target.dataset.showOnlyUnread || false);
     });
 
     mouseHandler.onClick("a[data-confirm]", (event) => {

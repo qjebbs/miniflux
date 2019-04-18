@@ -294,7 +294,10 @@ var templateViewsMap = map[string]string{
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
+                <a href="#" data-on-click="markPageAsRead"
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
+                    {{ t "menu.mark_page_as_read" }}
+                </a>
             </li>
         </ul>
     </section>
@@ -335,7 +338,10 @@ var templateViewsMap = map[string]string{
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
+                <a href="#" data-on-click="markPageAsRead"
+                   data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
+                    {{ t "menu.mark_page_as_read" }}
+                </a>
             </li>
         </ul>
     </section>
@@ -833,7 +839,7 @@ var templateViewsMap = map[string]string{
     </article>
     {{ if .entry.Enclosures }}
     <aside class="entry-enclosures">
-        <h3>{{ t "Attachments" }}</h3>
+        <h3>{{ t "page.entry.attachments" }}</h3>
         {{ range .entry.Enclosures }}
             <div class="entry-enclosure">
                 {{ if hasPrefix .MimeType "audio/" }}
@@ -922,7 +928,10 @@ var templateViewsMap = map[string]string{
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
+                <a href="#" data-on-click="markPageAsRead"
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
+                    {{ t "menu.mark_page_as_read" }}
+                </a>
             </li>
         </ul>
     </section>
@@ -963,7 +972,10 @@ var templateViewsMap = map[string]string{
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
+                <a href="#" data-on-click="markPageAsRead"
+                   data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
+                    {{ t "menu.mark_page_as_read" }}
+                </a>
             </li>
         </ul>
     </section>
@@ -1329,7 +1341,7 @@ var templateViewsMap = map[string]string{
         <input type="password" name="password" id="form-password" value="{{ .form.Password }}" required>
 
         <div class="buttons">
-            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.login" }}</button>
+            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.loading" }}">{{ t "action.login" }}</button>
         </div>
     </form>
     {{ if hasOAuth2Provider "google" }}
@@ -1787,7 +1799,7 @@ var templateViewsMapChecksums = map[string]string{
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
 	"bookmark_entries":    "aa28e4418b6f4cced4be47822067abaa6e2ef0f466818317e701e39c85e308fb",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "11012192d9c3c296b4eef775c2ffee9eb2e76cfe5843fb98e0d6f948a303cc88",
+	"category_entries":    "af44bed1b3fe5a15591e6bf1fc9374de5178f08b675dc1a7fcbce83b141596f6",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
@@ -1795,13 +1807,13 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_entry":          "26f893c5013fac746cc9beb66a714722dc2f9e1d4ae86674984d1ef178b933ad",
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
-	"entry":               "7b79cf389076aa23660f935bad34f0253a1d7499d262d89ab9b55470bbd236a4",
-	"feed_entries":        "028d6a238138ba7f24ad47da08d2e138b3324b80e1314e1800ab98ab17aceb24",
+	"entry":               "092d7dedb3811dc10f39bdc2fe824f896d7a12e314375bdf536d815e39c3248e",
+	"feed_entries":        "ee62830354a3fa487a28a994c34859bb1ae3c98e12a05f7847bd499a79267939",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
 	"history_entries":     "3e2ad4478cc03fdbc71a037edd2f9c10a1fcc72e721ad7ebb6166ec841a7e995",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",
 	"integrations":        "d73ad06ca242f39f4575c30e4b357d9ee058973ccd82312a86955fe4a24b36cf",
-	"login":               "f9e6714d34fdce82266c8b23b0ff449d05ba71e474d26f711da66f8c4fdc076a",
+	"login":               "2e72d2d4b9786641b696bedbed5e10b04bdfd68254ddbbdb0a53cca621d200c7",
 	"search_entries":      "34941bef77b8009898bfdfdfb9ebc7064e8b8b459d101680efb359d5c8df6753",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "1209b97876ca12a8fe3cc2f3f99505725dbccf4966a94e57c2c9478c5a276bff",

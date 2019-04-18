@@ -135,6 +135,7 @@
     "page.add_entry.title": "Save article",
     "page.add_entry.label.url": "URL",
     "page.add_entry.submit": "Save",
+    "page.entry.attachments": "Pièces Jointes",
     "page.keyboard_shortcuts.title": "Raccourcis clavier",
     "page.keyboard_shortcuts.subtitle.sections": "Naviguation entre les sections",
     "page.keyboard_shortcuts.subtitle.items": "Naviguation entre les éléments",

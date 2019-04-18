@@ -135,6 +135,7 @@
     "page.add_entry.title": "Save article",
     "page.add_entry.label.url": "URL",
     "page.add_entry.submit": "Save",
+    "page.entry.attachments": "Anlagen",
     "page.keyboard_shortcuts.title": "Tastenkürzel",
     "page.keyboard_shortcuts.subtitle.sections": "Navigation zwischen den Menüpunkten",
     "page.keyboard_shortcuts.subtitle.items": "Navigation zwischen den Artikeln",

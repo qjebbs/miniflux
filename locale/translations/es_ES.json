@@ -135,6 +135,7 @@
     "page.add_entry.title": "Save article",
     "page.add_entry.label.url": "URL",
     "page.add_entry.submit": "Save",
+    "page.entry.attachments": "Archivos adjuntos",
     "page.keyboard_shortcuts.title": "Atajos de teclado",
     "page.keyboard_shortcuts.subtitle.sections": "Navegación de secciones",
     "page.keyboard_shortcuts.subtitle.items": "Navegación de artículos",

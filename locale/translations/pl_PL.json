@@ -137,6 +137,7 @@
     "page.add_entry.title": "Save article",
     "page.add_entry.label.url": "URL",
     "page.add_entry.submit": "Save",
+    "page.entry.attachments": "Załączniki",
     "page.keyboard_shortcuts.title": "Skróty klawiszowe",
     "page.keyboard_shortcuts.subtitle.sections": "Nawigacja między punktami menu",
     "page.keyboard_shortcuts.subtitle.items": "Nawigacja między artykułami",

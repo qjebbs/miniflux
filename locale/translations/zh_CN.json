@@ -131,6 +131,7 @@
     "page.add_entry.title": "保存文章",
     "page.add_entry.label.url": "网址",
     "page.add_entry.submit": "保存",
+    "page.entry.attachments": "附件",
     "page.keyboard_shortcuts.title": "快捷键",
     "page.keyboard_shortcuts.subtitle.sections": "分区导航",
     "page.keyboard_shortcuts.subtitle.items": "条目导航",

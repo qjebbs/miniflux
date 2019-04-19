@@ -11,6 +11,7 @@ import (
 	"miniflux.app/http/client"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
+	"miniflux.app/model"
 	"miniflux.app/ui/form"
 	"miniflux.app/ui/session"
 	"miniflux.app/ui/view"
@@ -53,6 +54,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		CategoryID:   feed.Category.ID,
 		Username:     feed.Username,
 		Password:     feed.Password,
+		View:         feed.View,
 	}
 
 	all, count, size, err := h.store.MediaStatisticsByFeed(feedID)
@@ -65,6 +67,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 	view := view.New(h.tpl, r, sess)
 	view.Set("form", feedForm)
 	view.Set("categories", categories)
+	view.Set("views", model.Views())
 	view.Set("feed", feed)
 	view.Set("menu", "feeds")
 	view.Set("user", user)

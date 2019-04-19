@@ -5,7 +5,7 @@
     <h1>{{ t "page.stat.title" }}</h1>
 </section>
 
-<div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
+<div class='items{{ if ne .view "list" }} masonry{{ end }}'>
     <div class="item-sizer"></div>
     <div class="item list">
         <div class="list-header">

@@ -39,8 +39,8 @@ func (s *Storage) Category(userID, categoryID int64) (*model.Category, error) {
 	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:Category] userID=%d, getCategory=%d", userID, categoryID))
 	var category model.Category
 
-	query := `SELECT id, user_id, title FROM categories WHERE user_id=$1 AND id=$2`
-	err := s.db.QueryRow(query, userID, categoryID).Scan(&category.ID, &category.UserID, &category.Title)
+	query := `SELECT id, user_id, title, view FROM categories WHERE user_id=$1 AND id=$2`
+	err := s.db.QueryRow(query, userID, categoryID).Scan(&category.ID, &category.UserID, &category.Title, &category.View)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {
@@ -140,15 +140,16 @@ func (s *Storage) CreateCategory(category *model.Category) error {
 
 	query := `
 		INSERT INTO categories
-		(user_id, title)
+		(user_id, title, view)
 		VALUES
-		($1, $2)
+		($1, $2, $3)
 		RETURNING id
 	`
 	err := s.db.QueryRow(
 		query,
 		category.UserID,
 		category.Title,
+		category.View,
 	).Scan(&category.ID)
 
 	if err != nil {
@@ -162,10 +163,11 @@ func (s *Storage) CreateCategory(category *model.Category) error {
 func (s *Storage) UpdateCategory(category *model.Category) error {
 	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:UpdateCategory] categoryID=%d", category.ID))
 
-	query := `UPDATE categories SET title=$1 WHERE id=$2 AND user_id=$3`
+	query := `UPDATE categories SET title=$1, view=$2 WHERE id=$3 AND user_id=$4`
 	_, err := s.db.Exec(
 		query,
 		category.Title,
+		category.View,
 		category.ID,
 		category.UserID,
 	)

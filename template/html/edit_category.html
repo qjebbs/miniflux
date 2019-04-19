@@ -23,6 +23,13 @@
     <label for="form-title">{{ t "form.category.label.title" }}</label>
     <input type="text" name="title" id="form-title" value="{{ .form.Title }}" required autofocus>
 
+    <label for="form-view">{{ t "form.prefs.label.view" }}</label>
+    <select id="form-view" name="view">
+        {{ range $key, $value := .views }}
+            <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ $value }}</option>
+        {{ end }}
+    </select>
+
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="{{ route "categories" }}">{{ t "action.cancel" }}</a>
     </div>

@@ -6,9 +6,17 @@ package model // import "miniflux.app/model"
 
 import "miniflux.app/errors"
 
+// View types
+const (
+	ViewDefault = "default"
+	ViewList    = "list"
+	ViewMasonry = "masonry"
+)
+
 // Views returns the list of available views.
 func Views() map[string]string {
 	return map[string]string{
+		"default": "Default",
 		"list":    "List",
 		"masonry": "Masonry",
 	}

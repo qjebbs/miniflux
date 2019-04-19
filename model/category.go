@@ -15,6 +15,7 @@ type Category struct {
 	Title     string `json:"title,omitempty"`
 	UserID    int64  `json:"user_id,omitempty"`
 	FeedCount int    `json:"nb_feeds,omitempty"`
+	View      string `json:"view"`
 }
 
 func (c *Category) String() string {

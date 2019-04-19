@@ -67,7 +67,7 @@ func (s *Storage) Feeds(userID int64) (model.Feeds, error) {
 		f.user_id, f.checked_at at time zone u.timezone,
 		f.parsing_error_count, f.parsing_error_msg,
 		f.scraper_rules, f.rewrite_rules, f.crawler, f.user_agent,
-		f.username, f.password,
+		f.username, f.password, f.cache_media, f.view,
 		f.category_id, c.title as category_title,
 		fi.icon_id,
 		u.timezone
@@ -107,6 +107,8 @@ func (s *Storage) Feeds(userID int64) (model.Feeds, error) {
 			&feed.UserAgent,
 			&feed.Username,
 			&feed.Password,
+			&feed.CacheMedia,
+			&feed.View,
 			&feed.Category.ID,
 			&feed.Category.Title,
 			&iconID,
@@ -143,7 +145,7 @@ func (s *Storage) FeedByID(userID, feedID int64) (*model.Feed, error) {
 		f.user_id, f.checked_at at time zone u.timezone,
 		f.parsing_error_count, f.parsing_error_msg,
 		f.scraper_rules, f.rewrite_rules, f.crawler, f.cache_media, f.user_agent,
-		f.username, f.password,
+		f.username, f.password, f.view,
 		f.category_id, c.title as category_title,
 		fi.icon_id,
 		u.timezone
@@ -171,6 +173,7 @@ func (s *Storage) FeedByID(userID, feedID int64) (*model.Feed, error) {
 		&feed.UserAgent,
 		&feed.Username,
 		&feed.Password,
+		&feed.View,
 		&feed.Category.ID,
 		&feed.Category.Title,
 		&iconID,
@@ -239,8 +242,8 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 	query := `UPDATE feeds SET
 		feed_url=$1, site_url=$2, title=$3, category_id=$4, etag_header=$5, last_modified_header=$6, checked_at=$7,
 		parsing_error_msg=$8, parsing_error_count=$9, scraper_rules=$10, rewrite_rules=$11, crawler=$12, user_agent=$13,
-		username=$14, password=$15, cache_media=$16
-		WHERE id=$17 AND user_id=$18`
+		username=$14, password=$15, cache_media=$16, view=$17
+		WHERE id=$18 AND user_id=$19`
 
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -259,6 +262,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.Username,
 		feed.Password,
 		feed.CacheMedia,
+		feed.View,
 		feed.ID,
 		feed.UserID,
 	)

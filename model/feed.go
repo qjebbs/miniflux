@@ -33,6 +33,7 @@ type Feed struct {
 	Category           *Category `json:"category,omitempty"`
 	Entries            Entries   `json:"entries,omitempty"`
 	Icon               *FeedIcon `json:"icon"`
+	View               string    `json:"view"`
 }
 
 func (f *Feed) String() string {

@@ -68,6 +68,9 @@ func (h *handler) showFeedEntriesStarredPage(w http.ResponseWriter, r *http.Requ
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("showOnlyStarredEntries", true)
 	view.Set("pageEntriesType", "starred")
+	if feed.View != model.ViewDefault {
+		view.Set("view", feed.View)
+	}
 
 	html.OK(w, r, view.Render("feed_entries"))
 }

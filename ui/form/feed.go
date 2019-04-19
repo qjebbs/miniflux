@@ -25,6 +25,7 @@ type FeedForm struct {
 	CategoryID   int64
 	Username     string
 	Password     string
+	View         string
 }
 
 // ValidateModification validates FeedForm fields
@@ -50,6 +51,7 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.ParsingErrorMsg = ""
 	feed.Username = f.Username
 	feed.Password = f.Password
+	feed.View = f.View
 	return feed
 }
 
@@ -59,7 +61,10 @@ func NewFeedForm(r *http.Request) *FeedForm {
 	if err != nil {
 		categoryID = 0
 	}
-
+	view := r.FormValue("view")
+	if _, ok := model.Views()[view]; !ok {
+		view = model.ViewDefault
+	}
 	return &FeedForm{
 		FeedURL:      r.FormValue("feed_url"),
 		SiteURL:      r.FormValue("site_url"),
@@ -72,5 +77,6 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		CategoryID:   int64(categoryID),
 		Username:     r.FormValue("feed_username"),
 		Password:     r.FormValue("feed_password"),
+		View:         view,
 	}
 }

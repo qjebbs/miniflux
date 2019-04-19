@@ -68,6 +68,9 @@ func (h *handler) showFeedEntriesPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("showOnlyUnreadEntries", true)
 	view.Set("pageEntriesType", "unread")
+	if feed.View != model.ViewDefault {
+		view.Set("view", feed.View)
+	}
 
 	html.OK(w, r, view.Render("feed_entries"))
 }

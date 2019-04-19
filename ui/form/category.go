@@ -14,6 +14,7 @@ import (
 // CategoryForm represents a feed form in the UI
 type CategoryForm struct {
 	Title string
+	View  string
 }
 
 // Validate makes sure the form values are valid.
@@ -27,12 +28,18 @@ func (c CategoryForm) Validate() error {
 // Merge update the given category fields.
 func (c CategoryForm) Merge(category *model.Category) *model.Category {
 	category.Title = c.Title
+	category.View = c.View
 	return category
 }
 
 // NewCategoryForm returns a new CategoryForm.
 func NewCategoryForm(r *http.Request) *CategoryForm {
+	view := r.FormValue("view")
+	if _, ok := model.Views()[view]; !ok {
+		view = model.ViewDefault
+	}
 	return &CategoryForm{
 		Title: r.FormValue("title"),
+		View:  view,
 	}
 }

@@ -415,6 +415,13 @@ var templateViewsMap = map[string]string{
     <label for="form-title">{{ t "form.category.label.title" }}</label>
     <input type="text" name="title" id="form-title" value="{{ .form.Title }}" required autofocus>
 
+    <label for="form-view">{{ t "form.prefs.label.view" }}</label>
+    <select id="form-view" name="view">
+        {{ range $key, $value := .views }}
+            <option value="{{ $key }}">{{ $value }}</option>
+        {{ end }}
+    </select>
+
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.save" }}</button> {{ t "action.or" }} <a href="{{ route "categories" }}">{{ t "action.cancel" }}</a>
     </div>
@@ -493,6 +500,13 @@ var templateViewsMap = map[string]string{
 
     <label for="form-title">{{ t "form.category.label.title" }}</label>
     <input type="text" name="title" id="form-title" value="{{ .form.Title }}" required autofocus>
+
+    <label for="form-view">{{ t "form.prefs.label.view" }}</label>
+    <select id="form-view" name="view">
+        {{ range $key, $value := .views }}
+            <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ $value }}</option>
+        {{ end }}
+    </select>
 
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="{{ route "categories" }}">{{ t "action.cancel" }}</a>
@@ -1801,9 +1815,9 @@ var templateViewsMapChecksums = map[string]string{
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
 	"category_entries":    "af44bed1b3fe5a15591e6bf1fc9374de5178f08b675dc1a7fcbce83b141596f6",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
-	"create_category":     "6b22b5ce51abf4e225e23a79f81be09a7fb90acb265e93a8faf9446dff74018d",
+	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
-	"edit_category":       "daf073d2944a180ce5aaeb80b597eb69597a50dff55a9a1d6cf7938b48d768cb",
+	"edit_category":       "d5bc7086a791e01fbffd793cc3f67154ce986b40231d518258ffcdb758e696c9",
 	"edit_entry":          "26f893c5013fac746cc9beb66a714722dc2f9e1d4ae86674984d1ef178b933ad",
 	"edit_feed":           "3a0f93ab50b1a65dde18a55270985618682a279006c11612d2447cc419b98834",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",

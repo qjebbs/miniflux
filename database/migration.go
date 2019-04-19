@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"miniflux.app/logger"
 )
@@ -16,40 +17,79 @@ const schemaVersion = 22
 
 // Migrate executes database migrations.
 func Migrate(db *sql.DB) {
-	var currentVersion int
-	db.QueryRow(`select version from schema_version`).Scan(&currentVersion)
+	var (
+		versionString          string
+		currentVersion         int
+		currecurrentSubVersion int
+		err                    error
+	)
 
-	fmt.Println("Current schema version:", currentVersion)
+	db.QueryRow(`select version from schema_version`).Scan(&versionString)
+
+	vers := strings.Split(versionString, ".")
+	currentVersion, err = strconv.Atoi(vers[0])
+	if err != nil {
+		logger.Fatal("[Migrate] %v", err)
+	}
+	if len(vers) > 1 {
+		currecurrentSubVersion, err = strconv.Atoi(vers[1])
+		if err != nil {
+			logger.Fatal("[Migrate] %v", err)
+		}
+	}
+	fmt.Println("Current schema version:", versionString)
 	fmt.Println("Latest schema version:", schemaVersion)
 
-	for version := currentVersion + 1; version <= schemaVersion; version++ {
-		fmt.Println("Migrating to version:", version)
+	for version := currentVersion; version <= schemaVersion; version++ {
 
-		tx, err := db.Begin()
-		if err != nil {
-			logger.Fatal("[Migrate] %v", err)
+		rawSQL := ""
+		if version > currentVersion {
+			rawSQL = SqlMap["schema_version_"+strconv.Itoa(version)]
+			execSchema(db, rawSQL, version, 0)
 		}
 
-		rawSQL := SqlMap["schema_version_"+strconv.Itoa(version)]
-		// fmt.Println(rawSQL)
-		_, err = tx.Exec(rawSQL)
-		if err != nil {
-			tx.Rollback()
-			logger.Fatal("[Migrate] %v", err)
+		subVersion := currecurrentSubVersion + 1
+		subExists := true
+		for subExists {
+			if rawSQL, subExists = SqlMap["schema_version_"+strconv.Itoa(version)+"_"+strconv.Itoa(subVersion)]; subExists {
+				execSchema(db, rawSQL, version, subVersion)
+			}
+			subVersion++
 		}
+	}
+}
 
-		if _, err := tx.Exec(`delete from schema_version`); err != nil {
-			tx.Rollback()
-			logger.Fatal("[Migrate] %v", err)
-		}
+func execSchema(db *sql.DB, rawSQL string, version int, subVersion int) {
+	schemaVersion := ""
+	if subVersion > 0 {
+		schemaVersion = fmt.Sprintf("%d.%d", version, subVersion)
+	} else {
+		schemaVersion = strconv.Itoa(version)
+	}
+	fmt.Println("Migrating to version:", schemaVersion)
 
-		if _, err := tx.Exec(`insert into schema_version (version) values($1)`, version); err != nil {
-			tx.Rollback()
-			logger.Fatal("[Migrate] %v", err)
-		}
+	tx, err := db.Begin()
+	if err != nil {
+		logger.Fatal("[Migrate] %v", err)
+	}
 
-		if err := tx.Commit(); err != nil {
-			logger.Fatal("[Migrate] %v", err)
-		}
+	_, err = tx.Exec(rawSQL)
+	if err != nil {
+		tx.Rollback()
+		logger.Fatal("[Migrate] %v", err)
+	}
+
+	if _, err := tx.Exec(`delete from schema_version`); err != nil {
+		tx.Rollback()
+		logger.Fatal("[Migrate] %v", err)
+	}
+
+	if _, err := tx.Exec(`insert into schema_version (version) values($1)`, schemaVersion); err != nil {
+		tx.Rollback()
+		logger.Fatal("[Migrate] %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		logger.Fatal("[Migrate] %v", err)
 	}
 }

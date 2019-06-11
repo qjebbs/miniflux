@@ -5,6 +5,7 @@
 package ui // import "miniflux.app/ui"
 
 import (
+	"miniflux.app/config"
 	"encoding/base64"
 	"errors"
 	"io/ioutil"
@@ -48,7 +49,7 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		body = media.Content
 		mimeType = media.MimeType
 	} else {
-		proxyImages := h.cfg.ProxyImages()
+		proxyImages := config.Opts.ProxyImages()
 		if proxyImages == "none" || (proxyImages == "http-only" && url.IsHTTPS(decodedURLStr)) {
 			html.Redirect(w, r, decodedURLStr)
 			return

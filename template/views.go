@@ -1552,6 +1552,8 @@ var templateViewsMap = map[string]string{
         <option value="desc" {{ if eq "desc" $.form.EntryDirection }}selected="selected"{{ end }}>{{ t "form.prefs.select.recent_first" }}</option>
     </select>
 
+    <label><input type="checkbox" name="keyboard_shortcuts" value="1" {{ if .form.KeyboardShortcuts }}checked{{ end }}> {{ t "form.prefs.label.keyboard_shortcuts" }}</label>
+
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button>
     </div>
@@ -1837,7 +1839,7 @@ var templateViewsMapChecksums = map[string]string{
 	"login":               "2e72d2d4b9786641b696bedbed5e10b04bdfd68254ddbbdb0a53cca621d200c7",
 	"search_entries":      "34941bef77b8009898bfdfdfb9ebc7064e8b8b459d101680efb359d5c8df6753",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
-	"settings":            "1209b97876ca12a8fe3cc2f3f99505725dbccf4966a94e57c2c9478c5a276bff",
+	"settings":            "7fdae12cc04ed39fbb74f24f6c9dc2f732f2cf43e40a65a7bea8669584f1ec3a",
 	"stat":                "1b0474962e7c206b99534cd12a8fa1d29fbb3f82b3e41b8a26bd592a0396c4bb",
 	"unread_entries":      "ef75b90acb6c028ab0062127512750ca6c3ce9c46e9d014dc1d6dee5582ab300",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",

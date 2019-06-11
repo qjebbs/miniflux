@@ -25,7 +25,6 @@ import (
 )
 
 type funcMap struct {
-	cfg    *config.Config
 	router *mux.Router
 }
 
@@ -37,13 +36,13 @@ func (f *funcMap) Map() template.FuncMap {
 		"truncate": truncate,
 		"isEmail":  isEmail,
 		"baseURL": func() string {
-			return f.cfg.BaseURL()
+			return config.Opts.BaseURL()
 		},
 		"rootURL": func() string {
-			return f.cfg.RootURL()
+			return config.Opts.RootURL()
 		},
 		"hasOAuth2Provider": func(provider string) bool {
-			return f.cfg.OAuth2Provider() == provider
+			return config.Opts.OAuth2Provider() == provider
 		},
 		"route": func(name string, args ...interface{}) string {
 			return route.Path(f.router, name, args...)
@@ -52,14 +51,14 @@ func (f *funcMap) Map() template.FuncMap {
 			return template.HTML(str)
 		},
 		"proxyFilter": func(data string) string {
-			return imageProxyFilter(f.router, f.cfg, data)
+			return imageProxyFilter(f.router, data)
 		},
 		"proxyURL": func(link string) string {
 			if link == "" {
 				return ""
 			}
-			hasCacheService := f.cfg.HasCacheService()
-			proxyImages := f.cfg.ProxyImages()
+			hasCacheService := config.Opts.HasCacheService()
+			proxyImages := config.Opts.ProxyImages()
 
 			if hasCacheService || proxyImages == "all" || (proxyImages != "none" && !url.IsHTTPS(link)) {
 				return proxify(f.router, link)
@@ -94,10 +93,6 @@ func (f *funcMap) Map() template.FuncMap {
 			return ""
 		},
 	}
-}
-
-func newFuncMap(cfg *config.Config, router *mux.Router) *funcMap {
-	return &funcMap{cfg, router}
 }
 
 func dict(values ...interface{}) (map[string]interface{}, error) {
@@ -182,9 +177,9 @@ func elapsedTime(printer *locale.Printer, tz string, t time.Time) string {
 	}
 }
 
-func imageProxyFilter(router *mux.Router, cfg *config.Config, data string) string {
-	hasCacheService := cfg.HasCacheService()
-	proxyImages := cfg.ProxyImages()
+func imageProxyFilter(router *mux.Router, data string) string {
+	hasCacheService := config.Opts.HasCacheService()
+	proxyImages := config.Opts.ProxyImages()
 	if proxyImages == "none" && !hasCacheService {
 		return data
 	}

@@ -169,6 +169,7 @@ alter table users add column view text default 'list';`,
 	"schema_version_22": `update entries set document_vectors = setweight(to_tsvector(substring(coalesce(title, '') for 1000000)), 'A') || setweight(to_tsvector(substring(coalesce(content, '') for 1000000)), 'B');`,
 	"schema_version_22_1": `alter table categories add column view text default 'default';
 alter table feeds add column view text default 'default';`,
+	"schema_version_23": `alter table users add column keyboard_shortcuts boolean default 't';`,
 	"schema_version_3": `create table tokens (
     id text not null,
     value text not null,
@@ -221,6 +222,7 @@ var SqlMapChecksums = map[string]string{
 	"schema_version_21_1": "bef7ab52ebb1a68325e1d1ca1f15923e3394b3e22cbdfa812c87a21f3cce89d6",
 	"schema_version_22":   "51ed5fbcae9877e57274511f0ef8c61d254ebd78dfbcbc043a2acd30f4c93ca3",
 	"schema_version_22_1": "016337a03b5af58661b6e468a322d4ee9b94c1fe91ef631d6e3a7f10aca8f283",
+	"schema_version_23":   "cb3512d328436447f114e305048c0daa8af7505cfe5eab02778b0de1156081b2",
 	"schema_version_3":    "a54745dbc1c51c000f74d4e5068f1e2f43e83309f023415b1749a47d5c1e0f12",
 	"schema_version_4":    "216ea3a7d3e1704e40c797b5dc47456517c27dbb6ca98bf88812f4f63d74b5d9",
 	"schema_version_5":    "46397e2f5f2c82116786127e9f6a403e975b14d2ca7b652a48cd1ba843e6a27c",

@@ -5,6 +5,7 @@
 package ui // import "miniflux.app/ui"
 
 import (
+	"miniflux.app/config"
 	"net/http"
 
 	"miniflux.app/http/request"
@@ -86,7 +87,7 @@ func (h *handler) showUnreadEntryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 
-	if h.cfg.HasCacheService() {
+	if config.Opts.HasCacheService() {
 		countMedias, countCached, _, err := h.store.MediaStatisticsByEntry(entryID)
 		if err != nil {
 			html.ServerError(w, r, err)

@@ -125,7 +125,9 @@ var templateCommonMap = map[string]string{
     <script type="text/javascript" src="{{ route "javascript" "name" "app" }}?{{ .app_js_checksum }}" defer></script>
     <script type="text/javascript" src="{{ route "javascript" "name" "sw" }}?{{ .sw_js_checksum }}" defer id="service-worker-script"></script>
 </head>
-<body data-entries-status-url="{{ route "updateEntriesStatus" }}">
+<body
+    data-entries-status-url="{{ route "updateEntriesStatus" }}"
+    {{ if .user }}{{ if not .user.KeyboardShortcuts }}data-disable-keyboard-shortcuts="true"{{ end }}{{ end }}>
     {{ if .user }}
     <header class="header">
         <nav>
@@ -205,8 +207,8 @@ var templateCommonMap = map[string]string{
 
                 <p>{{ t "page.keyboard_shortcuts.subtitle.items" }}</p>
                 <ul>
-                    <li>{{ t "page.keyboard_shortcuts.go_to_previous_item" }} = <strong>p</strong>, <strong>j</strong>, <strong>◄</strong></li>
-                    <li>{{ t "page.keyboard_shortcuts.go_to_next_item" }} = <strong>n</strong>, <strong>k</strong>, <strong>►</strong></li>
+                    <li>{{ t "page.keyboard_shortcuts.go_to_previous_item" }} = <strong>p</strong>, <strong>k</strong>, <strong>◄</strong></li>
+                    <li>{{ t "page.keyboard_shortcuts.go_to_next_item" }} = <strong>n</strong>, <strong>j</strong>, <strong>►</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.go_to_feed" }} = <strong>g + f</strong></li>
                 </ul>
 
@@ -275,6 +277,6 @@ var templateCommonMap = map[string]string{
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "4faa91e2eae150c5e4eab4d258e039dfdd413bab7602f0009360e6d52898e353",
 	"item_meta":        "3fcf5aa5ddeb140c3b721aa929fffbc1c45d1bf9ef93a91e188208a816d75df8",
-	"layout":           "e9671320cd7b9f4282c266944d3b883e40d06b11edf77cd8f9f7e9a48bc0f6d9",
+	"layout":           "10acc8059140432bfea093e786c715f3e2cd7c8c14928ecb2c7241c130db63f1",
 	"pagination":       "3386e90c6e1230311459e9a484629bc5d5bf39514a75ef2e73bbbc61142f7abb",
 }

@@ -24,11 +24,14 @@ const (
 	flagResetPasswordHelp   = "Reset user password"
 	flagResetFeedErrorsHelp = "Clear all feed errors for all users"
 	flagDebugModeHelp       = "Show debug logs"
+	flagConfigFileHelp      = "Load configuration file"
+	flagConfigDumpHelp      = "Print parsed configuration values"
 )
 
 // Parse parses command line arguments.
 func Parse() {
 	var (
+		err                 error
 		flagInfo            bool
 		flagVersion         bool
 		flagMigrate         bool
@@ -37,6 +40,8 @@ func Parse() {
 		flagResetPassword   bool
 		flagResetFeedErrors bool
 		flagDebugMode       bool
+		flagConfigFile      string
+		flagConfigDump      bool
 	)
 
 	flag.BoolVar(&flagInfo, "info", false, flagInfoHelp)
@@ -49,11 +54,35 @@ func Parse() {
 	flag.BoolVar(&flagResetPassword, "reset-password", false, flagResetPasswordHelp)
 	flag.BoolVar(&flagResetFeedErrors, "reset-feed-errors", false, flagResetFeedErrorsHelp)
 	flag.BoolVar(&flagDebugMode, "debug", false, flagDebugModeHelp)
+	flag.StringVar(&flagConfigFile, "config-file", "", flagConfigFileHelp)
+	flag.StringVar(&flagConfigFile, "c", "", flagConfigFileHelp)
+	flag.BoolVar(&flagConfigDump, "config-dump", false, flagConfigDumpHelp)
 	flag.Parse()
 
-	cfg := config.NewConfig()
+	cfg := config.NewParser()
 
-	if flagDebugMode || cfg.HasDebugMode() {
+	if flagConfigFile != "" {
+		config.Opts, err = cfg.ParseFile(flagConfigFile)
+		if err != nil {
+			logger.Fatal("%v", err)
+		}
+	}
+
+	config.Opts, err = cfg.ParseEnvironmentVariables()
+	if err != nil {
+		logger.Fatal("%v", err)
+	}
+
+	if flagConfigDump {
+		fmt.Print(config.Opts)
+		return
+	}
+
+	if config.Opts.LogDateTime() {
+		logger.EnableDateTime()
+	}
+
+	if flagDebugMode || config.Opts.HasDebugMode() {
 		logger.EnableDebug()
 	}
 
@@ -67,7 +96,15 @@ func Parse() {
 		return
 	}
 
-	db, err := database.NewConnectionPool(cfg.DatabaseURL(), cfg.DatabaseMinConns(), cfg.DatabaseMaxConns())
+	if config.Opts.IsDefaultDatabaseURL() {
+		logger.Info("The default value for DATABASE_URL is used")
+	}
+
+	db, err := database.NewConnectionPool(
+		config.Opts.DatabaseURL(),
+		config.Opts.DatabaseMinConns(),
+		config.Opts.DatabaseMaxConns(),
+	)
 	if err != nil {
 		logger.Fatal("Unable to connect to the database: %v", err)
 	}
@@ -101,14 +138,14 @@ func Parse() {
 	}
 
 	// Run migrations and start the deamon.
-	if cfg.RunMigrations() {
+	if config.Opts.RunMigrations() {
 		database.Migrate(db)
 	}
 
 	// Create admin user and start the deamon.
-	if cfg.CreateAdmin() {
+	if config.Opts.CreateAdmin() {
 		createAdmin(store)
 	}
 
-	startDaemon(cfg, store)
+	startDaemon(store)
 }

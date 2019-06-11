@@ -311,6 +311,8 @@ func (o *Options) String() string {
 	builder.WriteString(fmt.Sprintf("DEBUG: %v\n", o.debug))
 	builder.WriteString(fmt.Sprintf("HTTP_SERVICE: %v\n", o.httpService))
 	builder.WriteString(fmt.Sprintf("SCHEDULER_SERVICE: %v\n", o.schedulerService))
+	builder.WriteString(fmt.Sprintf("CACHE_SERVICE: %v\n", o.cacheService))
+	builder.WriteString(fmt.Sprintf("CACHE_FREQUENCY: %v\n", o.cacheFrequency))
 	builder.WriteString(fmt.Sprintf("HTTPS: %v\n", o.HTTPS))
 	builder.WriteString(fmt.Sprintf("HSTS: %v\n", o.hsts))
 	builder.WriteString(fmt.Sprintf("BASE_URL: %v\n", o.baseURL))

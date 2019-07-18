@@ -57,7 +57,7 @@
         </div>
         <label></label><input type="checkbox" name="readability" id="form-readability"> {{ t "form.entry.label.readability" }}</label>
         <div class="buttons">
-            <button class="button button-primary" data-action="submit-entry" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-history-go-back="true">{{ t "action.cancel" }}</a>
+            <button class="button button-primary" data-action="submitEntry" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-action="historyGoBack">{{ t "action.cancel" }}</a>
         </div>
     </form>
 {{ end }}

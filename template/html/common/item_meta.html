@@ -56,7 +56,7 @@
                 >{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&#xfe0e;&nbsp;{{ t "entry.status.read" }}{{ end }}</a>
         </li>
         <li>
-            <a href="#" data-on-click="showActionMenu" data-action-menu-excluded title="{{ t "entry.actions.title" }}">{{ t "entry.actions.label" }}</a>
+            <a href="#" data-action="showActionMenu" data-action-menu-excluded title="{{ t "entry.actions.title" }}">{{ t "entry.actions.label" }}</a>
         </li>
     </ul>
 </div>

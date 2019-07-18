@@ -1,91 +1,73 @@
 document.addEventListener("DOMContentLoaded", function () {
-    FormHandler.handleSubmitButtons();
+    handleSubmitButtons();
 
     let tabHandler = new TabHandler();
     tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);
 
-    let navHandler = new NavHandler();
-
-    if (! document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {
+    if (!document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {
         let keyboardHandler = new KeyboardHandler();
-        keyboardHandler.on("g u", () => navHandler.goToPage("unread"));
-        keyboardHandler.on("g b", () => navHandler.goToPage("starred"));
-        keyboardHandler.on("g h", () => navHandler.goToPage("history"));
-        keyboardHandler.on("g f", () => navHandler.goToFeedOrFeeds());
-        keyboardHandler.on("g c", () => navHandler.goToPage("categories"));
-        keyboardHandler.on("g s", () => navHandler.goToPage("settings"));
-        keyboardHandler.on("ArrowLeft", () => navHandler.goToPrevious());
-        keyboardHandler.on("ArrowRight", () => navHandler.goToNext());
-        keyboardHandler.on("k", () => navHandler.goToPrevious());        
-        keyboardHandler.on("p", () => navHandler.goToPrevious());
-        keyboardHandler.on("j", () => navHandler.goToNext());
-        keyboardHandler.on("n", () => navHandler.goToNext());
-        keyboardHandler.on("h", () => navHandler.goToPage("previous"));
-        keyboardHandler.on("l", () => navHandler.goToPage("next"));
-        keyboardHandler.on("o", () => navHandler.openSelectedItem());
-        keyboardHandler.on("v", () => navHandler.openOriginalLink());
-        keyboardHandler.on("m", () => navHandler.toggleEntryStatus());
-        keyboardHandler.on("A", () => {
-            let element = document.querySelector("a[data-on-click=markPageAsRead]");
-            navHandler.markPageAsRead(element.dataset.showOnlyUnread || false);
-        });
-        keyboardHandler.on("s", () => navHandler.saveEntry());
-        keyboardHandler.on("d", () => navHandler.fetchOriginalContent());
-        keyboardHandler.on("f", () => navHandler.toggleBookmark());
-        keyboardHandler.on("?", () => navHandler.showKeyboardShortcuts());
-        keyboardHandler.on("#", () => navHandler.unsubscribeFromFeed());
-        keyboardHandler.on("/", (e) => navHandler.setFocusToSearchInput(e));
+        keyboardHandler.on("g u", () => goToPage("unread"));
+        keyboardHandler.on("g b", () => goToPage("starred"));
+        keyboardHandler.on("g h", () => goToPage("history"));
+        keyboardHandler.on("g f", () => goToFeedOrFeeds());
+        keyboardHandler.on("g c", () => goToPage("categories"));
+        keyboardHandler.on("g s", () => goToPage("settings"));
+        keyboardHandler.on("ArrowLeft", () => goToPrevious());
+        keyboardHandler.on("ArrowRight", () => goToNext());
+        keyboardHandler.on("k", () => goToPrevious());
+        keyboardHandler.on("p", () => goToPrevious());
+        keyboardHandler.on("j", () => goToNext());
+        keyboardHandler.on("n", () => goToNext());
+        keyboardHandler.on("h", () => goToPage("previous"));
+        keyboardHandler.on("l", () => goToPage("next"));
+        keyboardHandler.on("o", () => openSelectedItem());
+        keyboardHandler.on("v", () => openOriginalLink());
+        keyboardHandler.on("m", () => handleEntryStatus());
+        keyboardHandler.on("A", () => markPageAsRead());
+        keyboardHandler.on("s", () => handleSaveEntry());
+        keyboardHandler.on("d", () => handleFetchOriginalContent());
+        keyboardHandler.on("f", () => handleBookmark());
+        keyboardHandler.on("?", () => showKeyboardShortcuts());
+        keyboardHandler.on("#", () => unsubscribeFromFeed());
+        keyboardHandler.on("/", (e) => setFocusToSearchInput(e));
         keyboardHandler.on("Escape", () => ModalHandler.close());
         keyboardHandler.listen();
     }
 
-    let touchHandler = new TouchHandler(navHandler);
+    let touchHandler = new TouchHandler();
     touchHandler.listen();
 
-    let mouseHandler = new MouseHandler();
-    mouseHandler.onClick("a[data-save-entry]", (event) => {
-        EntryHandler.saveEntry(event.target);
-    });
+    onClick("a[data-save-entry]", () => handleSaveEntry());
+    onClick("a[data-toggle-bookmark]", () => handleBookmark());
+    onClick("a[data-toggle-cache]", () => handleCache());
+    onClick("a[data-fetch-content-entry]", () => handleFetchOriginalContent());
+    onClick("a[data-action=search]", (event) => setFocusToSearchInput(event));
+    onClick("a[data-action=markPageAsRead]", () => handleConfirmationMessage(event.target, () => markPageAsRead()));
+    onClick("a[data-action=historyGoBack]", () => { history.go(-1) });
 
-    mouseHandler.onClick("a[data-toggle-bookmark]", (event) => {
-        EntryHandler.toggleBookmark(event.target);
-    });
-
-    mouseHandler.onClick("a[data-toggle-cache]", (event) => {
-        EntryHandler.toggleCache(event.target);
-    });
-
-    mouseHandler.onClick("a[data-history-go-back]", (event) => {
-        history.go(-1);
-    });
-
-    mouseHandler.onClick("a[data-toggle-status]", (event) => {
+    onClick("a[data-toggle-status]", (event) => {
         let currentItem = DomHelper.findParent(event.target, "entry");
         if (!currentItem) {
             currentItem = DomHelper.findParent(event.target, "item");
         }
 
         if (currentItem) {
-            EntryHandler.toggleEntryStatus(currentItem);
+            toggleEntryStatus(currentItem);
         }
     });
 
-    mouseHandler.onClick("a[data-set-read]", (event) => {
+    onClick("a[data-set-read]", (event) => {
         let currentItem = DomHelper.findParent(event.target, "entry");
         if (!currentItem) {
             currentItem = DomHelper.findParent(event.target, "item");
         }
         if (currentItem) {
-            EntryHandler.setEntryStatusRead(currentItem)
+            setEntryStatusRead(currentItem)
         }
 
     }, true);
 
-    mouseHandler.onClick("a[data-fetch-content-entry]", (event) => {
-        EntryHandler.fetchOriginalContent(event.target);
-    });
-
-    mouseHandler.onClick("a[data-on-click=showActionMenu]", (event) => {
+    onClick("a[data-action=showActionMenu]", (event) => {
         let currentItem = DomHelper.findParent(event.target, "entry");
         if (!currentItem) {
             currentItem = DomHelper.findParent(event.target, "item");
@@ -95,28 +77,28 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })
 
-    mouseHandler.onClick("a[data-on-click=markPageAsRead]", (event) => {
-        navHandler.markPageAsRead(event.target.dataset.showOnlyUnread || false);
-    });
-
-    mouseHandler.onClick("a[data-confirm]", (event) => {
-        (new ConfirmHandler()).handle(event);
-    });
-
-    mouseHandler.onClick("a[data-action=search]", (event) => {
-        navHandler.setFocusToSearchInput(event);
-    });
-
-    mouseHandler.onClick("button[data-action=submit-entry]", (event) => {
+    onClick("button[data-action=submitEntry]", (event) => {
         EntryEditorHandler.submitHandler(event);
     });
 
-    mouseHandler.onClick("a[data-link-state=flip]", (event) => {
-        LinkStateHandler.flip(event.target);
-    }, true);
+    onClick("a[data-confirm]", (event) => handleConfirmationMessage(event.target, (url, redirectURL) => {
+        let request = new RequestBuilder(url);
 
-    let menuHandler = new MenuHandler();
-    mouseHandler.onClick(".logo", (event) => menuHandler.logoClickHandler(event));
+        request.withCallback(() => {
+            if (redirectURL) {
+                window.location.href = redirectURL;
+            } else {
+                window.location.reload();
+            }
+        });
+
+        request.execute();
+    }));
+
+    if (document.documentElement.clientWidth < 600) {
+        onClick(".logo", () => toggleMainMenu());
+        onClick(".header nav li", (event) => onClickMainMenuListItem(event));
+    }
 
     if ("serviceWorker" in navigator) {
         let scriptElement = document.getElementById("service-worker-script");

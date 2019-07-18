@@ -80,7 +80,7 @@ var templateCommonMap = map[string]string{
                 >{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&#xfe0e;&nbsp;{{ t "entry.status.read" }}{{ end }}</a>
         </li>
         <li>
-            <a href="#" data-on-click="showActionMenu" data-action-menu-excluded title="{{ t "entry.actions.title" }}">{{ t "entry.actions.label" }}</a>
+            <a href="#" data-action="showActionMenu" data-action-menu-excluded title="{{ t "entry.actions.title" }}">{{ t "entry.actions.label" }}</a>
         </li>
     </ul>
 </div>
@@ -276,7 +276,7 @@ var templateCommonMap = map[string]string{
 
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "4faa91e2eae150c5e4eab4d258e039dfdd413bab7602f0009360e6d52898e353",
-	"item_meta":        "3fcf5aa5ddeb140c3b721aa929fffbc1c45d1bf9ef93a91e188208a816d75df8",
+	"item_meta":        "bcfd7fa4990152a8608f67fd9f109c4ee4f5d17292f806d811aed200a77f04f0",
 	"layout":           "d7005214dfd8789ebe0d20b7236766fc34905aa05389fea0aa7cb6c26f70fd90",
 	"pagination":       "3386e90c6e1230311459e9a484629bc5d5bf39514a75ef2e73bbbc61142f7abb",
 }

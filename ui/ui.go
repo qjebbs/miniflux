@@ -38,7 +38,7 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool, feedHa
 	uiRouter.HandleFunc("/bookmarklet", handler.bookmarklet).Name("bookmarklet").Methods("GET")
 
 	// Unread page.
-	uiRouter.HandleFunc("/mark-all-as-read", handler.markAllAsRead).Name("markAllAsRead").Methods("GET")
+	uiRouter.HandleFunc("/mark-all-as-read", handler.markAllAsRead).Name("markAllAsRead").Methods("POST")
 	uiRouter.HandleFunc("/unread", handler.showUnreadPage).Name("unread").Methods("GET")
 	uiRouter.HandleFunc("/unread/entry/{entryID}", handler.showUnreadEntryPage).Name("unreadEntry").Methods("GET")
 	uiRouter.HandleFunc("/stat", handler.showStatPage).Name("stat").Methods("GET")
@@ -46,7 +46,7 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool, feedHa
 	// History pages.
 	uiRouter.HandleFunc("/history", handler.showHistoryPage).Name("history").Methods("GET")
 	uiRouter.HandleFunc("/history/entry/{entryID}", handler.showReadEntryPage).Name("readEntry").Methods("GET")
-	uiRouter.HandleFunc("/history/flush", handler.flushHistory).Name("flushHistory").Methods("GET")
+	uiRouter.HandleFunc("/history/flush", handler.flushHistory).Name("flushHistory").Methods("POST")
 
 	// Bookmark pages.
 	uiRouter.HandleFunc("/starred", handler.showStarredPage).Name("starred").Methods("GET")

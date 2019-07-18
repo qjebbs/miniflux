@@ -82,7 +82,7 @@ var templateViewsMap = map[string]string{
         </details>
 
         <div class="buttons">
-            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.loading" }}">{{ t "page.add_entry.submit" }}</button> {{ t "action.or" }} <a href="#" data-history-go-back="true">{{ t "action.cancel" }}</a>
+            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.loading" }}">{{ t "page.add_entry.submit" }}</button> {{ t "action.or" }} <a href="#" data-action="historyGoBack">{{ t "action.cancel" }}</a>
         </div>
     </form>
 {{ end }}
@@ -294,10 +294,13 @@ var templateViewsMap = map[string]string{
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead"
-                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
-                    {{ t "menu.mark_page_as_read" }}
-                </a>
+                <a href="#"
+                    data-action="markPageAsRead"
+                    data-label-question="{{ t "confirm.question" }}"
+                    data-label-yes="{{ t "confirm.yes" }}"
+                    data-label-no="{{ t "confirm.no" }}"
+                    data-label-loading="{{ t "confirm.loading" }}"
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
             </li>
         </ul>
     </section>
@@ -338,10 +341,13 @@ var templateViewsMap = map[string]string{
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead"
-                   data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
-                    {{ t "menu.mark_page_as_read" }}
-                </a>
+                <a href="#"
+                    data-action="markPageAsRead"
+                    data-label-question="{{ t "confirm.question" }}"
+                    data-label-yes="{{ t "confirm.yes" }}"
+                    data-label-no="{{ t "confirm.no" }}"
+                    data-label-loading="{{ t "confirm.loading" }}"
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
             </li>
         </ul>
     </section>
@@ -573,7 +579,7 @@ var templateViewsMap = map[string]string{
         </div>
         <label></label><input type="checkbox" name="readability" id="form-readability"> {{ t "form.entry.label.readability" }}</label>
         <div class="buttons">
-            <button class="button button-primary" data-action="submit-entry" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-history-go-back="true">{{ t "action.cancel" }}</a>
+            <button class="button button-primary" data-action="submitEntry" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-action="historyGoBack">{{ t "action.cancel" }}</a>
         </div>
     </form>
 {{ end }}
@@ -949,10 +955,13 @@ var templateViewsMap = map[string]string{
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead"
-                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
-                    {{ t "menu.mark_page_as_read" }}
-                </a>
+                <a href="#"
+                    data-action="markPageAsRead"
+                    data-label-question="{{ t "confirm.question" }}"
+                    data-label-yes="{{ t "confirm.yes" }}"
+                    data-label-no="{{ t "confirm.no" }}"
+                    data-label-loading="{{ t "confirm.loading" }}"
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
             </li>
         </ul>
     </section>
@@ -993,10 +1002,13 @@ var templateViewsMap = map[string]string{
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead"
-                   data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
-                    {{ t "menu.mark_page_as_read" }}
-                </a>
+                <a href="#"
+                    data-action="markPageAsRead"
+                    data-label-question="{{ t "confirm.question" }}"
+                    data-label-yes="{{ t "confirm.yes" }}"
+                    data-label-no="{{ t "confirm.no" }}"
+                    data-label-loading="{{ t "confirm.loading" }}"
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
             </li>
         </ul>
     </section>
@@ -1091,7 +1103,13 @@ var templateViewsMap = map[string]string{
     {{ if .entries }}
     <ul>
         <li>
-            <a href="{{ route "flushHistory" }}">{{ t "menu.flush_history" }}</a>
+            <a href="#"
+                data-confirm="true"
+                data-url="{{ route "flushHistory" }}"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}">{{ t "menu.flush_history" }}</a>
         </li>
     </ul>
     {{ end }}
@@ -1689,12 +1707,22 @@ var templateViewsMap = map[string]string{
     {{ if .entries }}
     <ul>
         <li>
-            <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
+            <a href="#"
+                data-action="markPageAsRead"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}">{{ t "menu.mark_page_as_read" }}</a>
         </li>
         <li>
-            <a data-link-state="flip"
-               data-label-new-state="{{ t "menu.mark_all_as_read_wip" }}"
-               href="{{ route "markAllAsRead" }}">{{ t "menu.mark_all_as_read" }}</a>
+            <a href="#"
+                data-confirm="true"
+                data-url="{{ route "markAllAsRead" }}"
+                data-redirect-url="{{ route "unread" }}"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}">{{ t "menu.mark_all_as_read" }}</a>
         </li>
     </ul>
     {{ end }}
@@ -1741,7 +1769,12 @@ var templateViewsMap = map[string]string{
         {{ if .entries }}
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead">{{ t "menu.mark_page_as_read" }}</a>
+                <a href="#"
+                    data-action="markPageAsRead"
+                    data-label-question="{{ t "confirm.question" }}"
+                    data-label-yes="{{ t "confirm.yes" }}"
+                    data-label-no="{{ t "confirm.no" }}"
+                    data-label-loading="{{ t "confirm.loading" }}">{{ t "menu.mark_page_as_read" }}</a>
             </li>
         </ul>
         {{ end }}
@@ -1818,22 +1851,22 @@ var templateViewsMap = map[string]string{
 
 var templateViewsMapChecksums = map[string]string{
 	"about":               "844e3313c33ae31a74b904f6ef5d60299773620d8450da6f760f9f317217c51e",
-	"add_entry":           "9e7299bc8e6c54918f065b46a2d82407f6b825321d95c80cbdc023c89dfc9f8f",
+	"add_entry":           "6a5c1b88ef5090c5bec82924fc2727c3548e3cd31f0c8bf963630420301c696b",
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
 	"bookmark_entries":    "aa28e4418b6f4cced4be47822067abaa6e2ef0f466818317e701e39c85e308fb",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "af44bed1b3fe5a15591e6bf1fc9374de5178f08b675dc1a7fcbce83b141596f6",
+	"category_entries":    "8e96960c1197cf94dbfc19d3edf2511c6eab48875eb697386f91ae5695dbecc5",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
 	"edit_category":       "d5bc7086a791e01fbffd793cc3f67154ce986b40231d518258ffcdb758e696c9",
-	"edit_entry":          "26f893c5013fac746cc9beb66a714722dc2f9e1d4ae86674984d1ef178b933ad",
+	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
 	"edit_feed":           "4765519ac07c087ecd52176d1128754029b412a5389ab66318edcef5d3418214",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "092d7dedb3811dc10f39bdc2fe824f896d7a12e314375bdf536d815e39c3248e",
-	"feed_entries":        "ee62830354a3fa487a28a994c34859bb1ae3c98e12a05f7847bd499a79267939",
+	"feed_entries":        "a37eb52461dc3051efc66e878ef53241c6a4eaae0a1b2113ed3091f006d47f9b",
 	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
-	"history_entries":     "3e2ad4478cc03fdbc71a037edd2f9c10a1fcc72e721ad7ebb6166ec841a7e995",
+	"history_entries":     "4185610b871d2cd9b161214ee3a80977997935df339c7598d3596fbdb7ae1814",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",
 	"integrations":        "d73ad06ca242f39f4575c30e4b357d9ee058973ccd82312a86955fe4a24b36cf",
 	"login":               "2e72d2d4b9786641b696bedbed5e10b04bdfd68254ddbbdb0a53cca621d200c7",
@@ -1841,6 +1874,6 @@ var templateViewsMapChecksums = map[string]string{
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "7fdae12cc04ed39fbb74f24f6c9dc2f732f2cf43e40a65a7bea8669584f1ec3a",
 	"stat":                "1b0474962e7c206b99534cd12a8fa1d29fbb3f82b3e41b8a26bd592a0396c4bb",
-	"unread_entries":      "ef75b90acb6c028ab0062127512750ca6c3ce9c46e9d014dc1d6dee5582ab300",
+	"unread_entries":      "3ba11d8541b848b481146e0b6f3ff3da35c8c51e9773e60c287ea1633a20a2db",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

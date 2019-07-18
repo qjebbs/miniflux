@@ -28,10 +28,13 @@
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead"
-                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
-                    {{ t "menu.mark_page_as_read" }}
-                </a>
+                <a href="#"
+                    data-action="markPageAsRead"
+                    data-label-question="{{ t "confirm.question" }}"
+                    data-label-yes="{{ t "confirm.yes" }}"
+                    data-label-no="{{ t "confirm.no" }}"
+                    data-label-loading="{{ t "confirm.loading" }}"
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
             </li>
         </ul>
     </section>
@@ -72,10 +75,13 @@
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#" data-on-click="markPageAsRead"
-                   data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">
-                    {{ t "menu.mark_page_as_read" }}
-                </a>
+                <a href="#"
+                    data-action="markPageAsRead"
+                    data-label-question="{{ t "confirm.question" }}"
+                    data-label-yes="{{ t "confirm.yes" }}"
+                    data-label-no="{{ t "confirm.no" }}"
+                    data-label-loading="{{ t "confirm.loading" }}"
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
             </li>
         </ul>
     </section>

@@ -55,7 +55,7 @@ addEventListener(tabs,listener){if(typeof tabs==='string'){tabs=document.querySe
 if(!tabs||!this.listeners[tabs])return;this.listeners[tabs].push(listener);}}class EntryEditorHandler{static switchHandler(header,content,i){let preview=document.querySelector('#preview-content');let editor=document.querySelector('#form-content');if(i==0){editor.value=preview.innerHTML;}else{preview.innerHTML=editor.value;}}
 static submitHandler(){let preview=document.querySelector('#preview-content');let editor=document.querySelector('#form-content');let previewParent=DomHelper.findParent(preview,"tab-content");if(previewParent.classList.contains('active')){editor.value=preview.innerHTML;}
 document.querySelector("#entry-form").submit();}}class ActionMenuHandler{constructor(element){this.element=element;document.querySelectorAll(".current-item").forEach(e=>e.classList.remove("current-item"));this.element.classList.add("current-item");}
-show(){ModalHandler.close();let template=document.getElementById("action-menus");if(template===null)return;if(this.element.classList.contains("item")){initMenu(this.element.querySelectorAll(".item-meta a"),"entries");document.querySelector("#menu-mark-above-read").addEventListener("click",()=>{EntryHandler.setEntriesAboveStatusRead(this.element);ModalHandler.close();});}else if(this.element.classList.contains("entry")){initMenu(this.element.querySelectorAll(".entry-actions a"),"entry");}
+show(){ModalHandler.close();let template=document.getElementById("action-menus");if(template===null)return;if(this.element.classList.contains("item")){initMenu(this.element.querySelectorAll(".item-meta a"),"entries");document.querySelector("#menu-mark-above-read").addEventListener("click",()=>{setEntriesAboveStatusRead(this.element);ModalHandler.close();});}else if(this.element.classList.contains("entry")){initMenu(this.element.querySelectorAll(".entry-actions a"),"entry");}
 document.querySelector("#menu-action-cancel").addEventListener("click",()=>{ModalHandler.close();});function initMenu(links,dataForValue){ModalHandler.open(template.content,true);let list=document.querySelector(".action-menus #element-links");while(list.hasChildNodes()){list.removeChild(list.firstChild);}
 links.forEach(link=>{if(link.dataset.actionMenuExcluded!==undefined)return;let menu=document.createElement("li");menu.innerText=link.innerText;menu.addEventListener("click",()=>{clickElement(link);ModalHandler.close();});list.appendChild(menu);});document.querySelectorAll(".action-menus li[data-for]").forEach(e=>{if(e.dataset.for!==dataForValue)
 e.style.display='none';});}
@@ -94,6 +94,10 @@ function setEntryStatusRead(element){let link=element.querySelector("a[data-set-
 link=element.querySelector("a[data-toggle-status]");if(link&&link.dataset.value==="unread"){link.innerHTML=link.dataset.labelUnread;link.dataset.value="read";}
 if(element&&element.classList.contains("item-status-unread")){element.classList.remove("item-status-unread");element.classList.add("item-status-read");updateUnreadCounterValue
 decrementUnreadCounter(1);}}
+function setEntriesAboveStatusRead(element){let currentItem=document.querySelector(".current-item");let items=DomHelper.getVisibleElements(".items .item");if(currentItem===null||items.length===0){return;}
+let targetItems=[];let entryIds=[];for(let i=0;i<items.length;i++){targetItems.push(items[i]);entryIds.push(parseInt(items[i].dataset.id,10));if(items[i].classList.contains("current-item")){break;}}
+updateEntriesStatus(entryIds,"read",()=>{targetItems.map(item=>{let link=item.querySelector("a[data-toggle-status]");if(link&&link.dataset.value==="unread"){link.innerHTML=link.dataset.labelUnread;link.dataset.value="read";}
+if(item&&item.classList.contains("item-status-unread")){item.classList.remove("item-status-unread");item.classList.add("item-status-read");decrementUnreadCounter(1);}});});}
 function handleFetchOriginalContent(){if(isListView()){return;}
 let element=document.querySelector("a[data-fetch-content-entry]");if(!element){return;}
 if(element.dataset.completed){return;}
@@ -144,6 +148,6 @@ imagesLoaded('.masonry .item').on('progress',callback);LazyloadHandler.add(".ite
 }
 
 var JavascriptsChecksums = map[string]string{
-	"app": "5bd0069fcdce7841eef3c038564251a99d4cf81f59da05d474a74672e23c89d7",
+	"app": "0ac0bb457ea1fd770485b0bf677354f01d251b2a2e592a7b3fd26cad5a50490a",
 	"sw":  "55fffa223919cc18572788fb9c62fccf92166c0eb5d3a1d6f91c31f24d020be9",
 }

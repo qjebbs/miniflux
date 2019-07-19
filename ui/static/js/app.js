@@ -245,7 +245,7 @@ function toggleBookmark(parentElement) {
     request.execute();
 }
 
-// Handle cache from the list view and entry view.
+// Handle media cache from the list view and entry view.
 function handleCache() {
     if (isListView()) {
         let currentItem = document.querySelector(".current-item");
@@ -257,7 +257,7 @@ function handleCache() {
     }
 }
 
-// Send the Ajax request and change the icon when bookmarking an entry.
+// Send the Ajax request and change the icon when caching an entry.
 function toggleCache(parentElement) {
     let element = parentElement.querySelector("a[data-toggle-cache]");
     if (!element) {
@@ -299,6 +299,37 @@ function setEntryStatusRead(element){
         updateUnreadCounterValue
         decrementUnreadCounter(1);
     }
+}
+
+function setEntriesAboveStatusRead(element){
+    let currentItem = document.querySelector(".current-item");
+    let items = DomHelper.getVisibleElements(".items .item");
+    if (currentItem === null || items.length === 0) {
+        return;
+    }
+    let targetItems=[];
+    let entryIds=[];
+    for (let i = 0; i < items.length; i++) {
+        targetItems.push(items[i]);
+        entryIds.push(parseInt(items[i].dataset.id, 10));
+        if (items[i].classList.contains("current-item")) {
+            break;
+        }
+    }
+    updateEntriesStatus(entryIds, "read",() => {
+        targetItems.map(item => {
+            let link = item.querySelector("a[data-toggle-status]");
+            if (link && link.dataset.value === "unread") {
+                link.innerHTML = link.dataset.labelUnread;
+                link.dataset.value = "read";
+            }
+            if (item && item.classList.contains("item-status-unread")) {
+                item.classList.remove("item-status-unread");
+                item.classList.add("item-status-read");
+                decrementUnreadCounter(1);
+            }
+        });
+    });
 }
 
 // Send the Ajax request to download the original web page.

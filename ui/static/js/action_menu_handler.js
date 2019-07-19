@@ -14,7 +14,7 @@ class ActionMenuHandler {
             // menu for entries
             initMenu(this.element.querySelectorAll(".item-meta a"), "entries");
             document.querySelector("#menu-mark-above-read").addEventListener("click", () => {
-                EntryHandler.setEntriesAboveStatusRead(this.element);
+                setEntriesAboveStatusRead(this.element);
                 ModalHandler.close();
             });
         } else if (this.element.classList.contains("entry")) {

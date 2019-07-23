@@ -37,49 +37,16 @@ document.addEventListener("DOMContentLoaded", function () {
     let touchHandler = new TouchHandler();
     touchHandler.listen();
 
-    onClick("a[data-save-entry]", () => handleSaveEntry());
-    onClick("a[data-toggle-bookmark]", () => handleBookmark());
-    onClick("a[data-toggle-cache]", () => handleCache());
+    onClick("a[data-save-entry]", (event) => handleSaveEntry(event.target));
+    onClick("a[data-toggle-bookmark]", (event) => handleBookmark(event.target));
     onClick("a[data-fetch-content-entry]", () => handleFetchOriginalContent());
     onClick("a[data-action=search]", (event) => setFocusToSearchInput(event));
     onClick("a[data-action=markPageAsRead]", () => handleConfirmationMessage(event.target, () => markPageAsRead()));
-    onClick("a[data-action=historyGoBack]", () => { history.go(-1) });
+    onClick("a[data-toggle-status]", (event) => handleEntryStatus(event.target));
 
-    onClick("a[data-toggle-status]", (event) => {
-        let currentItem = DomHelper.findParent(event.target, "entry");
-        if (!currentItem) {
-            currentItem = DomHelper.findParent(event.target, "item");
-        }
-
-        if (currentItem) {
-            toggleEntryStatus(currentItem);
-        }
-    });
-
-    onClick("a[data-set-read]", (event) => {
-        let currentItem = DomHelper.findParent(event.target, "entry");
-        if (!currentItem) {
-            currentItem = DomHelper.findParent(event.target, "item");
-        }
-        if (currentItem) {
-            setEntryStatusRead(currentItem)
-        }
-
-    }, true);
-
-    onClick("a[data-action=showActionMenu]", (event) => {
-        let currentItem = DomHelper.findParent(event.target, "entry");
-        if (!currentItem) {
-            currentItem = DomHelper.findParent(event.target, "item");
-        }
-        if (currentItem) {
-            new ActionMenuHandler(currentItem).show();
-        }
-    })
-
-    onClick("button[data-action=submitEntry]", (event) => {
-        EntryEditorHandler.submitHandler(event);
-    });
+    onClick("a[data-set-read]", (event) => setEntryStatusRead(findEntry(event.target)), true);
+    onClick("a[data-action=showActionMenu]", (event) => handleActionMenu(event.target));
+    onClick("button[data-action=submitEntry]", (event) => EntryEditorHandler.submitHandler(event));
 
     onClick("a[data-confirm]", (event) => handleConfirmationMessage(event.target, (url, redirectURL) => {
         let request = new RequestBuilder(url);

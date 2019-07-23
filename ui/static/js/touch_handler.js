@@ -77,8 +77,7 @@ class TouchHandler {
                 toggleEntryStatus(this.touch.element);
 
             } else if (distance < -75) {
-                let actHandler = new ActionMenuHandler(this.touch.element);
-                actHandler.show();
+                handleActionMenu(this.touch.element);
             }
 
             this.touch.element.style.opacity = 1;

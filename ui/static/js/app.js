@@ -265,11 +265,11 @@ function toggleCache(parentElement) {
     request.execute();
 }
 
-function setEntryStatusRead(element){
+function setEntryStatusRead(element) {
     if (!element) return;
     let link = element.querySelector("a[data-set-read]");
     let sendRequest = !link.dataset.noRequest;
-    if(sendRequest){
+    if (sendRequest) {
         let entryID = parseInt(element.dataset.id, 10);
         updateEntriesStatus([entryID], "read");
     }
@@ -288,22 +288,22 @@ function setEntryStatusRead(element){
     }
 }
 
-function setEntriesAboveStatusRead(element){
-    let currentItem = document.querySelector(".current-item");
+function setEntriesAboveStatusRead(element) {
+    let currentItem = findEntry(element);
     let items = DomHelper.getVisibleElements(".items .item");
-    if (currentItem === null || items.length === 0) {
+    if (!currentItem || items.length === 0) {
         return;
     }
-    let targetItems=[];
-    let entryIds=[];
+    let targetItems = [];
+    let entryIds = [];
     for (let i = 0; i < items.length; i++) {
         targetItems.push(items[i]);
         entryIds.push(parseInt(items[i].dataset.id, 10));
-        if (items[i].classList.contains("current-item")) {
+        if (items[i] == currentItem) {
             break;
         }
     }
-    updateEntriesStatus(entryIds, "read",() => {
+    updateEntriesStatus(entryIds, "read", () => {
         targetItems.map(item => {
             let link = item.querySelector("a[data-toggle-status]");
             if (link && link.dataset.value === "unread") {

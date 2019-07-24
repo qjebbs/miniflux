@@ -94,8 +94,8 @@ function setEntryStatusRead(element){if(!element)return;let link=element.querySe
 link=element.querySelector("a[data-toggle-status]");if(link&&link.dataset.value==="unread"){link.innerHTML=link.dataset.labelUnread;link.dataset.value="read";}
 if(element&&element.classList.contains("item-status-unread")){element.classList.remove("item-status-unread");element.classList.add("item-status-read");updateUnreadCounterValue
 decrementUnreadCounter(1);}}
-function setEntriesAboveStatusRead(element){let currentItem=document.querySelector(".current-item");let items=DomHelper.getVisibleElements(".items .item");if(currentItem===null||items.length===0){return;}
-let targetItems=[];let entryIds=[];for(let i=0;i<items.length;i++){targetItems.push(items[i]);entryIds.push(parseInt(items[i].dataset.id,10));if(items[i].classList.contains("current-item")){break;}}
+function setEntriesAboveStatusRead(element){let currentItem=findEntry(element);let items=DomHelper.getVisibleElements(".items .item");if(currentItem===null||items.length===0){return;}
+let targetItems=[];let entryIds=[];for(let i=0;i<items.length;i++){targetItems.push(items[i]);entryIds.push(parseInt(items[i].dataset.id,10));if(items[i]==currentItem){break;}}
 updateEntriesStatus(entryIds,"read",()=>{targetItems.map(item=>{let link=item.querySelector("a[data-toggle-status]");if(link&&link.dataset.value==="unread"){link.innerHTML=link.dataset.labelUnread;link.dataset.value="read";}
 if(item&&item.classList.contains("item-status-unread")){item.classList.remove("item-status-unread");item.classList.add("item-status-read");decrementUnreadCounter(1);}});});}
 function handleFetchOriginalContent(){if(isListView()){return;}
@@ -147,6 +147,6 @@ imagesLoaded('.masonry .item').on('progress',callback);LazyloadHandler.add(".ite
 }
 
 var JavascriptsChecksums = map[string]string{
-	"app": "8d39a228af49318209350f8b1158ce4a403bc318c4374de2053af58682769c23",
+	"app": "627901be68c1d1c435212b9798ac51a3527114fa9b4b0526c1ae73d2ed033952",
 	"sw":  "55fffa223919cc18572788fb9c62fccf92166c0eb5d3a1d6f91c31f24d020be9",
 }

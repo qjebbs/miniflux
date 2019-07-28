@@ -668,6 +668,8 @@ var templateViewsMap = map[string]string{
                 <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ $value }}</option>
             {{ end }}
         </select>
+        <label><input type="checkbox" name="crawler" value="1" {{ if .form.Crawler }}checked{{ end }}> {{ t "form.feed.label.crawler" }}</label>
+        <label><input type="checkbox" name="disabled" value="1" {{ if .form.Disabled }}checked{{ end }}> {{ t "form.feed.label.disabled" }}</label>
 
         <label><input type="checkbox" name="crawler" value="1" {{ if .form.Crawler }}checked{{ end }}> {{ t "form.feed.label.crawler" }}</label>
         <label><input type="checkbox" name="cache_media" value="1" {{ if .form.CacheMedia }}checked{{ end }}> {{ t "form.feed.label.cache_media" }}</label>
@@ -1049,6 +1051,7 @@ var templateViewsMap = map[string]string{
                     {{ if .Icon }}
                         <img src="{{ route "icon" "iconID" .Icon.IconID }}" width="16" height="16" alt="{{ .Title }}">
                     {{ end }}
+                    {{ if .Disabled }} 🚫 {{ end }}
                     <a href="{{ route "feedEntries" "feedID" .ID }}">{{ .Title }}</a>
                 </span>
                 <span class="category">
@@ -1861,11 +1864,11 @@ var templateViewsMapChecksums = map[string]string{
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
 	"edit_category":       "d5bc7086a791e01fbffd793cc3f67154ce986b40231d518258ffcdb758e696c9",
 	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
-	"edit_feed":           "4765519ac07c087ecd52176d1128754029b412a5389ab66318edcef5d3418214",
+	"edit_feed":           "647314031983272b716ab4f0a296c17c3bf3010ee1aea6336a8e3f76cedb78c5",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "092d7dedb3811dc10f39bdc2fe824f896d7a12e314375bdf536d815e39c3248e",
 	"feed_entries":        "a37eb52461dc3051efc66e878ef53241c6a4eaae0a1b2113ed3091f006d47f9b",
-	"feeds":               "31acc253c547a6cce5710d72a6f6b3b396162ecd5e5af295b2cf47c1ff55bd06",
+	"feeds":               "d11fb629921e22bbf6d9ecb1adcc38922fafcee84f81c437abf47209544bd1c5",
 	"history_entries":     "4185610b871d2cd9b161214ee3a80977997935df339c7598d3596fbdb7ae1814",
 	"import":              "8349e47a783bb40d8e9248b4771656e5f006185e11079e1c4680dd52633420ed",
 	"integrations":        "d73ad06ca242f39f4575c30e4b357d9ee058973ccd82312a86955fe4a24b36cf",

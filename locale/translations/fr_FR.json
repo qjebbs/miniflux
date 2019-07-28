@@ -257,6 +257,7 @@
     "form.entry.label.readability": "Parse with Readability",
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
+    "form.feed.label.disabled": "Ne pas actualiser ce flux",
     "form.category.label.title": "Titre",
     "form.user.label.username": "Nom d'utilisateur",
     "form.user.label.password": "Mot de passe",

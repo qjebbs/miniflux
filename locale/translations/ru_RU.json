@@ -259,6 +259,7 @@
     "form.entry.label.readability": "Parse with Readability",
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
+    "form.feed.label.disabled": "Не обновлять этот канал",
     "form.category.label.title": "Название",
     "form.user.label.username": "Имя пользователя",
     "form.user.label.password": "Пароль",

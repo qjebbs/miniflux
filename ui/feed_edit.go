@@ -55,6 +55,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		Username:     feed.Username,
 		Password:     feed.Password,
 		View:         feed.View,
+		Disabled:     feed.Disabled,
 	}
 
 	all, count, size, err := h.store.MediaStatisticsByFeed(feedID)

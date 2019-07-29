@@ -1,9 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     handleSubmitButtons();
 
-    let tabHandler = new TabHandler();
-    tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);
-
     if (!document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {
         let keyboardHandler = new KeyboardHandler();
         keyboardHandler.on("g u", () => goToPage("unread"));
@@ -44,6 +41,10 @@ document.addEventListener("DOMContentLoaded", function () {
     onClick("a[data-action=markPageAsRead]", () => handleConfirmationMessage(event.target, () => markPageAsRead()));
     onClick("a[data-toggle-status]", (event) => handleEntryStatus(event.target));
 
+    let tabHandler = new TabHandler();
+    tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);
+
+    onClick("a[data-toggle-cache]", (event) => handleCache(event.target));
     onClick("a[data-set-read]", (event) => setEntryStatusRead(findEntry(event.target)), true);
     onClick("a[data-action=showActionMenu]", (event) => handleActionMenu(event.target));
     onClick("button[data-action=submitEntry]", (event) => EntryEditorHandler.submitHandler(event));

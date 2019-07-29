@@ -234,13 +234,9 @@ function toggleBookmark(parentElement) {
 }
 
 // Handle media cache from the list view and entry view.
-function handleCache() {
-    if (isListView()) {
-        let currentItem = document.querySelector(".current-item");
-        if (currentItem !== null) {
-            toggleCache(currentItem);
-        }
-    } else {
+function handleCache(element) {
+    let currentEntry = findEntry(element);
+    if (currentEntry) {
         toggleCache(document.querySelector(".entry"));
     }
 }

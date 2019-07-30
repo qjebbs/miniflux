@@ -668,11 +668,11 @@ var templateViewsMap = map[string]string{
                 <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ $value }}</option>
             {{ end }}
         </select>
+        
         <label><input type="checkbox" name="crawler" value="1" {{ if .form.Crawler }}checked{{ end }}> {{ t "form.feed.label.crawler" }}</label>
         <label><input type="checkbox" name="disabled" value="1" {{ if .form.Disabled }}checked{{ end }}> {{ t "form.feed.label.disabled" }}</label>
-
-        <label><input type="checkbox" name="crawler" value="1" {{ if .form.Crawler }}checked{{ end }}> {{ t "form.feed.label.crawler" }}</label>
         <label><input type="checkbox" name="cache_media" value="1" {{ if .form.CacheMedia }}checked{{ end }}> {{ t "form.feed.label.cache_media" }}</label>
+
         <div class="buttons">
             <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="{{ route "feeds" }}">{{ t "action.cancel" }}</a>
         </div>
@@ -1864,7 +1864,7 @@ var templateViewsMapChecksums = map[string]string{
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
 	"edit_category":       "d5bc7086a791e01fbffd793cc3f67154ce986b40231d518258ffcdb758e696c9",
 	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
-	"edit_feed":           "647314031983272b716ab4f0a296c17c3bf3010ee1aea6336a8e3f76cedb78c5",
+	"edit_feed":           "ae256ca0ce7acda3afa6c60b4e100fec1c435e5413e9aeb43a4cb0eec1864761",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "092d7dedb3811dc10f39bdc2fe824f896d7a12e314375bdf536d815e39c3248e",
 	"feed_entries":        "a37eb52461dc3051efc66e878ef53241c6a4eaae0a1b2113ed3091f006d47f9b",

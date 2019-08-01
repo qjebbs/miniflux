@@ -46,6 +46,7 @@ type Client struct {
 	userAgent           string
 	cookies             []*http.Cookie
 	Insecure            bool
+	referrer            string
 }
 
 // WithCredentials defines the username/password for HTTP Basic authentication.
@@ -95,6 +96,14 @@ func (c *Client) WithCookies(cookies []*http.Cookie) *Client {
 		c.cookies = make([]*http.Cookie, 0)
 	}
 	c.cookies = append(c.cookies, cookies...)
+	return c
+}
+
+// WithReferrer add referrer for outgoing requests.
+func (c *Client) WithReferrer(referrer string) *Client {
+	if referrer != "" {
+		c.referrer = referrer
+	}
 	return c
 }
 
@@ -257,6 +266,10 @@ func (c *Client) buildHeaders() http.Header {
 
 	if c.authorizationHeader != "" {
 		headers.Add("Authorization", c.authorizationHeader)
+	}
+
+	if c.referrer != "" {
+		headers.Add("Referer", c.referrer)
 	}
 
 	headers.Add("Connection", "close")

@@ -25,51 +25,45 @@ func URLHash(mediaURL string) string {
 }
 
 // FindMedia try to find the media cache of the URL.
-func FindMedia(mediaURL string) (*model.Media, error) {
-	if strings.HasPrefix(mediaURL, "data:") {
-		return nil, fmt.Errorf("refuse to cache 'data' scheme media")
+func FindMedia(media *model.Media) error {
+	if strings.HasPrefix(media.URL, "data:") {
+		return fmt.Errorf("refuse to cache 'data' scheme media")
 	}
 
-	logger.Debug("[FindMedia] Fetching media => %s", mediaURL)
-	media, err := downloadMedia(mediaURL)
-	if err != nil {
-		return nil, err
-	}
-
-	return media, nil
+	logger.Debug("[FindMedia] Fetching media => %s", media.URL)
+	return downloadMedia(media)
 }
 
-func downloadMedia(mediaURL string) (*model.Media, error) {
-	clt := client.New(mediaURL)
+func downloadMedia(media *model.Media) error {
+	clt := client.New(media.URL)
+	if media.Referrer != "" {
+		clt.WithReferrer(media.Referrer)
+	}
 	response, err := clt.Get()
 	if err != nil {
-		return nil, fmt.Errorf("unable to download mediaURL: %v", err)
+		return fmt.Errorf("unable to download mediaURL: %v", err)
 	}
 
 	if response.HasServerFailure() {
-		return nil, fmt.Errorf("unable to download media: status=%d", response.StatusCode)
+		return fmt.Errorf("unable to download media: status=%d", response.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read downloaded media: %v", err)
+		return fmt.Errorf("unable to read downloaded media: %v", err)
 	}
 
 	if len(body) == 0 {
-		return nil, fmt.Errorf("downloaded media is empty, mediaURL=%s", mediaURL)
+		return fmt.Errorf("downloaded media is empty, mediaURL=%s", media.URL)
 	}
 
-	media := &model.Media{
-		URL:       mediaURL,
-		URLHash:   URLHash(mediaURL),
-		MimeType:  response.ContentType,
-		Content:   body,
-		Size:      len(body),
-		Cached:    true,
-		CreatedAt: time.Now(),
-	}
+	media.URLHash = URLHash(media.URL)
+	media.MimeType = response.ContentType
+	media.Content = body
+	media.Size = len(body)
+	media.CreatedAt = time.Now()
 
-	return media, nil
+	return nil
 }
 
 // ParseDocument parse the entry content and returns media urls of it

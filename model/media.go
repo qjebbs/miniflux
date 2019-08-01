@@ -15,6 +15,7 @@ type Media struct {
 	ID        int64     `json:"id"`
 	URL       string    `json:"url"`
 	URLHash   string    `json:"url_hash"`
+	Referrer  string    `json:"referrer"`
 	MimeType  string    `json:"mime_type"`
 	Content   []byte    `json:"content"`
 	Size      int       `json:"size"`

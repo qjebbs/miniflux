@@ -24,13 +24,12 @@ func (s *Storage) CacheMedias(days int) error {
 		logger.Debug("[Storage:CacheMedias] caching medias (%d of %d) %s", i+1, len(medias), m.URL)
 		entries, _ := mEntries[m.ID]
 		if !m.Cached {
-			fm, err := media.FindMedia(m.URL)
-			if err != nil {
+			if err = media.FindMedia(m); err != nil {
 				logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
 				continue
 			}
-			fm.ID = m.ID
-			err = s.UpdateMedia(fm)
+			m.Cached = true
+			err = s.UpdateMedia(m)
 			if err != nil {
 				logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
 				continue
@@ -55,7 +54,7 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
 	// FIXME: use created_at to ignore failed medias could have problem
 	// when caching medias which created long time ago but never requires cache
 	query := `
-	SELECT m.id, m.url, m.url_hash, m.cached, string_agg(cast(e.id as TEXT),',') as eids
+	SELECT m.id, m.url, m.url_hash, m.cached, max(e.url) as referrer, string_agg(cast(e.id as TEXT),',') as eids
     FROM feeds f
         INNER JOIN entries e ON f.id=e.feed_id
         INNER JOIN entry_medias em ON e.id=em.entry_id
@@ -82,7 +81,7 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
 	for rows.Next() {
 		var media model.Media
 		var entryIDs string
-		err := rows.Scan(&media.ID, &media.URL, &media.URLHash, &media.Cached, &entryIDs)
+		err := rows.Scan(&media.ID, &media.URL, &media.URLHash, &media.Cached, &media.Referrer, &entryIDs)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to fetch uncached medias row: %v", err)
 		}
@@ -117,13 +116,11 @@ func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
 	var buf bytes.Buffer
 	for _, m := range medias {
 		if !m.Cached {
-			fm, err := media.FindMedia(m.URL)
-			if err != nil {
+			if err = media.FindMedia(m); err != nil {
 				return err
 			}
-			fm.ID = m.ID
-			err = s.UpdateMedia(fm)
-			if err != nil {
+			m.Cached = true
+			if err = s.UpdateMedia(m); err != nil {
 				return err
 			}
 		}
@@ -142,7 +139,7 @@ func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
 
 func (s *Storage) getEntryMedias(userID, EntryID int64) (model.Medias, error) {
 	query := `
-		SELECT m.id, m.url, m.url_hash, m.cached
+		SELECT m.id, m.url, m.url_hash, m.cached, e.url
 		FROM feeds f
 			INNER JOIN entries e on f.id=e.feed_id
 			INNER JOIN entry_medias em on e.id=em.entry_id
@@ -160,7 +157,7 @@ func (s *Storage) getEntryMedias(userID, EntryID int64) (model.Medias, error) {
 
 	for rows.Next() {
 		var media model.Media
-		err := rows.Scan(&media.ID, &media.URL, &media.URLHash, &media.Cached)
+		err := rows.Scan(&media.ID, &media.URL, &media.URLHash, &media.Cached, &media.Referrer)
 		if err != nil {
 			return nil, fmt.Errorf("unable to fetch entry medias row: %v", err)
 		}

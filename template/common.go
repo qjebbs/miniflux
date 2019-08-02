@@ -227,6 +227,7 @@ var templateCommonMap = map[string]string{
                     <li>{{ t "page.keyboard_shortcuts.download_content" }} = <strong>d</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.toggle_bookmark_status" }} = <strong>f</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.save_article" }} = <strong>s</strong></li>
+                    <li>{{ t "page.keyboard_shortcuts.proxy_images" }} = <strong>P</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.remove_feed" }} = <strong>#</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.go_to_search" }} = <strong>/</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.close_modal" }} = <strong>Esc</strong></li>
@@ -277,6 +278,6 @@ var templateCommonMap = map[string]string{
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "4faa91e2eae150c5e4eab4d258e039dfdd413bab7602f0009360e6d52898e353",
 	"item_meta":        "bcfd7fa4990152a8608f67fd9f109c4ee4f5d17292f806d811aed200a77f04f0",
-	"layout":           "d7005214dfd8789ebe0d20b7236766fc34905aa05389fea0aa7cb6c26f70fd90",
+	"layout":           "597d5f7279a435babaa8dde925593206c4e9dc098bc520fcdfe25b86b7ee196e",
 	"pagination":       "3386e90c6e1230311459e9a484629bc5d5bf39514a75ef2e73bbbc61142f7abb",
 }

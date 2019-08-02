@@ -65,13 +65,20 @@ func (s *Storage) UserMediaByURL(URL string, userID int64) (*model.Media, error)
 func (s *Storage) UserMediaByHash(media *model.Media, userID int64) error {
 	defer timer.ExecutionTime(time.Now(), "[Storage:UserMediaByHash]")
 
+	useCache := false
+	// "ORDER BY use_cache DESC" is important.
+	// It makes sure the result of use_cache in this query would be true
+	// if any record set "use_cache" to true.
+	// e.g.: One image could be used in multiple entries to a single user,
+	// if one of any records uses cache, then rest of them use cache as well
 	err := s.db.QueryRow(`
-	SELECT m.id, m.url, m.mime_type, m.content, m.cached 
+	SELECT m.id, m.url, m.mime_type, m.content, m.cached, e.url, em.use_cache
 	FROM medias m
 		INNER JOIN entry_medias em ON m.id=em.media_id
 		INNER JOIN entries e ON e.id=em.entry_id
 		INNER JOIN feeds f on f.id=e.feed_id
-	WHERE m.url_hash=$1 AND em.use_cache='t' AND f.user_id=$2
+	WHERE m.url_hash=$1 AND f.user_id=$2
+	ORDER BY use_cache DESC
 `,
 		media.URLHash,
 		userID,
@@ -81,7 +88,11 @@ func (s *Storage) UserMediaByHash(media *model.Media, userID int64) error {
 		&media.MimeType,
 		&media.Content,
 		&media.Cached,
+		&media.Referrer,
+		&useCache,
 	)
+	// If not useCache, the the media cache could be created by other users.
+	media.Cached = media.Cached && useCache
 	if err == sql.ErrNoRows {
 		return nil
 	} else if err != nil {

@@ -577,3 +577,19 @@ function handleConfirmationMessage(linkElement, callback) {
 
     containerElement.appendChild(questionElement);
 }
+
+function forceProxyImages() {
+    let imgs = document.querySelectorAll(".entry-content img");
+    imgs.forEach(img => img.src = addProxyParam(img.src));
+    function addProxyParam(url) {
+        let parts = url.split('?');
+        let params = parts[1] ? parts[1].split('&') : [];
+        for (let i = 0; i < params.length; i++) {
+            if (params[i].toLowerCase().startsWith("proxy=")) {
+                params.splice(i, 1);
+            }
+        }
+        params.push("proxy=force");
+        return parts[0] + '?' + params.join('&');
+    }
+}

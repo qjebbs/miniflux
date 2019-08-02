@@ -5,12 +5,13 @@
 package ui // import "miniflux.app/ui"
 
 import (
-	"miniflux.app/config"
 	"encoding/base64"
 	"errors"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"miniflux.app/config"
 
 	"miniflux.app/url"
 
@@ -49,12 +50,18 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		body = media.Content
 		mimeType = media.MimeType
 	} else {
+		proxyParam := request.QueryStringParam(r, "proxy", "auto")
 		proxyImages := config.Opts.ProxyImages()
-		if proxyImages == "none" || (proxyImages == "http-only" && url.IsHTTPS(decodedURLStr)) {
+		if proxyParam != "force" &&
+			(proxyImages == "none" ||
+				(proxyImages == "http-only" && url.IsHTTPS(decodedURLStr))) {
 			html.Redirect(w, r, decodedURLStr)
 			return
 		}
 		clt := client.New(decodedURLStr)
+		if media.Referrer != "" {
+			clt.WithReferrer(media.Referrer)
+		}
 		resp, err := clt.Get()
 		if err != nil {
 			html.ServerError(w, r, err)

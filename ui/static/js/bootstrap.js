@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     handleSubmitButtons();
+    initImagesEvents();
 
     if (!document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {
         let keyboardHandler = new KeyboardHandler();
@@ -76,24 +77,3 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
-
-window.onload = function () {
-    // masonry has to wait for all resources loaded to get the right layout
-    let msnryElement = document.querySelector('.masonry');
-    if (msnryElement) {
-        var msnry = new Masonry(msnryElement, {
-            itemSelector: '.item',
-            columnWidth: '.item-sizer',
-            gutter: 10
-        })
-        let callback = (instance, image) => {
-            if (image && image.img && !image.img.dataset.src && !image.isLoaded) {
-                let thumbnail = DomHelper.findParent(image.img, "thumbnail");
-                if (thumbnail) thumbnail.parentNode.removeChild(thumbnail);
-            }
-            msnry.layout();
-        }
-        imagesLoaded('.masonry .item').on('progress', callback);
-        LazyloadHandler.add(".item", 'progress', callback);
-    }
-};

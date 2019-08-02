@@ -578,18 +578,78 @@ function handleConfirmationMessage(linkElement, callback) {
     containerElement.appendChild(questionElement);
 }
 
+function initImagesEvents() {
+    if (isListView()) {
+        let msnryElement = document.querySelector('.masonry');
+        if (msnryElement) {
+            // masonry has to wait for all resources loaded to get the right layout
+            var msnry;
+            let layoutCallback = throttle(() => {
+                if (msnry) {
+                    msnry.layout();
+                }
+            }, 500, 1000);
+            msnry = new Masonry(msnryElement, {
+                itemSelector: '.item',
+                columnWidth: '.item-sizer',
+                gutter: 10
+            })
+            LazyloadHandler.add(".item", 'progress', layoutCallback);
+            let imgs = document.querySelectorAll(".thumbnail img");
+            imgs.forEach(img => {
+                img.addEventListener("error", (e) => {
+                    if (img) {
+                        img.src = addProxyParam(img.src);
+                        img = undefined;
+                    } else {
+                        e.target.parentNode.removeChild(e.target);
+                        return;
+                    }
+                    layoutCallback();
+                })
+            });
+        }
+        return;
+    }
+    let imgs = document.querySelectorAll(".entry-content img");
+    imgs.forEach(img => {
+        img.addEventListener("error", (e) => {
+            if (img) {
+                img.src = addProxyParam(img.src);
+                img = undefined;
+            }
+        })
+    });
+}
+
 function forceProxyImages() {
     let imgs = document.querySelectorAll(".entry-content img");
     imgs.forEach(img => img.src = addProxyParam(img.src));
-    function addProxyParam(url) {
-        let parts = url.split('?');
-        let params = parts[1] ? parts[1].split('&') : [];
-        for (let i = 0; i < params.length; i++) {
-            if (params[i].toLowerCase().startsWith("proxy=")) {
-                params.splice(i, 1);
-            }
+}
+
+function addProxyParam(url) {
+    let parts = url.split('?');
+    let params = parts[1] ? parts[1].split('&') : [];
+    for (let i = 0; i < params.length; i++) {
+        if (params[i].toLowerCase().startsWith("proxy=")) {
+            params.splice(i, 1);
         }
-        params.push("proxy=force");
-        return parts[0] + '?' + params.join('&');
+    }
+    params.push("proxy=force");
+    return parts[0] + '?' + params.join('&');
+}
+
+function throttle(fn, delay, atleast) {
+    var timeout = null,
+        startTime = new Date();
+    return function (...args) {
+        var curTime = new Date();
+        clearTimeout(timeout);
+        if (curTime - startTime >= atleast) {
+            fn(...args);
+            startTime = curTime;
+        } else {
+            timeout = setTimeout(() => fn(...args), delay);
+        }
     }
 }

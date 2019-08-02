@@ -36,12 +36,17 @@ func FindMedia(media *model.Media) error {
 
 func downloadMedia(media *model.Media) error {
 	clt := client.New(media.URL)
-	if media.Referrer != "" {
-		clt.WithReferrer(media.Referrer)
-	}
 	response, err := clt.Get()
 	if err != nil {
 		return fmt.Errorf("unable to download mediaURL: %v", err)
+	}
+
+	if response.HasServerFailure() && media.Referrer != "" {
+		clt.WithReferrer(media.Referrer)
+		response, err = clt.Get()
+		if err != nil {
+			return fmt.Errorf("unable to download mediaURL: %v", err)
+		}
 	}
 
 	if response.HasServerFailure() {

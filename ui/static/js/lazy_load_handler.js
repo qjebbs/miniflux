@@ -5,21 +5,6 @@ class LazyloadHandler {
         loadImages();
         window.addEventListener('scroll', throttle(loadImages, 500, 1000), false);
 
-        function throttle(fn, delay, atleast) {
-            var timeout = null,
-                startTime = new Date();
-            return function () {
-                var curTime = new Date();
-                clearTimeout(timeout);
-                if (curTime - startTime >= atleast) {
-                    fn();
-                    startTime = curTime;
-                } else {
-                    timeout = setTimeout(fn, delay);
-                }
-            }
-        }
-
         function lazyload(selector) {
             let lastVisbileIndex = 0;
             return function () {

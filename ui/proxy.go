@@ -59,13 +59,19 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		clt := client.New(decodedURLStr)
-		if media.Referrer != "" {
-			clt.WithReferrer(media.Referrer)
-		}
 		resp, err := clt.Get()
 		if err != nil {
 			html.ServerError(w, r, err)
 			return
+		}
+
+		if resp.HasServerFailure() && media.Referrer != "" {
+			clt.WithReferrer(media.Referrer)
+			resp, err = clt.Get()
+			if err != nil {
+				html.ServerError(w, r, err)
+				return
+			}
 		}
 
 		if resp.HasServerFailure() {

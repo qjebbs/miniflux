@@ -598,6 +598,11 @@ function initImagesEvents() {
         let imgs = document.querySelectorAll(".thumbnail img");
         imgs.forEach(img => {
             img.addEventListener("error", (e) => {
+                if (img && img.src == location.href) {
+                    // should ignore no src error
+                    // console.log("no src error");
+                    return;
+                }
                 if (img) {
                     img.src = addProxyParam(img.src);
                     img = undefined;

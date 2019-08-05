@@ -579,23 +579,22 @@ function handleConfirmationMessage(linkElement, callback) {
 }
 
 function initImagesEvents() {
-    if (isListView()) {
-        let msnryElement = document.querySelector('.masonry');
-        if (!msnryElement) return;
-        // masonry has to wait for all resources loaded to get the right layout
-        var msnry;
-        let layoutCallback = throttle(() => {
-            if (msnry) {
-                msnry.layout();
-            }
-        }, 500, 1000);
-        msnry = new Masonry(msnryElement, {
+    let layoutCallback;
+    let msnryElement = document.querySelector('.masonry');
+    if (msnryElement) {
+        let msnry = new Masonry(msnryElement, {
             itemSelector: '.item',
             columnWidth: '.item-sizer',
             gutter: 10
         })
+        layoutCallback = throttle(() => msnry.layout(), 500, 1000);
+        // initialize layout
+        // important for layout of masonry view without images. e.g.: statistics page.
+        layoutCallback();
+    }
+    let imgs = document.querySelectorAll(".masonry img");
+    if (layoutCallback && imgs.length) {
         LazyloadHandler.add(".item", 'progress', layoutCallback);
-        let imgs = document.querySelectorAll(".thumbnail img");
         imgs.forEach(img => {
             img.addEventListener("error", (e) => {
                 if (img && img.src == location.href) {
@@ -614,7 +613,8 @@ function initImagesEvents() {
         });
         return;
     }
-    let imgs = document.querySelectorAll(".entry-content img");
+    // try force proxy when failed, for entry imgages.
+    imgs = document.querySelectorAll(".entry-content img");
     imgs.forEach(img => {
         img.addEventListener("error", (e) => {
             if (img) {

@@ -15,6 +15,13 @@ body {
     text-rendering: optimizeLegibility;
 }
 
+hr {
+    border: 0;
+    height: 0;
+    border-top: 1px dotted #ccc;
+    padding-bottom: 10px;
+}
+
 main {
     padding-left: 5px;
     padding-right: 5px;
@@ -35,7 +42,7 @@ a:focus {
     outline: 0;
     color: red;
     text-decoration: none;
-    border: 1px dotted #aaa;
+    outline: 1px dotted #aaa;
 }
 
 a:hover {

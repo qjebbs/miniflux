@@ -67,7 +67,7 @@ callback(event);};});}
 function toggleMainMenu(){let menu=document.querySelector(".header nav ul");if(DomHelper.isVisible(menu)){menu.style.display="none";}else{menu.style.display="block";}
 let searchElement=document.querySelector(".header .search");if(DomHelper.isVisible(searchElement)){searchElement.style.display="none";}else{searchElement.style.display="block";}}
 function onClickMainMenuListItem(event){let element=event.target;if(element.tagName==="A"){window.location.href=element.getAttribute("href");}else{window.location.href=element.querySelector("a").getAttribute("href");}}
-function handleSubmitButtons(){let elements=document.querySelectorAll("form");elements.forEach((element)=>{element.onsubmit=()=>{let button=document.querySelector("button");if(button){button.innerHTML=button.dataset.labelLoading;button.disabled=true;}};});}
+function handleSubmitButtons(){let elements=document.querySelectorAll("form");elements.forEach((element)=>{element.onsubmit=()=>{let button=element.querySelector("button");if(button){button.innerHTML=button.dataset.labelLoading;button.disabled=true;}};});}
 function setFocusToSearchInput(event){event.preventDefault();event.stopPropagation();let toggleSwitchElement=document.querySelector(".search-toggle-switch");if(toggleSwitchElement){toggleSwitchElement.style.display="none";}
 let searchFormElement=document.querySelector(".search-form");if(searchFormElement){searchFormElement.style.display="block";}
 let searchInputElement=document.getElementById("search-input");if(searchInputElement){searchInputElement.focus();searchInputElement.value="";}}
@@ -149,6 +149,6 @@ if("serviceWorker"in navigator){let scriptElement=document.getElementById("servi
 }
 
 var JavascriptsChecksums = map[string]string{
-	"app": "06ef0a8aa856d45bf2596aceb74e92a21ea0f4c4b96c727aefa8d1e07525afd5",
+	"app": "61ace91cd326d9cc994872817871e13602b90090e97eb8f259645aca83ba44b3",
 	"sw":  "55fffa223919cc18572788fb9c62fccf92166c0eb5d3a1d6f91c31f24d020be9",
 }

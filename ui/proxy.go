@@ -7,7 +7,6 @@ package ui // import "miniflux.app/ui"
 import (
 	"encoding/base64"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -44,48 +43,57 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 
 	userID := request.UserID(r)
 	media, err := h.store.UserMediaByURL(decodedURLStr, userID)
-	var body []byte
-	var mimeType string
+	etag := crypto.HashFromBytes(decodedURL)
+
 	if err == nil && media.Cached {
-		body = media.Content
-		mimeType = media.MimeType
-	} else {
-		proxyParam := request.QueryStringParam(r, "proxy", "auto")
-		proxyImages := config.Opts.ProxyImages()
-		if proxyParam != "force" &&
-			(proxyImages == "none" ||
-				(proxyImages == "http-only" && url.IsHTTPS(decodedURLStr))) {
-			html.Redirect(w, r, decodedURLStr)
-			return
-		}
-		clt := client.New(decodedURLStr)
-		resp, err := clt.Get()
-		if err != nil {
-			html.ServerError(w, r, err)
-			return
-		}
+		response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+			b.WithHeader("Content-Type", media.MimeType)
+			b.WithBody(media.Content)
+			b.WithoutCompression()
+			b.Write()
+		})
+		return
+	}
+	proxyParam := request.QueryStringParam(r, "proxy", "auto")
+	proxyImages := config.Opts.ProxyImages()
+	if proxyParam != "force" &&
+		(proxyImages == "none" ||
+			(proxyImages == "http-only" && url.IsHTTPS(decodedURLStr))) {
+		html.Redirect(w, r, decodedURLStr)
+		return
+	}
 
-		if resp.HasServerFailure() && media.Referrer != "" {
-			clt.WithReferrer(media.Referrer)
-			resp, err = clt.Get()
-			if err != nil {
-				html.ServerError(w, r, err)
-				return
-			}
-		}
+	req, err := http.NewRequest("GET", string(decodedURL), nil)
+	if err != nil {
+		html.ServerError(w, r, err)
+		return
+	}
+	req.Header.Add("User-Agent", client.DefaultUserAgent)
+	req.Header.Add("Connection", "close")
 
-		if resp.HasServerFailure() {
+	clt := &http.Client{
+		Timeout: time.Duration(config.Opts.HTTPClientTimeout()) * time.Second,
+	}
+
+	resp, err := clt.Do(req)
+	if err != nil {
+		html.ServerError(w, r, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		req.Header.Add("Referer", media.Referrer)
+		resp, err = clt.Do(req)
+		if resp.StatusCode != http.StatusOK {
 			html.NotFound(w, r)
 			return
 		}
-
-		body, _ = ioutil.ReadAll(resp.Body)
-		mimeType = resp.ContentType
 	}
-	etag := crypto.HashFromBytes(body)
+
 	response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
-		b.WithHeader("Content-Type", mimeType)
-		b.WithBody(body)
+		b.WithHeader("Content-Type", resp.Header.Get("Content-Type"))
+		b.WithBody(resp.Body)
 		b.WithoutCompression()
 		b.Write()
 	})

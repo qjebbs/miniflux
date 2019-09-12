@@ -1632,9 +1632,7 @@ var templateViewsMap = map[string]string{
                 </a>
             </ul>
         </li>
-    </div>
-    {{ if gt (len .unreadByCategory) 0 }}
-    <div class="item list">
+        {{ if gt (len .unreadByCategory) 0 }}
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.categories.unread" }}
@@ -1650,8 +1648,8 @@ var templateViewsMap = map[string]string{
             </ul>
             {{ end }}
         </li>
+        {{ end }}
     </div>
-    {{ end }}
     {{ if gt (len .unreadByFeed) 0 }}
     <div class="item list">
         <div class="list-header">
@@ -1676,27 +1674,8 @@ var templateViewsMap = map[string]string{
         </li>
     </div>
     {{ end }}
-    {{ if gt (len .starredByCategory) 0 }}
     <div class="item list">
-        <div class="list-header">
-            <span class="item-title">
-                {{ t "page.stat.categories.starred" }}
-            </span>
-        </div>
-        <li class="list-body">
-            {{ range .starredByCategory }}
-            <ul class="list-item">
-                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
-                        <span class="title">{{ .Category.Title }}</span>
-                    <span class="count">{{ .Count }}</span>
-                </a>
-            </ul>
-            {{ end }}
-        </li>
-    </div>
-    {{ end }}
-    {{ if gt (len .starredByFeed) 0 }}
-    <div class="item list">
+        {{ if gt (len .starredByFeed) 0 }}
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.feeds.starred" }}
@@ -1717,8 +1696,27 @@ var templateViewsMap = map[string]string{
             </ul>
             {{ end }}
         </li>
+        {{ end }}
     </div>
-    {{ end }}
+    <div class="item list">
+        {{ if gt (len .starredByCategory) 0 }}
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.categories.starred" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .starredByCategory }}
+            <ul class="list-item">
+                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
+                        <span class="title">{{ .Category.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+        {{ end }}
+    </div>
 </div>
 
 {{ end }}
@@ -1897,7 +1895,7 @@ var templateViewsMapChecksums = map[string]string{
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "7fdae12cc04ed39fbb74f24f6c9dc2f732f2cf43e40a65a7bea8669584f1ec3a",
-	"stat":                "eda539d2441590f147781a9356954ff7ff66e552989bdebcdb931c938b619abe",
+	"stat":                "8c01d0072d36787022da38889c4cb7cbbd3f49e7c00f4836967406a0d3a8d9db",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

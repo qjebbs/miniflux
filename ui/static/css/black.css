@@ -128,9 +128,6 @@ textarea:focus {
     background-color: #333;
 }
 
-.list .list-header {
-    color: #ddd;
-}
 .list .list-item .title {
     color: #aaa;
 }
@@ -138,10 +135,6 @@ textarea:focus {
 /* List */
 .list .list-item {
     border-color: #333;
-}
-
-.list .list-item .count {
-    color: #52a8eccc;
 }
 
 /* Modals */

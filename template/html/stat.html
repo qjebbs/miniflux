@@ -27,9 +27,7 @@
                 </a>
             </ul>
         </li>
-    </div>
-    {{ if gt (len .unreadByCategory) 0 }}
-    <div class="item list">
+        {{ if gt (len .unreadByCategory) 0 }}
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.categories.unread" }}
@@ -45,8 +43,8 @@
             </ul>
             {{ end }}
         </li>
+        {{ end }}
     </div>
-    {{ end }}
     {{ if gt (len .unreadByFeed) 0 }}
     <div class="item list">
         <div class="list-header">
@@ -71,27 +69,8 @@
         </li>
     </div>
     {{ end }}
-    {{ if gt (len .starredByCategory) 0 }}
     <div class="item list">
-        <div class="list-header">
-            <span class="item-title">
-                {{ t "page.stat.categories.starred" }}
-            </span>
-        </div>
-        <li class="list-body">
-            {{ range .starredByCategory }}
-            <ul class="list-item">
-                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
-                        <span class="title">{{ .Category.Title }}</span>
-                    <span class="count">{{ .Count }}</span>
-                </a>
-            </ul>
-            {{ end }}
-        </li>
-    </div>
-    {{ end }}
-    {{ if gt (len .starredByFeed) 0 }}
-    <div class="item list">
+        {{ if gt (len .starredByFeed) 0 }}
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.feeds.starred" }}
@@ -112,8 +91,27 @@
             </ul>
             {{ end }}
         </li>
+        {{ end }}
     </div>
-    {{ end }}
+    <div class="item list">
+        {{ if gt (len .starredByCategory) 0 }}
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.categories.starred" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .starredByCategory }}
+            <ul class="list-item">
+                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
+                        <span class="title">{{ .Category.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+        {{ end }}
+    </div>
 </div>
 
 {{ end }}

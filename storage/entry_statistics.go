@@ -35,9 +35,10 @@ func (s *Storage) StarredStatByCategory(userID int64) (stat model.EntryStat, err
 
 func feedStatisticsByCond(store *Storage, userID int64, cond string) (stat model.EntryStat, err error) {
 	query := fmt.Sprintf(`
-	SELECT f.id, f.title, count(e.id)
+	SELECT f.id, f.title, max(fi.icon_id) icon, count(e.id)
 	FROM feeds f
 		INNER JOIN entries e ON f.id=e.feed_id
+		LEFT JOIN feed_icons fi ON fi.feed_id=f.id
 	WHERE f.user_id=$1 AND %s
 	GROUP BY f.id`, cond)
 
@@ -50,16 +51,25 @@ func feedStatisticsByCond(store *Storage, userID int64, cond string) (stat model
 	stat = make(model.EntryStat, 0)
 
 	for rows.Next() {
+		var iconID interface{}
 		item := model.EntryStatItem{
-			Feed: &model.Feed{},
+			Feed: &model.Feed{
+				Icon: &model.FeedIcon{},
+			},
 		}
 		err := rows.Scan(
 			&item.Feed.ID,
 			&item.Feed.Title,
+			&iconID,
 			&item.Count,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("unable to fetch entry statistics row: %v", err)
+		}
+		if iconID == nil {
+			item.Feed.Icon.IconID = 0
+		} else {
+			item.Feed.Icon.IconID = iconID.(int64)
 		}
 		stat = append(stat, &item)
 	}

@@ -1663,7 +1663,12 @@ var templateViewsMap = map[string]string{
             {{ range .unreadByFeed }}
             <ul class="list-item">
                 <a href="{{ route "feedEntries" "feedID" .Feed.ID }}">
-                    <span class="title">{{ .Feed.Title }}</span>
+                    <span class="title">
+                        {{ if ne .Feed.Icon.IconID 0 }}
+                            <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .Feed.Title }}">
+                        {{ end }}
+                        {{ .Feed.Title }}
+                    </span>
                     <span class="count">{{ .Count }}</span>
                 </a>
             </ul>
@@ -1701,7 +1706,12 @@ var templateViewsMap = map[string]string{
             {{ range .starredByFeed }}
             <ul class="list-item">
                 <a href="{{ route "feedEntriesStarred" "feedID" .Feed.ID }}">
-                    <span class="title">{{ .Feed.Title }}</span>
+                    <span class="title">
+                        {{ if ne .Feed.Icon.IconID 0 }}
+                            <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .Feed.Title }}">
+                        {{ end }}
+                        {{ .Feed.Title }}
+                    </span>
                     <span class="count">{{ .Count }}</span>
                 </a>
             </ul>
@@ -1887,7 +1897,7 @@ var templateViewsMapChecksums = map[string]string{
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "7fdae12cc04ed39fbb74f24f6c9dc2f732f2cf43e40a65a7bea8669584f1ec3a",
-	"stat":                "1b0474962e7c206b99534cd12a8fa1d29fbb3f82b3e41b8a26bd592a0396c4bb",
+	"stat":                "eda539d2441590f147781a9356954ff7ff66e552989bdebcdb931c938b619abe",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

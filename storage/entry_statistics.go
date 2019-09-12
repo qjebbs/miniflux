@@ -40,7 +40,8 @@ func feedStatisticsByCond(store *Storage, userID int64, cond string) (stat model
 		INNER JOIN entries e ON f.id=e.feed_id
 		LEFT JOIN feed_icons fi ON fi.feed_id=f.id
 	WHERE f.user_id=$1 AND %s
-	GROUP BY f.id`, cond)
+	GROUP BY f.id
+	ORDER BY f.title ASC`, cond)
 
 	rows, err := store.db.Query(query, userID)
 	if err != nil {

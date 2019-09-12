@@ -765,7 +765,8 @@ article.feed-parsing-error {
 }
 
 .list .list-header {
-    margin-bottom: 0.5em;
+    padding: 0.5em;
+    color: #49e;
 }
 
 .list .list-item {

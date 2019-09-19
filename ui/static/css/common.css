@@ -111,6 +111,10 @@ a:hover {
     margin-left: 25px;
 }
 
+.page-header ul.right {
+    display: none;
+}
+
 .page-header li,
 .page-footer li {
     list-style-type: circle;
@@ -189,10 +193,28 @@ a:hover {
         margin-left: 0;
     }
 
+    .page-header ul.right {
+        display: inherit;
+    }
+
     .page-header li,
     .page-footer li {
         display: inline;
+        padding-left: 0;
         padding-right: 15px;
+    }
+
+    .page-header ul.left {
+        float: left;
+    }
+    
+    .page-header ul.right {
+        float: right;
+    }
+    
+    .page-header ul.right li {
+        padding-left: 15px;
+        padding-right: 0;
     }
 
     /* Search form */

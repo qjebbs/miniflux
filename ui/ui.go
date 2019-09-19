@@ -78,6 +78,7 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool, feedHa
 	uiRouter.HandleFunc("/feed/{feedID}/entry/{entryID}", handler.showFeedEntryPage).Name("feedEntry").Methods("GET")
 	uiRouter.HandleFunc("/feed/icon/{iconID}", handler.showIcon).Name("icon").Methods("GET")
 	uiRouter.HandleFunc("/feed/{feedID}/caches/remove", handler.removeFeedCaches).Name("removeFeedCache").Methods("POST")
+	uiRouter.HandleFunc("/feed/{feedID}/view", handler.updateFeedView).Name("updateFeedView").Methods("POST")
 
 	// Category pages.
 	uiRouter.HandleFunc("/category/{categoryID}/entry/{entryID}", handler.showCategoryEntryPage).Name("categoryEntry").Methods("GET")
@@ -90,6 +91,7 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool, feedHa
 	uiRouter.HandleFunc("/category/{categoryID}/edit", handler.showEditCategoryPage).Name("editCategory").Methods("GET")
 	uiRouter.HandleFunc("/category/{categoryID}/update", handler.updateCategory).Name("updateCategory").Methods("POST")
 	uiRouter.HandleFunc("/category/{categoryID}/remove", handler.removeCategory).Name("removeCategory").Methods("POST")
+	uiRouter.HandleFunc("/category/{categoryID}/view", handler.updateCategoryView).Name("updateCategoryView").Methods("POST")
 
 	// Entry pages.
 	uiRouter.HandleFunc("/entry/status", handler.updateEntriesStatus).Name("updateEntriesStatus").Methods("POST")

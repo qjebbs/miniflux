@@ -181,3 +181,26 @@ func (s *Storage) RemoveCategory(userID, categoryID int64) error {
 
 	return nil
 }
+
+// UpdateCategoryView updates a category view setting.
+func (s *Storage) UpdateCategoryView(userID int64, categoryID int64, view string) error {
+	if _, ok := model.Views()[view]; !ok {
+		return fmt.Errorf("invalid view value: %v", view)
+	}
+	query := `UPDATE categories SET view = $3 WHERE user_id=$1 AND id=$2`
+	result, err := s.db.Exec(query, userID, categoryID, view)
+	if err != nil {
+		return fmt.Errorf("unable to set view for category #%d: %v", categoryID, err)
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("unable to set view for category #%d: %v", categoryID, err)
+	}
+
+	if count == 0 {
+		return errors.New("nothing has been updated")
+	}
+
+	return nil
+}

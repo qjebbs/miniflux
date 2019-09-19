@@ -183,6 +183,19 @@ function handleSaveEntry(element) {
     }
 }
 
+// Handle set view action for feeds and categories pages.
+function handleSetView(element) {
+    if (!element) {
+        return;
+    }
+    let request = new RequestBuilder(element.dataset.url);
+    request.withForm({ view: element.dataset.value });
+    request.withCallback((response) => {
+        if (response.ok) location.reload();
+    });
+    request.execute();
+}
+
 // Send the Ajax request to save an entry.
 function saveEntry(element) {
     if (!element) {

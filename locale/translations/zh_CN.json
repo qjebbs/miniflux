@@ -265,6 +265,8 @@
     "form.prefs.label.timezone": "时区",
     "form.prefs.label.theme": "主题",
     "form.prefs.label.view": "视图",
+    "form.prefs.label.list_view": "列表视图",
+    "form.prefs.label.masonry_view": "瀑布流视图",
     "form.prefs.label.entry_sorting": "内容排序",
     "form.prefs.select.older_first": "旧->新",
     "form.prefs.select.recent_first": "新->旧",

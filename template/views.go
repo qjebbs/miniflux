@@ -267,9 +267,9 @@ var templateViewsMap = map[string]string{
 	"category_entries": `{{ define "title"}}{{ .category.Title }} ({{ .total }}){{ end }}
 
 {{ define "content"}}
-<section class="page-header">
+<section class="page-header clearfix">
     <h1>{{ .category.Title }} ({{ .total }})</h1>
-    <ul>
+    <ul class="left">
         <li>
             <a href="{{ route "categoryEntries" "categoryID" .category.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ t "menu.show_only_unread_entries" }}</a>
         </li>
@@ -278,6 +278,21 @@ var templateViewsMap = map[string]string{
         </li>
         <li>
             <a href="{{ route "categoryEntriesAll" "categoryID" .category.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ t "menu.show_all_entries" }}</a>
+        </li>
+    </ul>
+    <ul class="right">
+        <li>
+            <a href="#"
+                data-action="setView"
+                data-url="{{ route "updateCategoryView" "categoryID" .category.ID }}"
+                {{ if ne .view "masonry" }}
+                    data-value="masonry">
+                    ❒ {{ t "form.prefs.label.masonry_view" }}
+                {{ else }}
+                    data-value="list">
+                    ≡ {{ t "form.prefs.label.list_view" }}
+                {{ end }}
+            </a>
         </li>
     </ul>
 </section>
@@ -907,9 +922,9 @@ var templateViewsMap = map[string]string{
 	"feed_entries": `{{ define "title"}}{{ .feed.Title }} ({{ .total }}){{ end }}
 
 {{ define "content"}}
-<section class="page-header">
+<section class="page-header clearfix">
     <h1>{{ .feed.Title }} ({{ .total }})</h1>
-    <ul>
+    <ul class="left">
         <li>
             <a href="{{ route "feedEntries" "feedID" .feed.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ t "menu.show_only_unread_entries" }}</a>
         </li>
@@ -935,6 +950,21 @@ var templateViewsMap = map[string]string{
                 data-label-loading="{{ t "confirm.loading" }}"
                 data-url="{{ route "removeFeed" "feedID" .feed.ID }}"
                 data-redirect-url="{{ route "feeds" }}">{{ t "action.remove_feed" }}</a>
+        </li>
+    </ul>
+    <ul class="right">
+        <li>
+            <a href="#"
+                data-action="setView"
+                data-url="{{ route "updateFeedView" "feedID" .feed.ID }}"
+                {{ if ne .view "masonry" }}
+                    data-value="masonry">
+                    ❒ {{ t "form.prefs.label.masonry_view" }}
+                {{ else }}
+                    data-value="list">
+                    ≡ {{ t "form.prefs.label.list_view" }}
+                {{ end }}
+            </a>
         </li>
     </ul>
 </section>
@@ -1877,7 +1907,7 @@ var templateViewsMapChecksums = map[string]string{
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
 	"bookmark_entries":    "3b845054c20053908bd6a1ea1c0b1dd472a3b1c6a7732cd0e5b067d58663e846",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "74e338124d5c61ea06ee6e6b186bfe7a4e76753303f2354085e8729a02750d4b",
+	"category_entries":    "fde19f614f57aba772d64a26542cce59a351a7ccbce7babac4042b810c324ffb",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
@@ -1886,7 +1916,7 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_feed":           "ae256ca0ce7acda3afa6c60b4e100fec1c435e5413e9aeb43a4cb0eec1864761",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "aae9a8a5b21ace7010e7c2f3c8dba0c58e73ac26ced6f61e2cbe62ba36ba0011",
-	"feed_entries":        "0880c42e88cde47f3824e0953a285d3e51e369c48d2b14dfefc2d81f830fbfb9",
+	"feed_entries":        "bd780f63f9fdafbe9834c03168aef30ccb54e0d27272e6251f0a18ffed3a311d",
 	"feeds":               "fa2dad422445eca898c1daa4ab742691207a8c0d3c274eed84462bc610d22219",
 	"history_entries":     "f7b272ff7b6f30f7da7548e43a9a79f022281eb55545bf3c31f15d019ca668bc",
 	"import":              "5eb56cecaa4d369b9acc991a82be7617710c551089a2e99d34ce8b6e5c37df0a",

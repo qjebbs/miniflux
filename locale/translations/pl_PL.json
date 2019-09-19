@@ -270,6 +270,8 @@
     "form.prefs.label.timezone": "Strefa czasowa",
     "form.prefs.label.theme": "Wygląd",
     "form.prefs.label.view": "View",
+    "form.prefs.label.list_view": "List View",
+    "form.prefs.label.masonry_view": "Masonry View",
     "form.prefs.label.entry_sorting": "Sortowanie artykułów",
     "form.prefs.select.older_first": "Najstarsze wpisy jako pierwsze",
     "form.prefs.label.keyboard_shortcuts": "Włącz skróty klawiaturowe",

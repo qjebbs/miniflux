@@ -310,6 +310,29 @@ func (s *Storage) UpdateFeedError(feed *model.Feed) (err error) {
 	return nil
 }
 
+// UpdateFeedView updates a feed view setting.
+func (s *Storage) UpdateFeedView(userID int64, feedID int64, view string) error {
+	if _, ok := model.Views()[view]; !ok {
+		return fmt.Errorf("invalid view value: %v", view)
+	}
+	query := `UPDATE feeds SET view = $3 WHERE user_id=$1 AND id=$2`
+	result, err := s.db.Exec(query, userID, feedID, view)
+	if err != nil {
+		return fmt.Errorf("unable to set view for feed #%d: %v", feedID, err)
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("unable to set view for feed #%d: %v", feedID, err)
+	}
+
+	if count == 0 {
+		return errors.New("nothing has been updated")
+	}
+
+	return nil
+}
+
 // RemoveFeed removes a feed.
 func (s *Storage) RemoveFeed(userID, feedID int64) error {
 	result, err := s.db.Exec("DELETE FROM feeds WHERE id = $1 AND user_id = $2", feedID, userID)

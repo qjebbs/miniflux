@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     handleSubmitButtons();
     initImagesEvents();
+    initTouchHandlers();
 
     if (!document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {
         let keyboardHandler = new KeyboardHandler();
@@ -32,9 +33,6 @@ document.addEventListener("DOMContentLoaded", function () {
         keyboardHandler.on("P", () => forceProxyImages());
         keyboardHandler.listen();
     }
-
-    let touchHandler = new TouchHandler();
-    touchHandler.listen();
 
     onClick("a[data-save-entry]", (event) => handleSaveEntry(event.target));
     onClick("a[data-toggle-bookmark]", (event) => handleBookmark(event.target));

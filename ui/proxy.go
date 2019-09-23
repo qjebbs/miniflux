@@ -19,6 +19,7 @@ import (
 	"miniflux.app/http/request"
 	"miniflux.app/http/response"
 	"miniflux.app/http/response/html"
+	"miniflux.app/logger"
 )
 
 func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +64,10 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := http.NewRequest("GET", string(decodedURL), nil)
+	imageURL := string(decodedURL)
+	logger.Debug(`[Proxy] Fetching %q`, imageURL)
+
+	req, err := http.NewRequest("GET", imageURL, nil)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return

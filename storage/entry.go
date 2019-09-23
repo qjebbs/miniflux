@@ -90,7 +90,7 @@ func (s *Storage) CreateEntry(entry *model.Entry) error {
 	).Scan(&entry.ID, &entry.Status)
 
 	if err != nil {
-		return fmt.Errorf("unable to create entry %q (feed #%d): %v", entry.URL, entry.FeedID, err)
+		return fmt.Errorf("Unable to create entry %q (feed #%d): %v", entry.URL, entry.FeedID, err)
 	}
 
 	err = s.CreateEntriesMedia(model.Entries{entry})
@@ -185,9 +185,9 @@ func (s *Storage) UpdateEntryByID(entry *model.Entry) error {
 // EntryExists checks if an entry already exists based on its hash when refreshing a feed.
 func (s *Storage) EntryExists(entry *model.Entry) bool {
 	var result int
-	query := `SELECT count(*) as c FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`
+	query := `SELECT 1 FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`
 	s.db.QueryRow(query, entry.UserID, entry.FeedID, entry.Hash).Scan(&result)
-	return result >= 1
+	return result == 1
 }
 
 // cleanupEntries deletes from the database entries marked as "removed" and not visible anymore in the feed.

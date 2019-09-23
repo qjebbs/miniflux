@@ -17,8 +17,19 @@ import (
 func Serve(store *storage.Storage, pool *worker.Pool) {
 	logger.Info(`Starting scheduler...`)
 	go store.CreateMediasRunOnce()
-	go feedScheduler(store, pool, config.Opts.PollingFrequency(), config.Opts.BatchSize())
-	go cleanupScheduler(store, config.Opts.CleanupFrequency(), config.Opts.ArchiveReadDays())
+	go feedScheduler(
+		store,
+		pool,
+		config.Opts.PollingFrequency(),
+		config.Opts.BatchSize(),
+	)
+
+	go cleanupScheduler(
+		store,
+		config.Opts.CleanupFrequencyHours(),
+		config.Opts.CleanupArchiveReadDays(),
+		config.Opts.CleanupRemoveSessionsDays(),
+	)
 	if config.Opts.HasCacheService() {
 		go cacheScheduler(store, config.Opts.CacheFrequency())
 	}
@@ -37,11 +48,11 @@ func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency, batchSi
 	}
 }
 
-func cleanupScheduler(store *storage.Storage, frequency int, archiveDays int) {
+func cleanupScheduler(store *storage.Storage, frequency int, archiveDays int, sessionsDays int) {
 	c := time.Tick(time.Duration(frequency) * time.Hour)
 	for range c {
-		nbSessions := store.CleanOldSessions()
-		nbUserSessions := store.CleanOldUserSessions()
+		nbSessions := store.CleanOldSessions(sessionsDays)
+		nbUserSessions := store.CleanOldUserSessions(sessionsDays)
 		logger.Info("[Scheduler:Cleanup] Cleaned %d sessions and %d user sessions", nbSessions, nbUserSessions)
 
 		if err := store.ArchiveEntries(archiveDays); err != nil {

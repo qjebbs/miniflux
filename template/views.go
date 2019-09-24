@@ -287,10 +287,10 @@ var templateViewsMap = map[string]string{
                 data-url="{{ route "updateCategoryView" "categoryID" .category.ID }}"
                 {{ if ne .view "masonry" }}
                     data-value="masonry">
-                    ❒ {{ t "form.prefs.label.masonry_view" }}
+                    ❒ {{ t "form.prefs.select.view_masonry" }}
                 {{ else }}
                     data-value="list">
-                    ≡ {{ t "form.prefs.label.list_view" }}
+                    ≡ {{ t "form.prefs.select.view_list" }}
                 {{ end }}
             </a>
         </li>
@@ -959,10 +959,10 @@ var templateViewsMap = map[string]string{
                 data-url="{{ route "updateFeedView" "feedID" .feed.ID }}"
                 {{ if ne .view "masonry" }}
                     data-value="masonry">
-                    ❒ {{ t "form.prefs.label.masonry_view" }}
+                    ❒ {{ t "form.prefs.select.view_masonry" }}
                 {{ else }}
                     data-value="list">
-                    ≡ {{ t "form.prefs.label.list_view" }}
+                    ≡ {{ t "form.prefs.select.view_list" }}
                 {{ end }}
             </a>
         </li>
@@ -1597,14 +1597,14 @@ var templateViewsMap = map[string]string{
     <label for="form-theme">{{ t "form.prefs.label.theme" }}</label>
     <select id="form-theme" name="theme">
     {{ range $key, $value := .themes }}
-        <option value="{{ $key }}" {{ if eq $key $.form.Theme }}selected="selected"{{ end }}>{{ $value }}</option>
+        <option value="{{ $key }}" {{ if eq $key $.form.Theme }}selected="selected"{{ end }}>{{ t $value }}</option>
     {{ end }}
     </select>
 
     <label for="form-view">{{ t "form.prefs.label.view" }}</label>
     <select id="form-view" name="view">
     {{ range $key, $value := .views }}
-        <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ $value }}</option>
+        <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ t $value }}</option>
     {{ end }}
     </select>
 
@@ -1907,7 +1907,7 @@ var templateViewsMapChecksums = map[string]string{
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
 	"bookmark_entries":    "3b845054c20053908bd6a1ea1c0b1dd472a3b1c6a7732cd0e5b067d58663e846",
 	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "fde19f614f57aba772d64a26542cce59a351a7ccbce7babac4042b810c324ffb",
+	"category_entries":    "3ffb2334d1f7d7122cd7df70d87f13d2f7acfdf2f7f8b6319951da69b9d39840",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
 	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
@@ -1916,7 +1916,7 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_feed":           "ae256ca0ce7acda3afa6c60b4e100fec1c435e5413e9aeb43a4cb0eec1864761",
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "aae9a8a5b21ace7010e7c2f3c8dba0c58e73ac26ced6f61e2cbe62ba36ba0011",
-	"feed_entries":        "bd780f63f9fdafbe9834c03168aef30ccb54e0d27272e6251f0a18ffed3a311d",
+	"feed_entries":        "e6c62ef14304aaf8fc1509b22535cfd46b3f600ffa662682204e9fa60d747935",
 	"feeds":               "fa2dad422445eca898c1daa4ab742691207a8c0d3c274eed84462bc610d22219",
 	"history_entries":     "f7b272ff7b6f30f7da7548e43a9a79f022281eb55545bf3c31f15d019ca668bc",
 	"import":              "5eb56cecaa4d369b9acc991a82be7617710c551089a2e99d34ce8b6e5c37df0a",
@@ -1924,7 +1924,7 @@ var templateViewsMapChecksums = map[string]string{
 	"login":               "2e72d2d4b9786641b696bedbed5e10b04bdfd68254ddbbdb0a53cca621d200c7",
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
-	"settings":            "7fdae12cc04ed39fbb74f24f6c9dc2f732f2cf43e40a65a7bea8669584f1ec3a",
+	"settings":            "f17db61211493ece9b760465f44d0ea6213f51f507946bf36a5472a1ad5deb23",
 	"stat":                "8c01d0072d36787022da38889c4cb7cbbd3f49e7c00f4836967406a0d3a8d9db",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",

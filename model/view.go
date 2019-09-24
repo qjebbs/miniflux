@@ -16,9 +16,9 @@ const (
 // Views returns the list of available views.
 func Views() map[string]string {
 	return map[string]string{
-		"default": "Default",
-		"list":    "List",
-		"masonry": "Masonry",
+		"default": "form.prefs.select.view_default",
+		"list":    "form.prefs.select.view_list",
+		"masonry": "form.prefs.select.view_masonry",
 	}
 }
 

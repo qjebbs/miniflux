@@ -2,20 +2,26 @@ class RequestBuilder {
     constructor(url) {
         this.callback = null;
         this.url = url;
-        this.options = {};
-    }
-
-    withBody(body) {
         this.options = {
             method: "POST",
             cache: "no-cache",
             credentials: "include",
-            body: JSON.stringify(body),
+            body: null,
             headers: new Headers({
                 "Content-Type": "application/json",
                 "X-Csrf-Token": this.getCsrfToken()
             })
         };
+    }
+
+    withBody(body) {
+        this.options = Object.assign(this.options, {
+            body: JSON.stringify(body),
+            headers: new Headers({
+                "Content-Type": "application/json",
+                "X-Csrf-Token": this.getCsrfToken()
+            })
+        });
         return this;
     }
 
@@ -24,15 +30,12 @@ class RequestBuilder {
         for (let key in data) {
             form.append(key, data[key]);
         }
-        this.options = {
-            method: "POST",
-            cache: "no-cache",
-            credentials: "include",
+        this.options = Object.assign(this.options, {
             body: form,
             headers: new Headers({
                 "X-Csrf-Token": this.getCsrfToken()
             })
-        };
+        });
         return this;
     }
 

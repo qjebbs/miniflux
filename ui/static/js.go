@@ -41,10 +41,10 @@ isEventIgnored(event){return event.target.tagName==="INPUT"||event.target.tagNam
 isModifierKeyDown(event){return event.getModifierState("Control")||event.getModifierState("Alt")||event.getModifierState("Meta");}
 getKey(event){const mapping={'Esc':'Escape','Up':'ArrowUp','Down':'ArrowDown','Left':'ArrowLeft','Right':'ArrowRight'};for(let key in mapping){if(mapping.hasOwnProperty(key)&&key===event.key){return mapping[key];}}
 return event.key;}}
-class RequestBuilder{constructor(url){this.callback=null;this.url=url;this.options={};}
-withBody(body){this.options={method:"POST",cache:"no-cache",credentials:"include",body:JSON.stringify(body),headers:new Headers({"Content-Type":"application/json","X-Csrf-Token":this.getCsrfToken()})};return this;}
+class RequestBuilder{constructor(url){this.callback=null;this.url=url;this.options={method:"POST",cache:"no-cache",credentials:"include",body:null,headers:new Headers({"Content-Type":"application/json","X-Csrf-Token":this.getCsrfToken()})};}
+withBody(body){this.options=Object.assign(this.options,{body:JSON.stringify(body),headers:new Headers({"Content-Type":"application/json","X-Csrf-Token":this.getCsrfToken()})});return this;}
 withForm(data){let form=new FormData();for(let key in data){form.append(key,data[key]);}
-this.options={method:"POST",cache:"no-cache",credentials:"include",body:form,headers:new Headers({"X-Csrf-Token":this.getCsrfToken()})};return this;}
+this.options=Object.assign(this.options,{body:form,headers:new Headers({"X-Csrf-Token":this.getCsrfToken()})});return this;}
 withCallback(callback){this.callback=callback;return this;}
 getCsrfToken(){let element=document.querySelector("meta[name=X-CSRF-Token]");if(element!==null){return element.getAttribute("value");}
 return "";}
@@ -157,6 +157,6 @@ if("serviceWorker"in navigator){let scriptElement=document.getElementById("servi
 }
 
 var JavascriptsChecksums = map[string]string{
-	"app": "223c9775456dfb81045335f8bf49a8831f45e57f6a7a2d1502e28ea6c5eb627f",
+	"app": "4eb4540506704f3d4c502d41ba3a7195aa5ab151bccebb14e15fd44c4f21d4c6",
 	"sw":  "55fffa223919cc18572788fb9c62fccf92166c0eb5d3a1d6f91c31f24d020be9",
 }

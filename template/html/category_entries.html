@@ -21,10 +21,10 @@
                 data-url="{{ route "updateCategoryView" "categoryID" .category.ID }}"
                 {{ if ne .view "masonry" }}
                     data-value="masonry">
-                    ❒ {{ t "form.prefs.label.masonry_view" }}
+                    ❒ {{ t "form.prefs.select.view_masonry" }}
                 {{ else }}
                     data-value="list">
-                    ≡ {{ t "form.prefs.label.list_view" }}
+                    ≡ {{ t "form.prefs.select.view_list" }}
                 {{ end }}
             </a>
         </li>

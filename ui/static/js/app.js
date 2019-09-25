@@ -138,9 +138,11 @@ function toggleEntryStatus(element) {
     if (currentStatus === "read") {
         link.innerHTML = link.dataset.labelRead;
         link.dataset.value = "unread";
+        toast(link.dataset.toastUnread);
     } else {
         link.innerHTML = link.dataset.labelUnread;
         link.dataset.value = "read";
+        toast(link.dataset.toastRead);
     }
 
     if (element.classList.contains("item-status-" + currentStatus)) {
@@ -212,6 +214,7 @@ function saveEntry(element) {
     request.withCallback(() => {
         element.innerHTML = element.dataset.labelDone;
         element.dataset.completed = true;
+        toast(element.dataset.toastDone);
     });
     request.execute();
 }
@@ -238,9 +241,11 @@ function toggleBookmark(parentElement) {
         if (element.dataset.value === "star") {
             element.innerHTML = element.dataset.labelStar;
             element.dataset.value = "unstar";
+            toast(element.dataset.toastUnstar);
         } else {
             element.innerHTML = element.dataset.labelUnstar;
             element.dataset.value = "star";
+            toast(element.dataset.toastStar);
         }
     });
     request.execute();
@@ -668,4 +673,14 @@ function throttle(fn, delay, atleast) {
             timeout = setTimeout(() => fn(...args), delay);
         }
     }
+}
+
+function toast(msg) {
+    if (!msg) return;
+    document.querySelector('.toast-wrap .toast-msg').innerHTML = msg;
+    var toastWrapper = document.querySelector('.toast-wrap');
+    toastWrapper.classList.remove('toastAnimate');
+    setTimeout(function () {
+        toastWrapper.classList.add('toastAnimate');
+    }, 100);
 }

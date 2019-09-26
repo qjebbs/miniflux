@@ -116,9 +116,10 @@ function markPageAsRead() {
 
 // Handle entry status changes from the list view and entry view.
 function handleEntryStatus(element) {
+    let toasting = !element;
     let currentEntry = findEntry(element);
     if (currentEntry) {
-        toggleEntryStatus(currentEntry);
+        toggleEntryStatus(currentEntry, toasting);
         if (isListView() && currentEntry.classList.contains('current-item')) {
             goToNextListItem();
         }
@@ -126,7 +127,7 @@ function handleEntryStatus(element) {
 }
 
 // Change the entry status to the opposite value.
-function toggleEntryStatus(element) {
+function toggleEntryStatus(element, toasting) {
     let entryID = parseInt(element.dataset.id, 10);
     let link = element.querySelector("a[data-toggle-status]");
 
@@ -138,11 +139,15 @@ function toggleEntryStatus(element) {
     if (currentStatus === "read") {
         link.innerHTML = link.dataset.labelRead;
         link.dataset.value = "unread";
-        toast(link.dataset.toastUnread);
+        if (toasting) {
+            toast(link.dataset.toastUnread);
+        }
     } else {
         link.innerHTML = link.dataset.labelUnread;
         link.dataset.value = "read";
-        toast(link.dataset.toastRead);
+        if (toasting) {
+            toast(link.dataset.toastRead);
+        }
     }
 
     if (element.classList.contains("item-status-" + currentStatus)) {
@@ -179,9 +184,10 @@ function updateEntriesStatus(entryIDs, status, callback) {
 
 // Handle save entry from list view and entry view.
 function handleSaveEntry(element) {
+    let toasting = !element;
     let currentEntry = findEntry(element);
     if (currentEntry) {
-        saveEntry(currentEntry.querySelector("a[data-save-entry]"));
+        saveEntry(currentEntry.querySelector("a[data-save-entry]"), toasting);
     }
 }
 
@@ -199,7 +205,7 @@ function handleSetView(element) {
 }
 
 // Send the Ajax request to save an entry.
-function saveEntry(element) {
+function saveEntry(element, toasting) {
     if (!element) {
         return;
     }
@@ -214,21 +220,24 @@ function saveEntry(element) {
     request.withCallback(() => {
         element.innerHTML = element.dataset.labelDone;
         element.dataset.completed = true;
-        toast(element.dataset.toastDone);
+        if (toasting) {
+            toast(element.dataset.toastDone);
+        }
     });
     request.execute();
 }
 
 // Handle bookmark from the list view and entry view.
 function handleBookmark(element) {
+    let toasting = !element;
     let currentEntry = findEntry(element);
     if (currentEntry) {
-        toggleBookmark(currentEntry);
+        toggleBookmark(currentEntry, toasting);
     }
 }
 
 // Send the Ajax request and change the icon when bookmarking an entry.
-function toggleBookmark(parentElement) {
+function toggleBookmark(parentElement, toasting) {
     let element = parentElement.querySelector("a[data-toggle-bookmark]");
     if (!element) {
         return;
@@ -241,11 +250,15 @@ function toggleBookmark(parentElement) {
         if (element.dataset.value === "star") {
             element.innerHTML = element.dataset.labelStar;
             element.dataset.value = "unstar";
-            toast(element.dataset.toastUnstar);
+            if (toasting) {
+                toast(element.dataset.toastUnstar);
+            }
         } else {
             element.innerHTML = element.dataset.labelUnstar;
             element.dataset.value = "star";
-            toast(element.dataset.toastStar);
+            if (toasting) {
+                toast(element.dataset.toastStar);
+            }
         }
     });
     request.execute();

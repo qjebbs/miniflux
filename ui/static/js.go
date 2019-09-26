@@ -80,20 +80,20 @@ let searchInputElement=document.getElementById("search-input");if(searchInputEle
 function showKeyboardShortcuts(){let template=document.getElementById("keyboard-shortcuts");if(template!==null){ModalHandler.open(template.content);}}
 function markPageAsRead(){let items=DomHelper.getVisibleElements(".items .item");let entryIDs=[];items.forEach((element)=>{element.classList.add("item-status-read");entryIDs.push(parseInt(element.dataset.id,10));});if(entryIDs.length>0){updateEntriesStatus(entryIDs,"read",()=>{let element=document.querySelector("a[data-action=markPageAsRead]");let showOnlyUnread=false;if(element){showOnlyUnread=element.dataset.showOnlyUnread||false;}
 if(showOnlyUnread){window.location.reload();}else{goToPage("next",true);}});}}
-function handleEntryStatus(element){let currentEntry=findEntry(element);if(currentEntry){toggleEntryStatus(currentEntry);if(isListView()&&currentEntry.classList.contains('current-item')){goToNextListItem();}}}
-function toggleEntryStatus(element){let entryID=parseInt(element.dataset.id,10);let link=element.querySelector("a[data-toggle-status]");let currentStatus=link.dataset.value;let newStatus=currentStatus==="read"?"unread":"read";updateEntriesStatus([entryID],newStatus);if(currentStatus==="read"){link.innerHTML=link.dataset.labelRead;link.dataset.value="unread";toast(link.dataset.toastUnread);}else{link.innerHTML=link.dataset.labelUnread;link.dataset.value="read";toast(link.dataset.toastRead);}
+function handleEntryStatus(element){let toasting=!element;let currentEntry=findEntry(element);if(currentEntry){toggleEntryStatus(currentEntry,toasting);if(isListView()&&currentEntry.classList.contains('current-item')){goToNextListItem();}}}
+function toggleEntryStatus(element,toasting){let entryID=parseInt(element.dataset.id,10);let link=element.querySelector("a[data-toggle-status]");let currentStatus=link.dataset.value;let newStatus=currentStatus==="read"?"unread":"read";updateEntriesStatus([entryID],newStatus);if(currentStatus==="read"){link.innerHTML=link.dataset.labelRead;link.dataset.value="unread";if(toasting){toast(link.dataset.toastUnread);}}else{link.innerHTML=link.dataset.labelUnread;link.dataset.value="read";if(toasting){toast(link.dataset.toastRead);}}
 if(element.classList.contains("item-status-"+currentStatus)){element.classList.remove("item-status-"+currentStatus);element.classList.add("item-status-"+newStatus);}}
 function markEntryAsRead(element){if(element.classList.contains("item-status-unread")){element.classList.remove("item-status-unread");element.classList.add("item-status-read");let entryID=parseInt(element.dataset.id,10);updateEntriesStatus([entryID],"read");}}
 function updateEntriesStatus(entryIDs,status,callback){let url=document.body.dataset.entriesStatusUrl;let request=new RequestBuilder(url);request.withBody({entry_ids:entryIDs,status:status});request.withCallback(callback);request.execute();if(status==="read"){decrementUnreadCounter(1);}else{incrementUnreadCounter(1);}}
-function handleSaveEntry(element){let currentEntry=findEntry(element);if(currentEntry){saveEntry(currentEntry.querySelector("a[data-save-entry]"));}}
+function handleSaveEntry(element){let toasting=!element;let currentEntry=findEntry(element);if(currentEntry){saveEntry(currentEntry.querySelector("a[data-save-entry]"),toasting);}}
 function handleSetView(element){if(!element){return;}
 let request=new RequestBuilder(element.dataset.url);request.withForm({view:element.dataset.value});request.withCallback((response)=>{if(response.ok)location.reload();});request.execute();}
-function saveEntry(element){if(!element){return;}
+function saveEntry(element,toasting){if(!element){return;}
 if(element.dataset.completed){return;}
-element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.saveUrl);request.withCallback(()=>{element.innerHTML=element.dataset.labelDone;element.dataset.completed=true;toast(element.dataset.toastDone);});request.execute();}
-function handleBookmark(element){let currentEntry=findEntry(element);if(currentEntry){toggleBookmark(currentEntry);}}
-function toggleBookmark(parentElement){let element=parentElement.querySelector("a[data-toggle-bookmark]");if(!element){return;}
-element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.bookmarkUrl);request.withCallback(()=>{if(element.dataset.value==="star"){element.innerHTML=element.dataset.labelStar;element.dataset.value="unstar";toast(element.dataset.toastUnstar);}else{element.innerHTML=element.dataset.labelUnstar;element.dataset.value="star";toast(element.dataset.toastStar);}});request.execute();}
+element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.saveUrl);request.withCallback(()=>{element.innerHTML=element.dataset.labelDone;element.dataset.completed=true;if(toasting){toast(element.dataset.toastDone);}});request.execute();}
+function handleBookmark(element){let toasting=!element;let currentEntry=findEntry(element);if(currentEntry){toggleBookmark(currentEntry,toasting);}}
+function toggleBookmark(parentElement,toasting){let element=parentElement.querySelector("a[data-toggle-bookmark]");if(!element){return;}
+element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.bookmarkUrl);request.withCallback(()=>{if(element.dataset.value==="star"){element.innerHTML=element.dataset.labelStar;element.dataset.value="unstar";if(toasting){toast(element.dataset.toastUnstar);}}else{element.innerHTML=element.dataset.labelUnstar;element.dataset.value="star";if(toasting){toast(element.dataset.toastStar);}}});request.execute();}
 function handleCache(element){let currentEntry=findEntry(element);if(currentEntry){toggleCache(document.querySelector(".entry"));}}
 function toggleCache(parentElement){let element=parentElement.querySelector("a[data-toggle-cache]");if(!element){return;}
 element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.cacheUrl);request.withCallback(()=>{if(element.dataset.value==="cached"){element.innerHTML=element.dataset.labelCached;element.dataset.value="uncached";}else{element.innerHTML=element.dataset.labelUncached;element.dataset.value="cached";}});request.execute();}
@@ -158,6 +158,6 @@ if("serviceWorker"in navigator){let scriptElement=document.getElementById("servi
 }
 
 var JavascriptsChecksums = map[string]string{
-	"app": "fc129bd42398f3d0ef5ddecdf43fbd381f6297d8f2be2d57704cd828d4bbd9e3",
+	"app": "f499a9cdb5c78f25d92885d21437a9afb3dd06f5598e782a154791c1e9cff6ef",
 	"sw":  "55fffa223919cc18572788fb9c62fccf92166c0eb5d3a1d6f91c31f24d020be9",
 }

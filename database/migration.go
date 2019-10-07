@@ -24,17 +24,22 @@ func Migrate(db *sql.DB) {
 		err                    error
 	)
 
-	db.QueryRow(`select version from schema_version`).Scan(&versionString)
-
-	vers := strings.Split(versionString, ".")
-	currentVersion, err = strconv.Atoi(vers[0])
+	err = db.QueryRow(`select version from schema_version`).Scan(&versionString)
 	if err != nil {
-		logger.Fatal("[Migrate] %v", err)
-	}
-	if len(vers) > 1 {
-		currecurrentSubVersion, err = strconv.Atoi(vers[1])
+		versionString = "0"
+		currentVersion = 0
+		currecurrentSubVersion = 0
+	} else {
+		vers := strings.Split(versionString, ".")
+		currentVersion, err = strconv.Atoi(vers[0])
 		if err != nil {
 			logger.Fatal("[Migrate] %v", err)
+		}
+		if len(vers) > 1 {
+			currecurrentSubVersion, err = strconv.Atoi(vers[1])
+			if err != nil {
+				logger.Fatal("[Migrate] %v", err)
+			}
 		}
 	}
 	fmt.Println("Current schema version:", versionString)

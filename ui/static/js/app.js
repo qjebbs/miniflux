@@ -691,7 +691,7 @@ function throttle(fn, delay, atleast) {
 function toast(msg) {
     if (!msg) return;
     document.querySelector('.toast-wrap .toast-msg').innerHTML = msg;
-    var toastWrapper = document.querySelector('.toast-wrap');
+    let toastWrapper = document.querySelector('.toast-wrap');
     toastWrapper.classList.remove('toastAnimate');
     setTimeout(function () {
         toastWrapper.classList.add('toastAnimate');

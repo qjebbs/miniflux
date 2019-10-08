@@ -69,8 +69,8 @@
         </li>
     </div>
     {{ end }}
+    {{ if gt (len .starredByFeed) 0 }}
     <div class="item list">
-        {{ if gt (len .starredByFeed) 0 }}
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.feeds.starred" }}
@@ -91,10 +91,10 @@
             </ul>
             {{ end }}
         </li>
-        {{ end }}
     </div>
+    {{ end }}
+    {{ if gt (len .starredByCategory) 0 }}
     <div class="item list">
-        {{ if gt (len .starredByCategory) 0 }}
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.categories.starred" }}
@@ -110,8 +110,8 @@
             </ul>
             {{ end }}
         </li>
-        {{ end }}
     </div>
+    {{ end }}
 </div>
 
 {{ end }}

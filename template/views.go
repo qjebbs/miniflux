@@ -1709,8 +1709,8 @@ var templateViewsMap = map[string]string{
         </li>
     </div>
     {{ end }}
+    {{ if gt (len .starredByFeed) 0 }}
     <div class="item list">
-        {{ if gt (len .starredByFeed) 0 }}
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.feeds.starred" }}
@@ -1731,10 +1731,10 @@ var templateViewsMap = map[string]string{
             </ul>
             {{ end }}
         </li>
-        {{ end }}
     </div>
+    {{ end }}
+    {{ if gt (len .starredByCategory) 0 }}
     <div class="item list">
-        {{ if gt (len .starredByCategory) 0 }}
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.categories.starred" }}
@@ -1750,8 +1750,8 @@ var templateViewsMap = map[string]string{
             </ul>
             {{ end }}
         </li>
-        {{ end }}
     </div>
+    {{ end }}
 </div>
 
 {{ end }}
@@ -1930,7 +1930,7 @@ var templateViewsMapChecksums = map[string]string{
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "f17db61211493ece9b760465f44d0ea6213f51f507946bf36a5472a1ad5deb23",
-	"stat":                "8c01d0072d36787022da38889c4cb7cbbd3f49e7c00f4836967406a0d3a8d9db",
+	"stat":                "a365580cc6cb99f9d1c4706d429c604ac86207145369def6c08b521749e2f191",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

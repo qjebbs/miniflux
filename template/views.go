@@ -1645,7 +1645,7 @@ var templateViewsMap = map[string]string{
     <h1>{{ t "page.stat.title" }}</h1>
 </section>
 
-<div class='items{{ if ne .view "list" }} masonry{{ end }}'>
+<div class='items{{ if ne .view "list" }} masonry col{{ .colCount }}{{ end }}'>
     <div class="item-sizer"></div>
     <div class="item list">
         <div class="list-header">
@@ -1709,6 +1709,25 @@ var templateViewsMap = map[string]string{
         </li>
     </div>
     {{ end }}
+    {{ if gt (len .starredByCategory) 0 }}
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.categories.starred" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .starredByCategory }}
+            <ul class="list-item">
+                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
+                        <span class="title">{{ .Category.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
+    {{ end }}
     {{ if gt (len .starredByFeed) 0 }}
     <div class="item list">
         <div class="list-header">
@@ -1726,25 +1745,6 @@ var templateViewsMap = map[string]string{
                         {{ end }}
                         {{ .Feed.Title }}
                     </span>
-                    <span class="count">{{ .Count }}</span>
-                </a>
-            </ul>
-            {{ end }}
-        </li>
-    </div>
-    {{ end }}
-    {{ if gt (len .starredByCategory) 0 }}
-    <div class="item list">
-        <div class="list-header">
-            <span class="item-title">
-                {{ t "page.stat.categories.starred" }}
-            </span>
-        </div>
-        <li class="list-body">
-            {{ range .starredByCategory }}
-            <ul class="list-item">
-                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
-                        <span class="title">{{ .Category.Title }}</span>
                     <span class="count">{{ .Count }}</span>
                 </a>
             </ul>
@@ -1930,7 +1930,7 @@ var templateViewsMapChecksums = map[string]string{
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "f17db61211493ece9b760465f44d0ea6213f51f507946bf36a5472a1ad5deb23",
-	"stat":                "a365580cc6cb99f9d1c4706d429c604ac86207145369def6c08b521749e2f191",
+	"stat":                "6559255ca7908d3f55f0ed2318c5e9d1d4f3609e9d4c09ad0cf4112fceff658c",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

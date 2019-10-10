@@ -5,7 +5,7 @@
     <h1>{{ t "page.stat.title" }}</h1>
 </section>
 
-<div class='items{{ if ne .view "list" }} masonry{{ end }}'>
+<div class='items{{ if ne .view "list" }} masonry col{{ .colCount }}{{ end }}'>
     <div class="item-sizer"></div>
     <div class="item list">
         <div class="list-header">
@@ -69,6 +69,25 @@
         </li>
     </div>
     {{ end }}
+    {{ if gt (len .starredByCategory) 0 }}
+    <div class="item list">
+        <div class="list-header">
+            <span class="item-title">
+                {{ t "page.stat.categories.starred" }}
+            </span>
+        </div>
+        <li class="list-body">
+            {{ range .starredByCategory }}
+            <ul class="list-item">
+                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
+                        <span class="title">{{ .Category.Title }}</span>
+                    <span class="count">{{ .Count }}</span>
+                </a>
+            </ul>
+            {{ end }}
+        </li>
+    </div>
+    {{ end }}
     {{ if gt (len .starredByFeed) 0 }}
     <div class="item list">
         <div class="list-header">
@@ -86,25 +105,6 @@
                         {{ end }}
                         {{ .Feed.Title }}
                     </span>
-                    <span class="count">{{ .Count }}</span>
-                </a>
-            </ul>
-            {{ end }}
-        </li>
-    </div>
-    {{ end }}
-    {{ if gt (len .starredByCategory) 0 }}
-    <div class="item list">
-        <div class="list-header">
-            <span class="item-title">
-                {{ t "page.stat.categories.starred" }}
-            </span>
-        </div>
-        <li class="list-body">
-            {{ range .starredByCategory }}
-            <ul class="list-item">
-                    <a href="{{ route "categoryEntriesStarred" "categoryID" .Category.ID }}">
-                        <span class="title">{{ .Category.Title }}</span>
                     <span class="count">{{ .Count }}</span>
                 </a>
             </ul>

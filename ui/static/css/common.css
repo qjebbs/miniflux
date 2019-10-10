@@ -802,6 +802,18 @@ body.modal-open {
     .masonry .item-sizer, .masonry .item {
         width: calc((100% - 20px)/3);
     }
+    .masonry.col1 .item-sizer, .masonry.col1 .item {
+        width: 100%;
+    }
+    .masonry.col2 .item-sizer, .masonry.col2 .item {
+        width: calc((100% - 10px)/2);
+    }
+    .masonry.col3 .item-sizer, .masonry.col3 .item {
+        width: calc((100% - 20px)/3);
+    }
+    .masonry.col4 .item-sizer, .masonry.col4 .item {
+        width: calc((100% - 30px)/4);
+    }
 }
 
 .masonry .thumbnail{

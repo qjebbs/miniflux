@@ -5,8 +5,9 @@
 package ui // import "miniflux.app/ui"
 
 import (
-	"miniflux.app/config"
 	"net/http"
+
+	"miniflux.app/config"
 
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
@@ -80,6 +81,7 @@ func (h *handler) showStarredEntryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
+	view.Set("bodyClass", "smaller")
 
 	if config.Opts.HasCacheService() {
 		countMedias, countCached, _, err := h.store.MediaStatisticsByEntry(entryID)

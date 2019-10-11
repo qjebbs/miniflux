@@ -59,6 +59,7 @@ func (h *handler) showEditEntryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	view.Set("bodyClass", "smaller")
 
 	html.OK(w, r, view.Render("edit_entry"))
 }

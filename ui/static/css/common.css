@@ -204,6 +204,10 @@ a:hover {
         max-width: 950px;
     }
 
+    body.smaller {
+        max-width: 750px;
+    }
+
     .header {
         margin-bottom: 0;
     }

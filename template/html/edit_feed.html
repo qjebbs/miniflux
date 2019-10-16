@@ -77,7 +77,7 @@
         <label for="form-view">{{ t "form.prefs.label.view" }}</label>
         <select id="form-view" name="view">
             {{ range $key, $value := .views }}
-                <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ $value }}</option>
+                <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ t $value }}</option>
             {{ end }}
         </select>
         

@@ -81,7 +81,12 @@ function setFocusToSearchInput(event) {
 function showKeyboardShortcuts() {
     let template = document.getElementById("keyboard-shortcuts");
     if (template !== null) {
-        ModalHandler.open(template.content);
+        let container = ModalHandler.open(template.content);
+        let modal = container.querySelector(".modal");
+        if (modal === null) return;
+        setTimeout(() => {
+            modal.classList.add("fade");
+        }, 100)
     }
 }
 

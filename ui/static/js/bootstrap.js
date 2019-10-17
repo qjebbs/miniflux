@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     onClick("a[data-toggle-cache]", (event) => handleCache(event.target));
     onClick("a[data-set-read]", (event) => setEntryStatusRead(findEntry(event.target)), true);
-    onClick("a[data-action=showActionMenu]", (event) => handleActionMenu(event.target));
+    onClick("a[data-action=showActionMenu]", (event) => ActionMenu.switch(event.target));
     onClick("button[data-action=submitEntry]", (event) => EntryEditorHandler.submitHandler(event));
 
     onClick("a[data-confirm]", (event) => handleConfirmationMessage(event.target, (url, redirectURL) => {

@@ -15,6 +15,7 @@ body {
     text-rendering: optimizeLegibility;
     color: var(--body-color);
     background: var(--body-background);
+    position: relative;
 }
 
 hr {
@@ -558,12 +559,22 @@ a.button {
     margin: 0;
 }
 
-.modal-left {
-    left: 0;
+.left {
+    left: -360px;
 }
 
-.modal-right {
+.right {
+    right: -360px;
+}
+
+.modal.left.fade {
+    left: 0;
+    transition: left 0.2s ease-out;
+}
+
+.modal.right.fade {
     right: 0;
+    transition: right 0.2s ease-out;
 }
 
 .btn-close-modal {
@@ -579,11 +590,6 @@ a.button {
 
 .btn-close-modal:hover {
     color: #999;
-}
-
-body.modal-open {
-    position: fixed;
-    width: 100%;
 }
 
 /* Tabs */

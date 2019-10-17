@@ -192,7 +192,7 @@ var templateCommonMap = map[string]string{
         {{template "content" .}}
     </main>
     <template id="keyboard-shortcuts">
-        <div class="modal modal-left">
+        <div class="modal left">
             <a href="#" class="btn-close-modal">x</a>
             <h3>{{ t "page.keyboard_shortcuts.title" }}</h3>
 
@@ -239,7 +239,7 @@ var templateCommonMap = map[string]string{
         </div>
     </template>
     <template id="action-menus">
-        <div class="modal modal-right">
+        <div class="modal right">
             <a href="#" class="btn-close-modal">x</a>
             <div class="action-menus">
                 <ul id="element-links">
@@ -281,6 +281,6 @@ var templateCommonMap = map[string]string{
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "4faa91e2eae150c5e4eab4d258e039dfdd413bab7602f0009360e6d52898e353",
 	"item_meta":        "bcfd7fa4990152a8608f67fd9f109c4ee4f5d17292f806d811aed200a77f04f0",
-	"layout":           "6216de73d12c7461e4288173e3421f771f1f1409e77823c1929a5f74182d1998",
+	"layout":           "89ebe7f3469eba839b469f9849df6cc26b829e12b6099e9d86589d2f63d13dab",
 	"pagination":       "3386e90c6e1230311459e9a484629bc5d5bf39514a75ef2e73bbbc61142f7abb",
 }

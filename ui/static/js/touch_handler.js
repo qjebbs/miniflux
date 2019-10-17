@@ -145,16 +145,19 @@ class TouchHandler {
 
 function initTouchHandlers() {
     let touchHandler = new TouchHandler('touch-item');
+    touchHandler.addEventListener("start", (e) => {
+        ActionMenu.close();
+    });
     touchHandler.addEventListener("move", (e) => {
         if (e.direction == "left") {
             let menu = document.querySelector("#modal-container .modal");
             if (menu) {
                 menu.style.transform = "translateX(" + (1 - e.phase) * 100 + "%)";
             } else {
-                handleActionMenu(e.target);
+                ActionMenu.initialize(e.target);
             }
         } else {
-            ModalHandler.close();
+            ActionMenu.close();
         }
     });
     touchHandler.addEventListener("active", (e) => {
@@ -162,7 +165,7 @@ function initTouchHandlers() {
             toggleEntryStatus(e.target);
         }
     });
-    touchHandler.addEventListener("end", (e) => ModalHandler.close());
+    touchHandler.addEventListener("end", (e) => ActionMenu.close());
     touchHandler.listen();
 
     let entryContentElement = document.querySelector(".entry-content");

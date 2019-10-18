@@ -859,7 +859,7 @@ article.feed-parsing-error {
 
 .list .list-header {
     padding: 0.5em;
-    color: var(--current-item-border-color);
+    color: var(--category-color);
 }
 
 .list .list-item {
@@ -875,7 +875,6 @@ article.feed-parsing-error {
 .list .list-item .title {
     display: inline-block;
     width: 80%;
-    color: var(--title-color);
     overflow: hidden;
     text-overflow:ellipsis;
     white-space: nowrap;
@@ -883,7 +882,6 @@ article.feed-parsing-error {
 
 .list .list-item .count {
     float: right;
-    color: var(--counter-color);
     width: 20%;
     text-align: right;
 }

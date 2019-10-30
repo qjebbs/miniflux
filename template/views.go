@@ -1101,6 +1101,11 @@ var templateViewsMap = map[string]string{
                     <li>
                         {{ t "page.feeds.last_check" }} <time datetime="{{ isodate .CheckedAt }}" title="{{ isodate .CheckedAt }}">{{ elapsed $.user.Timezone .CheckedAt }}</time>
                     </li>
+                    {{ if gt .UnreadCount 0 }}
+                    <li>
+                        {{ t "page.feeds.unread" }} <span class="unread-counter">{{ .UnreadCount }}</span>
+                    </li>
+                    {{ end }}
                 </ul>
                 <ul>
                     <li>
@@ -1922,7 +1927,7 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
 	"entry":               "b53ecc9afa8daa414b714a0f29d8ef5dcc3a31601adc042742b13502c7ed290c",
 	"feed_entries":        "e6c62ef14304aaf8fc1509b22535cfd46b3f600ffa662682204e9fa60d747935",
-	"feeds":               "fa2dad422445eca898c1daa4ab742691207a8c0d3c274eed84462bc610d22219",
+	"feeds":               "55317035a4c008a720294c1858e9dc626f19e222ae41498db67dbb537ba7a456",
 	"history_entries":     "f7b272ff7b6f30f7da7548e43a9a79f022281eb55545bf3c31f15d019ca668bc",
 	"import":              "5eb56cecaa4d369b9acc991a82be7617710c551089a2e99d34ce8b6e5c37df0a",
 	"integrations":        "d73ad06ca242f39f4575c30e4b357d9ee058973ccd82312a86955fe4a24b36cf",

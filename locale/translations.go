@@ -105,6 +105,7 @@ var translations = map[string]string{
     "page.edit_user.title": "Benutzer bearbeiten: %s",
     "page.feeds.title": "Abonnements",
     "page.feeds.last_check": "Letzte Aktualisierung:",
+    "page.feeds.unread": "Ungelesen:",
     "page.feeds.error_count": [
         "%d Fehler",
         "%d Fehler"
@@ -470,6 +471,7 @@ var translations = map[string]string{
     "page.edit_user.title": "Edit User: %s",
     "page.feeds.title": "Feeds",
     "page.feeds.last_check": "Last check:",
+    "page.feeds.unread": "Unread:",
     "page.feeds.error_count": [
         "%d error",
         "%d errors"
@@ -814,6 +816,7 @@ var translations = map[string]string{
     "page.edit_user.title": "Editar usuario: %s",
     "page.feeds.title": "Fuentes",
     "page.feeds.last_check": "Última verificación:",
+    "page.feeds.unread": "No leídos:",
     "page.feeds.error_count": [
         "%d error",
         "%d errores"
@@ -1159,6 +1162,7 @@ var translations = map[string]string{
     "page.edit_user.title": "Modification de l'utilisateur : %s",
     "page.feeds.title": "Abonnements",
     "page.feeds.last_check": "Dernière vérification :",
+    "page.feeds.unread": "Non lus:",
     "page.feeds.error_count": [
         "%d erreur",
         "%d erreurs"
@@ -1524,6 +1528,7 @@ var translations = map[string]string{
     "page.edit_user.title": "Modifica utente: %s",
     "page.feeds.title": "Feed",
     "page.feeds.last_check": "Ultimo controllo:",
+    "page.feeds.unread": "Da leggere:",
     "page.feeds.error_count": [
         "%d errore",
         "%d errori"
@@ -1869,6 +1874,7 @@ var translations = map[string]string{
     "page.edit_user.title": "Bewerk gebruiker: %s",
     "page.feeds.title": "Feeds",
     "page.feeds.last_check": "Laatste update:",
+    "page.feeds.unread": "Ongelezen:",
     "page.feeds.error_count": [
         "%d error",
         "%d errors"
@@ -2233,6 +2239,7 @@ var translations = map[string]string{
     "page.edit_user.title": "Edytuj użytkownika: %s",
     "page.feeds.title": "Kanały",
     "page.feeds.last_check": "Ostatnia aktualizacja:",
+    "page.feeds.unread": "Nieprzeczytane:",
     "page.feeds.error_count": [
         "%d błąd",
         "%d błąd",
@@ -2604,6 +2611,7 @@ var translations = map[string]string{
     "page.edit_user.title": "Изменить пользователя: %s",
     "page.feeds.title": "Подписки",
     "page.feeds.last_check": "Последняя проверка:",
+    "page.feeds.unread": "Непрочитано:",
     "page.feeds.error_count": [
         "%d ошибка",
         "%d ошибки",
@@ -2956,6 +2964,7 @@ var translations = map[string]string{
     "page.edit_user.title": "编辑用户 : %s",
     "page.feeds.title": "源",
     "page.feeds.last_check": "最后检查时间：",
+    "page.feeds.unread": "未读:",
     "page.feeds.error_count": [
         "%d 错误"
     ],
@@ -3198,6 +3207,7 @@ var translations = map[string]string{
     "Unable to parse Atom feed: %q": "无法解析Atom源: %q",
     "Unable to parse JSON feed: %q": "无法解析JSON源: %q",
     "Unable to parse RDF feed: %q": "无法解析RDF源: %q",
+    "Unable to read data: %q": "无法读取数据: %q",
     "Unable to normalize encoding: %q": "无法正则化编码: %q",
     "Category not found for this user": "未找到该用户的这一分类",
     "This feed is empty": "该源是空的",
@@ -3210,13 +3220,13 @@ var translations = map[string]string{
 }
 
 var translationsChecksums = map[string]string{
-	"de_DE": "28e50071371171ed3fecd27722d5fade2046ed7e57ca3fa0719aa125168db83e",
-	"en_US": "0c825f4c12c216642ea9b0130d4e0e8a86fcc945969716054ab7db2c0d618197",
-	"es_ES": "0245559599d50376d84fac30a733c12c8a477d403e66d6357aabc95a35e3ea5a",
-	"fr_FR": "8287c32db09cb968238daa34fc194b56161323b27e87291d2ccf82301fc2979e",
-	"it_IT": "1e75372419b49d17ec068d45c294db3a8d0d282971f84188d7254fd661edd032",
-	"nl_NL": "aa79b5d0f31496a28ef63152a57eb1de2d47ef3d8b98f7fd297f4e0326893968",
-	"pl_PL": "c465d55a2a1a06e48280520ef40c9ccb8f65dd96569feb80ca9f3222ddeed84a",
-	"ru_RU": "5c61ca5f3bdd828be8cdda32512ef61f19ec9837caab8261b352362b6aa7bd26",
-	"zh_CN": "835448a9e8070a584e962c1f15e4ad6e8fd67dc19ec8d652864daa2950d1cd63",
+	"de_DE": "6db589853ae6295bf05ad54844ac79673435e2cd09867f12e6cc99369b62ff80",
+	"en_US": "e9c55d67d65931667dfc9837a53bb3cede3441aa72d2aeb0685bd0ed1de3dd25",
+	"es_ES": "1577bc1d8be655921ed42da9c7c9211c4808632a5983dcc51d19946dc32844f5",
+	"fr_FR": "91eb4c060889ec1a5a91672014b2c954ac8267574e85608d451910f8c11f5eec",
+	"it_IT": "fdb1d9c31379e7848b3edd0c81761d9ae2a6856c2c9df7cff2a128f0a61c55e5",
+	"nl_NL": "29d87d80bccb82332d233b0aae952e8e219be7828d6f5d7a2d3613ddd8525008",
+	"pl_PL": "ba5cd73028a8569f1de02895817ef080990a90b26e7ff6daad3a3652c9b97cab",
+	"ru_RU": "72b9ca0dd32de9c981d92017efa202a53b63fc58639190e5b832a0665644ddec",
+	"zh_CN": "0d94ababbf88229330acccc0b042b53074ac7029f62e4e21828e63d7bae37620",
 }

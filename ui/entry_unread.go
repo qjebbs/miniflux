@@ -87,7 +87,6 @@ func (h *handler) showUnreadEntryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("user", user)
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
-	view.Set("bodyClass", "smaller")
 
 	if config.Opts.HasCacheService() {
 		countMedias, countCached, _, err := h.store.MediaStatisticsByEntry(entryID)

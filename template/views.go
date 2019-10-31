@@ -1649,11 +1649,14 @@ var templateViewsMap = map[string]string{
 <section class="page-header">
     <h1>{{ t "page.stat.title" }}</h1>
 </section>
-
-<div class='items{{ if ne .view "list" }} masonry col{{ .colCount }}{{ end }}'>
+{{ if and (eq .countUnread 0) (eq .countStarred 0) }}
+    <p class="alert alert-info">{{ t "alert.no_unread_entry" }}</p>
+{{ else }}
+<div class='items{{ if ne .view "list" }} masonry col-2{{ end }}'>
     <div class="item-sizer"></div>
+    {{ if gt (len .unreadByCategory) 0 }}
     <div class="item list">
-        <div class="list-header">
+        <!-- <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.articles" }}
             </span>
@@ -1671,8 +1674,7 @@ var templateViewsMap = map[string]string{
                     <span class="count">{{ .countStarred }}</span>
                 </a>
             </ul>
-        </li>
-        {{ if gt (len .unreadByCategory) 0 }}
+        </li> -->
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.categories.unread" }}
@@ -1688,8 +1690,8 @@ var templateViewsMap = map[string]string{
             </ul>
             {{ end }}
         </li>
-        {{ end }}
     </div>
+    {{ end }}
     {{ if gt (len .unreadByFeed) 0 }}
     <div class="item list">
         <div class="list-header">
@@ -1758,6 +1760,7 @@ var templateViewsMap = map[string]string{
     </div>
     {{ end }}
 </div>
+{{ end }}
 
 {{ end }}
 `,
@@ -1935,7 +1938,7 @@ var templateViewsMapChecksums = map[string]string{
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",
 	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
 	"settings":            "f17db61211493ece9b760465f44d0ea6213f51f507946bf36a5472a1ad5deb23",
-	"stat":                "6559255ca7908d3f55f0ed2318c5e9d1d4f3609e9d4c09ad0cf4112fceff658c",
+	"stat":                "2084858c0050c5740b82886cc879e0c884bece52f044f4f1d1183b4df3eb6ec6",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
 	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
 }

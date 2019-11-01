@@ -40,28 +40,40 @@ func (h *handler) showStatPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	unreadByFeed, err := h.store.UnreadStatByFeed(user.ID)
-	if err != nil {
-		html.ServerError(w, r, err)
-		return
-	}
+	var unreadByFeed, unreadByCategory, starredByFeed, starredByCategory, emptyStat model.EntryStat
 
-	unreadByCategory, err := h.store.UnreadStatByCategory(user.ID)
-	if err != nil {
-		html.ServerError(w, r, err)
-		return
-	}
+	emptyStat = make(model.EntryStat, 0)
+	if countUnread == 0 {
+		unreadByFeed = emptyStat
+		unreadByCategory = emptyStat
+	} else {
+		unreadByFeed, err = h.store.UnreadStatByFeed(user.ID)
+		if err != nil {
+			html.ServerError(w, r, err)
+			return
+		}
 
-	starredByFeed, err := h.store.StarredStatByFeed(user.ID)
-	if err != nil {
-		html.ServerError(w, r, err)
-		return
+		unreadByCategory, err = h.store.UnreadStatByCategory(user.ID)
+		if err != nil {
+			html.ServerError(w, r, err)
+			return
+		}
 	}
+	if countStarred == 0 {
+		starredByFeed = emptyStat
+		starredByCategory = emptyStat
+	} else {
+		starredByFeed, err = h.store.StarredStatByFeed(user.ID)
+		if err != nil {
+			html.ServerError(w, r, err)
+			return
+		}
 
-	starredByCategory, err := h.store.StarredStatByCategory(user.ID)
-	if err != nil {
-		html.ServerError(w, r, err)
-		return
+		starredByCategory, err = h.store.StarredStatByCategory(user.ID)
+		if err != nil {
+			html.ServerError(w, r, err)
+			return
+		}
 	}
 
 	view.Set("unreadByFeed", unreadByFeed)

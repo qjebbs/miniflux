@@ -10,7 +10,7 @@
 <div class='items{{ if ne .view "list" }} masonry col-2{{ end }}'>
     <div class="item-sizer"></div>
     {{ if gt (len .unreadByCategory) 0 }}
-    <div class="item list">
+    <div class="item statistics-list">
         <!-- <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.articles" }}
@@ -48,7 +48,7 @@
     </div>
     {{ end }}
     {{ if gt (len .unreadByFeed) 0 }}
-    <div class="item list">
+    <div class="item statistics-list">
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.feeds.unread" }}
@@ -72,7 +72,7 @@
     </div>
     {{ end }}
     {{ if gt (len .starredByCategory) 0 }}
-    <div class="item list">
+    <div class="item statistics-list">
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.categories.starred" }}
@@ -91,7 +91,7 @@
     </div>
     {{ end }}
     {{ if gt (len .starredByFeed) 0 }}
-    <div class="item list">
+    <div class="item statistics-list">
         <div class="list-header">
             <span class="item-title">
                 {{ t "page.stat.feeds.starred" }}

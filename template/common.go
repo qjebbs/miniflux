@@ -28,14 +28,14 @@ var templateCommonMap = map[string]string{
         <li>
             {{ if .pageEntriesType}}
                 {{ if eq .pageEntriesType "all" }}
-                <a href="{{ route "feedEntriesAll" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+                    <a href="{{ route "feedEntriesAll" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
                 {{ else if eq .pageEntriesType "starred" }}
-                <a href="{{ route "feedEntriesStarred" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+                    <a href="{{ route "feedEntriesStarred" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
                 {{ else }}
-                <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+                    <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
                 {{ end }}
             {{ else }}
-            <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+                <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
             {{ end }}
         </li>
         <li>
@@ -137,7 +137,7 @@ var templateCommonMap = map[string]string{
         <nav>
             <div class="logo">
                 <a href="{{ route "stat" }}">Mini<span>flux</span></a>
-            </div> 
+            </div>
             <ul>
                 <li id="menu-home" {{ if eq .menu "home" }}class="active"{{ end }} title="{{ t "tooltip.keyboard_shortcuts" "g u" }}">
                     <a href="{{ route "stat" }}" data-page="home">{{ t "menu.home" }}</a>
@@ -281,7 +281,7 @@ var templateCommonMap = map[string]string{
 
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "4faa91e2eae150c5e4eab4d258e039dfdd413bab7602f0009360e6d52898e353",
-	"item_meta":        "bcfd7fa4990152a8608f67fd9f109c4ee4f5d17292f806d811aed200a77f04f0",
-	"layout":           "ac873fedc9db826c44e31d09b1ab6494b4cb0aa1c552965dcf2745ea1305b243",
+	"item_meta":        "5372ca4315982a88b9fe973a6bf23363ca26f972542f64db3cb5885dab3e9950",
+	"layout":           "9bd0a3343c2e752d7e4ef503b254e84555207c92c889e3d8c19336996c5039ed",
 	"pagination":       "3386e90c6e1230311459e9a484629bc5d5bf39514a75ef2e73bbbc61142f7abb",
 }

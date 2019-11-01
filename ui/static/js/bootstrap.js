@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     handleSubmitButtons();
-    initImagesEvents();
+    initMasonryLayout();
     initTouchHandlers();
 
     if (!document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {

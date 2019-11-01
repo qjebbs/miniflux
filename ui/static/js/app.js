@@ -614,7 +614,7 @@ function handleConfirmationMessage(linkElement, callback) {
     containerElement.appendChild(questionElement);
 }
 
-function initImagesEvents() {
+function initMasonryLayout() {
     let layoutCallback;
     let msnryElement = document.querySelector('.masonry');
     if (msnryElement) {
@@ -678,6 +678,16 @@ function addProxyParam(url) {
     return parts[0] + '?' + params.join('&');
 }
 
+function toast(msg) {
+    if (!msg) return;
+    document.querySelector('.toast-wrap .toast-msg').innerHTML = msg;
+    let toastWrapper = document.querySelector('.toast-wrap');
+    toastWrapper.classList.remove('toastAnimate');
+    setTimeout(function () {
+        toastWrapper.classList.add('toastAnimate');
+    }, 100);
+}
+
 function throttle(fn, delay, atleast) {
     var timeout = null,
         startTime = new Date();
@@ -691,14 +701,4 @@ function throttle(fn, delay, atleast) {
             timeout = setTimeout(() => fn(...args), delay);
         }
     }
-}
-
-function toast(msg) {
-    if (!msg) return;
-    document.querySelector('.toast-wrap .toast-msg').innerHTML = msg;
-    let toastWrapper = document.querySelector('.toast-wrap');
-    toastWrapper.classList.remove('toastAnimate');
-    setTimeout(function () {
-        toastWrapper.classList.add('toastAnimate');
-    }, 100);
 }

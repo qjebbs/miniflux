@@ -255,12 +255,14 @@ function toggleBookmark(parentElement, toasting) {
         if (element.dataset.value === "star") {
             element.innerHTML = element.dataset.labelStar;
             element.dataset.value = "unstar";
+            parentElement.classList.remove('item-starred');
             if (toasting) {
                 toast(element.dataset.toastUnstar);
             }
         } else {
             element.innerHTML = element.dataset.labelUnstar;
             element.dataset.value = "star";
+            parentElement.classList.add('item-starred');
             if (toasting) {
                 toast(element.dataset.toastStar);
             }

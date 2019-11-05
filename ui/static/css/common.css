@@ -796,7 +796,17 @@ a.button {
 }
 
 .thumbnail {
+    margin-top: 10px;
     display: none;
+}
+
+.masonry .thumbnail img {
+    width: 100%;
+    background-color: white;
+}
+
+.masonry .item-status-read:not(.item-starred) .thumbnail{
+    opacity: 0.2;
 }
 
 /* masonry view */
@@ -824,15 +834,6 @@ a.button {
 
 .masonry .thumbnail{
     display: inherit;
-}
-
-.masonry .thumbnail img {
-    width: 100%;
-    padding-top: 10px;
-}
-
-.masonry .item-status-read:not(.item-starred) .thumbnail{
-    opacity: 0.2;
 }
 
 /* Feeds list */

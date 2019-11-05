@@ -806,7 +806,7 @@ a.button {
 
 @media (min-width: 600px) {
     .masonry .item-sizer, .masonry .item {
-        width: calc((100% - 20px)/3);
+        width: calc((100% - 10px)/2);
     }
     .masonry.col-1 .item-sizer, .masonry.col-1 .item {
         width: 100%;

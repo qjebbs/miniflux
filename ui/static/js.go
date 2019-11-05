@@ -94,7 +94,7 @@ if(element.dataset.completed){return;}
 element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.saveUrl);request.withCallback(()=>{element.innerHTML=element.dataset.labelDone;element.dataset.completed=true;if(toasting){toast(element.dataset.toastDone);}});request.execute();}
 function handleBookmark(element){let toasting=!element;let currentEntry=findEntry(element);if(currentEntry){toggleBookmark(currentEntry,toasting);}}
 function toggleBookmark(parentElement,toasting){let element=parentElement.querySelector("a[data-toggle-bookmark]");if(!element){return;}
-element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.bookmarkUrl);request.withCallback(()=>{if(element.dataset.value==="star"){element.innerHTML=element.dataset.labelStar;element.dataset.value="unstar";if(toasting){toast(element.dataset.toastUnstar);}}else{element.innerHTML=element.dataset.labelUnstar;element.dataset.value="star";if(toasting){toast(element.dataset.toastStar);}}});request.execute();}
+element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.bookmarkUrl);request.withCallback(()=>{if(element.dataset.value==="star"){element.innerHTML=element.dataset.labelStar;element.dataset.value="unstar";parentElement.classList.remove('item-starred');if(toasting){toast(element.dataset.toastUnstar);}}else{element.innerHTML=element.dataset.labelUnstar;element.dataset.value="star";parentElement.classList.add('item-starred');if(toasting){toast(element.dataset.toastStar);}}});request.execute();}
 function handleCache(element){let currentEntry=findEntry(element);if(currentEntry){toggleCache(document.querySelector(".entry"));}}
 function toggleCache(parentElement){let element=parentElement.querySelector("a[data-toggle-cache]");if(!element){return;}
 element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.cacheUrl);request.withCallback(()=>{if(element.dataset.value==="cached"){element.innerHTML=element.dataset.labelCached;element.dataset.value="uncached";}else{element.innerHTML=element.dataset.labelUncached;element.dataset.value="cached";}});request.execute();}
@@ -160,6 +160,6 @@ if("serviceWorker"in navigator){let scriptElement=document.getElementById("servi
 }
 
 var JavascriptsChecksums = map[string]string{
-	"app": "f3a8e07e592d064dbd8336ce2a2296a8bd934f54e013e868759baf926d8ac0a7",
+	"app": "fcdc2317407c72abcae65e42c3174e4970334e403cdb91efdf995492f0a866a8",
 	"sw":  "55fffa223919cc18572788fb9c62fccf92166c0eb5d3a1d6f91c31f24d020be9",
 }

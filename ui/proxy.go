@@ -40,10 +40,19 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 
 	imageURL := string(decodedURL)
 	logger.Debug(`[Proxy] Fetching %q`, imageURL)
+	defer func() {
+		if err != nil {
+			// the server may blocked by some image host
+			// anyway, nowthat the proxy cannot work
+			// redirect client to get image from the original URL
+			logger.Debug(`[Proxy] Redirect to original URL due to error: %q.`, err)
+			html.Redirect(w, r, imageURL)
+		}
+	}()
 
 	req, err := http.NewRequest("GET", imageURL, nil)
 	if err != nil {
-		html.ServerError(w, r, err)
+		// deferred and redirected
 		return
 	}
 	req.Header.Add("User-Agent", client.DefaultUserAgent)
@@ -55,13 +64,13 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := clt.Do(req)
 	if err != nil {
-		html.ServerError(w, r, err)
+		// deferred and redirected
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		html.NotFound(w, r)
+		html.Redirect(w, r, imageURL)
 		return
 	}
 

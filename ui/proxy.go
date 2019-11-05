@@ -40,10 +40,10 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		html.BadRequest(w, r, errors.New("Unable to decode this URL"))
 		return
 	}
-	decodedURLStr := string(decodedURL)
+	imageURL := string(decodedURL)
 
 	userID := request.UserID(r)
-	media, err := h.store.UserMediaByURL(decodedURLStr, userID)
+	media, err := h.store.UserMediaByURL(imageURL, userID)
 	etag := crypto.HashFromBytes(decodedURL)
 
 	if err == nil && media.Cached {
@@ -59,12 +59,11 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 	proxyImages := config.Opts.ProxyImages()
 	if proxyParam != "force" &&
 		(proxyImages == "none" ||
-			(proxyImages == "http-only" && url.IsHTTPS(decodedURLStr))) {
-		html.Redirect(w, r, decodedURLStr)
+			(proxyImages == "http-only" && url.IsHTTPS(imageURL))) {
+		html.Redirect(w, r, imageURL)
 		return
 	}
 
-	imageURL := string(decodedURL)
 	logger.Debug(`[Proxy] Fetching %q`, imageURL)
 
 	req, err := http.NewRequest("GET", imageURL, nil)
@@ -89,6 +88,10 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 	if resp.StatusCode != http.StatusOK {
 		req.Header.Add("Referer", media.Referrer)
 		resp, err = clt.Do(req)
+		if err != nil {
+			html.ServerError(w, r, err)
+			return
+		}
 		if resp.StatusCode != http.StatusOK {
 			html.NotFound(w, r)
 			return

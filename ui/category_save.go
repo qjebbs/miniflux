@@ -31,7 +31,7 @@ func (h *handler) saveCategory(w http.ResponseWriter, r *http.Request) {
 	view.Set("form", categoryForm)
 	view.Set("menu", "categories")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 
 	if err := categoryForm.Validate(); err != nil {

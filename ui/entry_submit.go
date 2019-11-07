@@ -42,7 +42,7 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 	v.Set("form", entryForm)
 	v.Set("feeds", feeds)
 	v.Set("user", user)
-	v.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	v.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	v.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	v.Set("defaultUserAgent", client.DefaultUserAgent)
 

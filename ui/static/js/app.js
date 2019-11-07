@@ -209,6 +209,19 @@ function handleSetView(element) {
     request.execute();
 }
 
+// Handle toggle NSFW action for pages.
+function handleNSFW() {
+    let element = document.querySelector("a[data-action=nsfw]");
+    if (!element || !element.dataset.url) {
+        return;
+    }
+    let request = new RequestBuilder(element.dataset.url);
+    request.withCallback((response) => {
+        if (response.ok) location.reload();
+    });
+    request.execute();
+}
+
 // Send the Ajax request to save an entry.
 function saveEntry(element, toasting) {
     if (!element) {

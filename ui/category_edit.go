@@ -47,7 +47,7 @@ func (h *handler) showEditCategoryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("views", model.Views())
 	view.Set("menu", "categories")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 
 	html.OK(w, r, view.Render("edit_category"))

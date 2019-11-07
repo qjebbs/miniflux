@@ -16,10 +16,13 @@ import (
 )
 
 // CountUnreadEntries returns the number of unread entries.
-func (s *Storage) CountUnreadEntries(userID int64) int {
+// If nsfw is enabled, it doesn't take nsfw entries into count
+func (s *Storage) CountUnreadEntries(userID int64, nsfw bool) int {
 	builder := s.NewEntryQueryBuilder(userID)
 	builder.WithStatus(model.EntryStatusUnread)
-
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	n, err := builder.CountEntries()
 	if err != nil {
 		logger.Error(`store: unable to count unread entries for user #%d: %v`, userID, err)
@@ -331,6 +334,29 @@ func (s *Storage) FlushHistory(userID int64) error {
 // MarkAllAsRead updates all user entries to the read status.
 func (s *Storage) MarkAllAsRead(userID int64) error {
 	query := `UPDATE entries SET status=$1 WHERE user_id=$2 AND status=$3`
+	result, err := s.db.Exec(query, model.EntryStatusRead, userID, model.EntryStatusUnread)
+	if err != nil {
+		return fmt.Errorf(`store: unable to mark all entries as read: %v`, err)
+	}
+
+	count, _ := result.RowsAffected()
+	logger.Debug("[Storage:MarkAllAsRead] %d items marked as read", count)
+
+	return nil
+}
+
+// MarkAllAsReadExceptNSFW updates all user entries except nsfw ones to the read status
+func (s *Storage) MarkAllAsReadExceptNSFW(userID int64) error {
+	query := `
+		UPDATE entries 
+		SET status=$1
+		WHERE id in (
+			SELECT e.id 
+			FROM feeds f
+			INNER JOIN entries e ON f.id = e.feed_id
+			WHERE e.user_id=$2 AND e.status=$3 AND f.nsfw = 'f'
+		)
+	`
 	result, err := s.db.Exec(query, model.EntryStatusRead, userID, model.EntryStatusUnread)
 	if err != nil {
 		return fmt.Errorf(`store: unable to mark all entries as read: %v`, err)

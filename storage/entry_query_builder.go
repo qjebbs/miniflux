@@ -137,6 +137,12 @@ func (e *EntryQueryBuilder) WithoutStatus(status string) *EntryQueryBuilder {
 	return e
 }
 
+// WithoutNSFW excludes entries whose feed marked as Not Safe For Work.
+func (e *EntryQueryBuilder) WithoutNSFW() *EntryQueryBuilder {
+	e.conditions = append(e.conditions, "f.nsfw = 'f'")
+	return e
+}
+
 // WithOrder set the sorting order.
 func (e *EntryQueryBuilder) WithOrder(order string) *EntryQueryBuilder {
 	e.order = order

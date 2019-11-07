@@ -33,7 +33,7 @@ func (h *handler) showAddEntryPage(w http.ResponseWriter, r *http.Request) {
 
 	view.Set("feeds", feeds)
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("defaultUserAgent", client.DefaultUserAgent)
 	view.Set("form", &form.EntryForm{FeedID: 0})

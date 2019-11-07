@@ -2,14 +2,14 @@
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
-package ui  // import "miniflux.app/ui"
+package ui // import "miniflux.app/ui"
 
 import (
 	"net/http"
 
 	"miniflux.app/http/client"
-	"miniflux.app/http/response/html"
 	"miniflux.app/http/request"
+	"miniflux.app/http/response/html"
 	"miniflux.app/http/route"
 	"miniflux.app/logger"
 	"miniflux.app/reader/subscription"
@@ -37,7 +37,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 	v.Set("categories", categories)
 	v.Set("menu", "feeds")
 	v.Set("user", user)
-	v.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	v.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	v.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	v.Set("defaultUserAgent", client.DefaultUserAgent)
 
@@ -95,7 +95,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 		v.Set("form", subscriptionForm)
 		v.Set("menu", "feeds")
 		v.Set("user", user)
-		v.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+		v.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 		v.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 
 		html.OK(w, r, v.Render("choose_subscription"))

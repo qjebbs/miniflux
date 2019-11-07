@@ -21,11 +21,12 @@ type SessionData struct {
 	Theme              string `json:"theme"`
 	View               string `json:"view"`
 	PocketRequestToken string `json:"pocket_request_token"`
+	NSFW               string `json:"nsfw"`
 }
 
 func (s SessionData) String() string {
-	return fmt.Sprintf(`CSRF=%q, OAuth2State=%q, FlashMsg=%q, FlashErrMsg=%q, Lang=%q, Theme=%q, View=%q, PocketTkn=%q`,
-		s.CSRF, s.OAuth2State, s.FlashMessage, s.FlashErrorMessage, s.Language, s.Theme, s.View, s.PocketRequestToken)
+	return fmt.Sprintf(`CSRF=%q, OAuth2State=%q, FlashMsg=%q, FlashErrMsg=%q, Lang=%q, Theme=%q, View=%q, PocketTkn=%q, NSFW=%q`,
+		s.CSRF, s.OAuth2State, s.FlashMessage, s.FlashErrorMessage, s.Language, s.Theme, s.View, s.PocketRequestToken, s.NSFW)
 }
 
 // Value converts the session data to JSON.

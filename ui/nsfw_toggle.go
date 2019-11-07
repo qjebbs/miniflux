@@ -9,19 +9,15 @@ import (
 
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/json"
+	"miniflux.app/ui/session"
 )
 
-func (h *handler) markAllAsRead(w http.ResponseWriter, r *http.Request) {
-	var err error
+func (h *handler) toggleNSFW(w http.ResponseWriter, r *http.Request) {
+	sess := session.New(h.store, request.SessionID(r))
 	if request.IsNSFWEnabled(r) {
-		err = h.store.MarkAllAsReadExceptNSFW(request.UserID(r))
+		sess.SetNSFW("show")
 	} else {
-		err = h.store.MarkAllAsRead(request.UserID(r))
-	}
-
-	if err != nil {
-		json.ServerError(w, r, err)
-		return
+		sess.SetNSFW("hide")
 	}
 	json.OK(w, r, "OK")
 }

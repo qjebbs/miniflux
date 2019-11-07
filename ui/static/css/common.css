@@ -229,6 +229,10 @@ a:hover {
         font-size: 1.0em;
     }
 
+    .header li.mobile-only {
+        display: none;
+    }
+
     .page-header ul,
     .page-footer ul {
         margin-left: 0;

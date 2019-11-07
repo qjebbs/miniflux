@@ -43,7 +43,7 @@ func (h *handler) updateCategory(w http.ResponseWriter, r *http.Request) {
 	view.Set("category", category)
 	view.Set("menu", "categories")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 
 	if err := categoryForm.Validate(); err != nil {

@@ -24,8 +24,13 @@ func (h *handler) showStatPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
+
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithStatus(model.EntryStatusUnread)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	countUnread, err := builder.CountEntries()
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -34,6 +39,9 @@ func (h *handler) showStatPage(w http.ResponseWriter, r *http.Request) {
 
 	builder = h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithStarred()
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	countStarred, err := builder.CountEntries()
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -47,13 +55,13 @@ func (h *handler) showStatPage(w http.ResponseWriter, r *http.Request) {
 		unreadByFeed = emptyStat
 		unreadByCategory = emptyStat
 	} else {
-		unreadByFeed, err = h.store.UnreadStatByFeed(user.ID)
+		unreadByFeed, err = h.store.UnreadStatByFeed(user.ID, nsfw)
 		if err != nil {
 			html.ServerError(w, r, err)
 			return
 		}
 
-		unreadByCategory, err = h.store.UnreadStatByCategory(user.ID)
+		unreadByCategory, err = h.store.UnreadStatByCategory(user.ID, nsfw)
 		if err != nil {
 			html.ServerError(w, r, err)
 			return
@@ -63,13 +71,13 @@ func (h *handler) showStatPage(w http.ResponseWriter, r *http.Request) {
 		starredByFeed = emptyStat
 		starredByCategory = emptyStat
 	} else {
-		starredByFeed, err = h.store.StarredStatByFeed(user.ID)
+		starredByFeed, err = h.store.StarredStatByFeed(user.ID, nsfw)
 		if err != nil {
 			html.ServerError(w, r, err)
 			return
 		}
 
-		starredByCategory, err = h.store.StarredStatByCategory(user.ID)
+		starredByCategory, err = h.store.StarredStatByCategory(user.ID, nsfw)
 		if err != nil {
 			html.ServerError(w, r, err)
 			return

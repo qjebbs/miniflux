@@ -21,6 +21,7 @@ func (h *handler) showStarredPage(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
+	nsfw := request.IsNSFWEnabled(r)
 
 	offset := request.QueryIntParam(r, "offset", 0)
 	builder := h.store.NewEntryQueryBuilder(user.ID)
@@ -30,6 +31,9 @@ func (h *handler) showStarredPage(w http.ResponseWriter, r *http.Request) {
 	builder.WithDirection(user.EntryDirection)
 	builder.WithOffset(offset)
 	builder.WithLimit(nbItemsPerPage)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 
 	entries, err := builder.GetEntries()
 	if err != nil {
@@ -51,7 +55,7 @@ func (h *handler) showStarredPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("pagination", getPagination(route.Path(h.router, "starred"), count, offset))
 	view.Set("menu", "starred")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("pageEntriesType", "starred")

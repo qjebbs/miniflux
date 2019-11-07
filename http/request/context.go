@@ -26,6 +26,7 @@ const (
 	FlashErrorMessageContextKey
 	PocketRequestTokenContextKey
 	ClientIPContextKey
+	NSFWContextKey
 )
 
 // IsAdminUser checks if the logged user is administrator.
@@ -77,6 +78,11 @@ func UserView(r *http.Request) string {
 		view = "list"
 	}
 	return view
+}
+
+// IsNSFWEnabled returns the current NSFW setting.
+func IsNSFWEnabled(r *http.Request) bool {
+	return getContextStringValue(r, NSFWContextKey) == "hide"
 }
 
 // CSRF returns the current CSRF token.

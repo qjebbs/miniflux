@@ -102,19 +102,23 @@ func (s *Storage) Categories(userID int64) (model.Categories, error) {
 }
 
 // CategoriesWithFeedCount returns all categories with the number of feeds.
-func (s *Storage) CategoriesWithFeedCount(userID int64) (model.Categories, error) {
+func (s *Storage) CategoriesWithFeedCount(userID int64, nsfw bool) (model.Categories, error) {
 	query := `
 		SELECT
 			c.id,
 			c.user_id,
 			c.title,
-			(SELECT count(*) FROM feeds WHERE feeds.category_id=c.id) AS count
+			(SELECT count(*) FROM feeds WHERE feeds.category_id=c.id %s) AS count
 		FROM categories c
 		WHERE
 			user_id=$1
 		ORDER BY c.title ASC
 	`
-
+	nsfwCond := ""
+	if nsfw {
+		nsfwCond = "AND feeds.nsfw = 'f'"
+	}
+	query = fmt.Sprintf(query, nsfwCond)
 	rows, err := s.db.Query(query, userID)
 	if err != nil {
 		return nil, fmt.Errorf(`store: unable to fetch categories: %v`, err)

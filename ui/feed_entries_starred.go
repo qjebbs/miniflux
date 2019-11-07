@@ -63,7 +63,7 @@ func (h *handler) showFeedEntriesStarredPage(w http.ResponseWriter, r *http.Requ
 	view.Set("pagination", getPagination(route.Path(h.router, "feedEntriesStarred", "feedID", feed.ID), count, offset))
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("showOnlyStarredEntries", true)

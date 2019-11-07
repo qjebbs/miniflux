@@ -36,12 +36,14 @@ func New(tpl *template.Engine, r *http.Request, sess *session.Session) *View {
 	b := &View{tpl, r, make(map[string]interface{})}
 	theme := request.UserTheme(r)
 	view := request.UserView(r)
+	nsfw := request.IsNSFWEnabled(r)
 	b.params["menu"] = ""
 	b.params["csrf"] = request.CSRF(r)
 	b.params["flashMessage"] = sess.FlashMessage(request.FlashMessage(r))
 	b.params["flashErrorMessage"] = sess.FlashErrorMessage(request.FlashErrorMessage(r))
 	b.params["theme"] = theme
 	b.params["view"] = view
+	b.params["nsfw"] = nsfw
 	b.params["theme_checksum"] = static.StylesheetsChecksums[theme]
 	b.params["app_js_checksum"] = static.JavascriptsChecksums["app"]
 	b.params["sw_js_checksum"] = static.JavascriptsChecksums["sw"]

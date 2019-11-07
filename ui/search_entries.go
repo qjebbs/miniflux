@@ -22,6 +22,8 @@ func (h *handler) showSearchEntriesPage(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
+
 	searchQuery := request.QueryStringParam(r, "q", "")
 	offset := request.QueryIntParam(r, "offset", 0)
 	builder := h.store.NewEntryQueryBuilder(user.ID)
@@ -29,6 +31,9 @@ func (h *handler) showSearchEntriesPage(w http.ResponseWriter, r *http.Request) 
 	builder.WithoutStatus(model.EntryStatusRemoved)
 	builder.WithOffset(offset)
 	builder.WithLimit(nbItemsPerPage)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 
 	entries, err := builder.GetEntries()
 	if err != nil {
@@ -53,7 +58,7 @@ func (h *handler) showSearchEntriesPage(w http.ResponseWriter, r *http.Request) 
 	view.Set("pagination", pagination)
 	view.Set("menu", "search")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("pageEntriesType", "all")

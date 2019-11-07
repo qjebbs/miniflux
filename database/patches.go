@@ -57,6 +57,12 @@ func (p *patcher) do() error {
 			return err
 		}
 	}
+	if !p.columnExists("feeds", "nsfw") {
+		_, err = p.db.Exec("alter table feeds add column nsfw bool default 'f';")
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

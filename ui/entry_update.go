@@ -54,7 +54,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 	view.Set("form", entryForm)
 	view.Set("feeds", feeds)
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 
 	if err := entryForm.ValidateModification(); err != nil {

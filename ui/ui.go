@@ -138,6 +138,9 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool, feedHa
 	uiRouter.HandleFunc("/logout", handler.logout).Name("logout").Methods("GET")
 	uiRouter.HandleFunc("/", handler.showLoginPage).Name("login").Methods("GET")
 
+	// Miscellaneous
+	uiRouter.HandleFunc("/nsfw", handler.toggleNSFW).Name("nsfw").Methods("POST")
+
 	router.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
 		w.Write([]byte("User-agent: *\nDisallow: /"))

@@ -76,6 +76,7 @@ func (s *Storage) Feeds(userID int64) (model.Feeds, error) {
 			f.cache_media,
 			f.view,
 			f.disabled,
+			f.nsfw,
 			f.category_id,
 			c.title as category_title,
 			fi.icon_id,
@@ -120,6 +121,7 @@ func (s *Storage) Feeds(userID int64) (model.Feeds, error) {
 			&feed.CacheMedia,
 			&feed.View,
 			&feed.Disabled,
+			&feed.NSFW,
 			&feed.Category.ID,
 			&feed.Category.Title,
 			&iconID,
@@ -141,8 +143,8 @@ func (s *Storage) Feeds(userID int64) (model.Feeds, error) {
 	return feeds, nil
 }
 
-// FeedsWithCounters returns all feeds of the given user with counters of read and unread entries.
-func (s *Storage) FeedsWithCounters(userID int64) (model.Feeds, error) {
+// FeedsExcludeNSFW returns all feeds of the given user,  exclude NSFW ones.
+func (s *Storage) FeedsExcludeNSFW(userID int64) (model.Feeds, error) {
 	feeds := make(model.Feeds, 0)
 	query := `
 		SELECT
@@ -154,21 +156,29 @@ func (s *Storage) FeedsWithCounters(userID int64) (model.Feeds, error) {
 			f.last_modified_header,
 			f.user_id,
 			f.checked_at at time zone u.timezone,
-			f.parsing_error_count, f.parsing_error_msg,
-			f.scraper_rules, f.rewrite_rules, f.crawler, f.user_agent,
-			f.username, f.password, f.cache_media, f.view, f.disabled,
-			f.category_id, c.title as category_title,
+			f.parsing_error_count,
+			f.parsing_error_msg,
+			f.scraper_rules,
+			f.rewrite_rules,
+			f.crawler,
+			f.user_agent,
+			f.username,
+			f.password,
+			f.cache_media,
+			f.view,
+			f.disabled,
+			f.nsfw,
+			f.category_id,
+			c.title as category_title,
 			fi.icon_id,
-			u.timezone,
-			(SELECT count(*) FROM entries WHERE entries.feed_id=f.id AND status='unread') as unread_count,
-			(SELECT count(*) FROM entries WHERE entries.feed_id=f.id AND status='read') as read_count
+			u.timezone
 		FROM feeds f
 		LEFT JOIN categories c ON c.id=f.category_id
 		LEFT JOIN feed_icons fi ON fi.feed_id=f.id
 		LEFT JOIN users u ON u.id=f.user_id
 		WHERE
-			f.user_id=$1
-		ORDER BY f.parsing_error_count DESC, unread_count DESC, lower(f.title) ASC
+			f.user_id=$1 AND f.nsfw = 'f'
+		ORDER BY f.parsing_error_count DESC, lower(f.title) ASC
 	`
 	rows, err := s.db.Query(query, userID)
 	if err != nil {
@@ -202,6 +212,96 @@ func (s *Storage) FeedsWithCounters(userID int64) (model.Feeds, error) {
 			&feed.CacheMedia,
 			&feed.View,
 			&feed.Disabled,
+			&feed.NSFW,
+			&feed.Category.ID,
+			&feed.Category.Title,
+			&iconID,
+			&tz,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf(`store: unable to fetch feeds row: %v`, err)
+		}
+
+		if iconID != nil {
+			feed.Icon = &model.FeedIcon{FeedID: feed.ID, IconID: iconID.(int64)}
+		}
+
+		feed.CheckedAt = timezone.Convert(tz, feed.CheckedAt)
+		feeds = append(feeds, &feed)
+	}
+
+	return feeds, nil
+}
+
+// FeedsWithCounters returns all feeds of the given user with counters of read and unread entries.
+func (s *Storage) FeedsWithCounters(userID int64, nsfw bool) (model.Feeds, error) {
+	feeds := make(model.Feeds, 0)
+	query := `
+		SELECT
+			f.id,
+			f.feed_url,
+			f.site_url,
+			f.title,
+			f.etag_header,
+			f.last_modified_header,
+			f.user_id,
+			f.checked_at at time zone u.timezone,
+			f.parsing_error_count, f.parsing_error_msg,
+			f.scraper_rules, f.rewrite_rules, f.crawler, f.user_agent,
+			f.username, f.password, f.cache_media, f.view, f.disabled,
+			f.nsfw,
+			f.category_id, c.title as category_title,
+			fi.icon_id,
+			u.timezone,
+			(SELECT count(*) FROM entries WHERE entries.feed_id=f.id AND status='unread') as unread_count,
+			(SELECT count(*) FROM entries WHERE entries.feed_id=f.id AND status='read') as read_count
+		FROM feeds f
+		LEFT JOIN categories c ON c.id=f.category_id
+		LEFT JOIN feed_icons fi ON fi.feed_id=f.id
+		LEFT JOIN users u ON u.id=f.user_id
+		WHERE
+			f.user_id=$1 %s
+		ORDER BY f.parsing_error_count DESC, unread_count DESC, lower(f.title) ASC
+	`
+	nsfwCond := ""
+	if nsfw {
+		nsfwCond = "AND f.nsfw = 'f'"
+	}
+	query = fmt.Sprintf(query, nsfwCond)
+	rows, err := s.db.Query(query, userID)
+	if err != nil {
+		return nil, fmt.Errorf(`store: unable to fetch feeds: %v`, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var feed model.Feed
+		var iconID interface{}
+		var tz string
+		feed.Category = &model.Category{UserID: userID}
+
+		err := rows.Scan(
+			&feed.ID,
+			&feed.FeedURL,
+			&feed.SiteURL,
+			&feed.Title,
+			&feed.EtagHeader,
+			&feed.LastModifiedHeader,
+			&feed.UserID,
+			&feed.CheckedAt,
+			&feed.ParsingErrorCount,
+			&feed.ParsingErrorMsg,
+			&feed.ScraperRules,
+			&feed.RewriteRules,
+			&feed.Crawler,
+			&feed.UserAgent,
+			&feed.Username,
+			&feed.Password,
+			&feed.CacheMedia,
+			&feed.View,
+			&feed.Disabled,
+			&feed.NSFW,
 			&feed.Category.ID,
 			&feed.Category.Title,
 			&iconID,
@@ -253,10 +353,12 @@ func (s *Storage) FeedByID(userID, feedID int64) (*model.Feed, error) {
 			f.password,
 			f.view,
 			f.disabled,
+			f.nsfw,
 			f.category_id,
 			c.title as category_title,
 			fi.icon_id,
-			u.timezone
+			u.timezone,
+			f.nsfw
 		FROM feeds f
 		LEFT JOIN categories c ON c.id=f.category_id
 		LEFT JOIN feed_icons fi ON fi.feed_id=f.id
@@ -285,10 +387,12 @@ func (s *Storage) FeedByID(userID, feedID int64) (*model.Feed, error) {
 		&feed.Password,
 		&feed.View,
 		&feed.Disabled,
+		&feed.NSFW,
 		&feed.Category.ID,
 		&feed.Category.Title,
 		&iconID,
 		&tz,
+		&feed.NSFW,
 	)
 
 	switch {
@@ -385,9 +489,10 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			password=$15,
 			cache_media=$16,
 			view=$17,
-			disabled=$18
+			disabled=$18,
+			nsfw=$19
 		WHERE
-			id=$19 AND user_id=$20
+			id=$20 AND user_id=$21
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -408,6 +513,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.CacheMedia,
 		feed.View,
 		feed.Disabled,
+		feed.NSFW,
 		feed.ID,
 		feed.UserID,
 	)

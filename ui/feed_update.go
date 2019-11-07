@@ -51,7 +51,7 @@ func (h *handler) updateFeed(w http.ResponseWriter, r *http.Request) {
 	view.Set("feed", feed)
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("defaultUserAgent", client.DefaultUserAgent)
 

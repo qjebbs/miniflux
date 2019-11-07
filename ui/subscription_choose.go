@@ -8,8 +8,8 @@ import (
 	"net/http"
 
 	"miniflux.app/http/client"
-	"miniflux.app/http/response/html"
 	"miniflux.app/http/request"
+	"miniflux.app/http/response/html"
 	"miniflux.app/http/route"
 	"miniflux.app/ui/form"
 	"miniflux.app/ui/session"
@@ -35,7 +35,7 @@ func (h *handler) showChooseSubscriptionPage(w http.ResponseWriter, r *http.Requ
 	view.Set("categories", categories)
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("defaultUserAgent", client.DefaultUserAgent)
 

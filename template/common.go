@@ -136,10 +136,10 @@ var templateCommonMap = map[string]string{
     <header class="header">
         <nav>
             <div class="logo">
-                <a href="{{ route "stat" }}">Mini<span>flux</span></a>
+                <a href="{{ route "stat" }}">Mini<span>flux{{ if .nsfw }}∙{{ end }}</span></a>
             </div>
             <ul>
-                <li id="menu-home" {{ if eq .menu "home" }}class="active"{{ end }} title="{{ t "tooltip.keyboard_shortcuts" "g u" }}">
+                <li class="mobile-only" {{ if eq .menu "home" }}class="active"{{ end }}>
                     <a href="{{ route "stat" }}" data-page="home">{{ t "menu.home" }}</a>
                 </li>
                 <li {{ if eq .menu "unread" }}class="active"{{ end }} title="{{ t "tooltip.keyboard_shortcuts" "g u" }}">
@@ -170,6 +170,9 @@ var templateCommonMap = map[string]string{
                 </li>
                 <li>
                     <a href="{{ route "logout" }}" title="{{ t "tooltip.logged_user" .user.Username }}">{{ t "menu.logout" }}</a>
+                </li>
+                <li class="mobile-only" title="{{ t "tooltip.keyboard_shortcuts" "N" }}">
+                    <a href="#" data-action="nsfw" data-url="{{ route "nsfw" }}">{{ t "menu.nsfw" }}</a>
                 </li>
             </ul>
             <div class="search">
@@ -234,6 +237,7 @@ var templateCommonMap = map[string]string{
                     <li>{{ t "page.keyboard_shortcuts.proxy_images" }} = <strong>P</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.remove_feed" }} = <strong>#</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.go_to_search" }} = <strong>/</strong></li>
+                    <li>{{ t "page.keyboard_shortcuts.toggle_nsfw" }} = <strong>N</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.close_modal" }} = <strong>Esc</strong></li>
                 </ul>
             </div>
@@ -282,6 +286,6 @@ var templateCommonMap = map[string]string{
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "4faa91e2eae150c5e4eab4d258e039dfdd413bab7602f0009360e6d52898e353",
 	"item_meta":        "5372ca4315982a88b9fe973a6bf23363ca26f972542f64db3cb5885dab3e9950",
-	"layout":           "9bd0a3343c2e752d7e4ef503b254e84555207c92c889e3d8c19336996c5039ed",
+	"layout":           "087a75e09d009d307bee3089294d7faf30359c7e0b3a558632aeac973b8892b6",
 	"pagination":       "3386e90c6e1230311459e9a484629bc5d5bf39514a75ef2e73bbbc61142f7abb",
 }

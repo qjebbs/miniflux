@@ -35,6 +35,7 @@ type Feed struct {
 	Entries            Entries   `json:"entries,omitempty"`
 	Icon               *FeedIcon `json:"icon"`
 	View               string    `json:"view"`
+	NSFW               bool      `json:"nsfw"`
 	UnreadCount        int
 	ReadCount          int
 }

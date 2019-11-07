@@ -10,7 +10,7 @@ import (
 )
 
 // UnreadStatByFeed returns unread count of feeds.
-func (s *Storage) UnreadStatByFeed(userID int64) (stat model.EntryStat, err error) {
+func (s *Storage) UnreadStatByFeed(userID int64, nsfw bool) (stat model.EntryStat, err error) {
 	defer timer.ExecutionTime(time.Now(), "[Storage:UnreadStatByFeed]")
 	query := `
 		SELECT f.id, f.title, max(fi.icon_id) icon, count(e.id) u_count
@@ -24,28 +24,38 @@ func (s *Storage) UnreadStatByFeed(userID int64) (stat model.EntryStat, err erro
 			) starred ON f.id=starred.id
 			INNER JOIN entries e ON f.id=e.feed_id
 			LEFT JOIN feed_icons fi ON fi.feed_id=f.id
-		WHERE f.user_id=$1 AND e.status='unread'
+		WHERE f.user_id=$1 AND e.status='unread' %s
 		GROUP BY f.id
 		ORDER BY max(starred.count) DESC NULLS LAST, f.title ASC`
+	nsfwCond := ""
+	if nsfw {
+		nsfwCond = "AND f.nsfw = 'f'"
+	}
+	query = fmt.Sprintf(query, nsfwCond)
 	return s.feedStatistics(query, userID)
 }
 
 // StarredStatByFeed returns starred count of feeds.
-func (s *Storage) StarredStatByFeed(userID int64) (stat model.EntryStat, err error) {
+func (s *Storage) StarredStatByFeed(userID int64, nsfw bool) (stat model.EntryStat, err error) {
 	defer timer.ExecutionTime(time.Now(), "[Storage:StarredStatByFeed]")
 	query := `
 		SELECT f.id, f.title, max(fi.icon_id) icon, count(e.id) s_count
 		FROM feeds f
 			INNER JOIN entries e ON f.id=e.feed_id
 			LEFT JOIN feed_icons fi ON fi.feed_id=f.id
-		WHERE f.user_id=$1 AND e.starred='T'
+		WHERE f.user_id=$1 AND e.starred='T' %s
 		GROUP BY f.id
 		ORDER BY s_count DESC NULLS LAST, f.title ASC`
+	nsfwCond := ""
+	if nsfw {
+		nsfwCond = "AND f.nsfw = 'f'"
+	}
+	query = fmt.Sprintf(query, nsfwCond)
 	return s.feedStatistics(query, userID)
 }
 
 // UnreadStatByCategory returns unread count of categories.
-func (s *Storage) UnreadStatByCategory(userID int64) (stat model.EntryStat, err error) {
+func (s *Storage) UnreadStatByCategory(userID int64, nsfw bool) (stat model.EntryStat, err error) {
 	defer timer.ExecutionTime(time.Now(), "[Storage:UnreadStatByCategory]")
 	query := `
 		SELECT c.id, c.title, count(e.id) u_count
@@ -60,23 +70,33 @@ func (s *Storage) UnreadStatByCategory(userID int64) (stat model.EntryStat, err 
 			) starred ON c.id=starred.id
 			INNER JOIN feeds f on c.id=f.category_id
 			INNER JOIN entries e ON f.id=e.feed_id
-		WHERE c.user_id=$1 AND e.status='unread'
+		WHERE c.user_id=$1 AND e.status='unread' %s
 		GROUP BY c.id
 		ORDER BY max(starred.count) DESC NULLS LAST, c.title ASC`
+	nsfwCond := ""
+	if nsfw {
+		nsfwCond = "AND f.nsfw = 'f'"
+	}
+	query = fmt.Sprintf(query, nsfwCond)
 	return s.categoryStatistics(query, userID)
 }
 
 // StarredStatByCategory returns starred count of categories.
-func (s *Storage) StarredStatByCategory(userID int64) (stat model.EntryStat, err error) {
+func (s *Storage) StarredStatByCategory(userID int64, nsfw bool) (stat model.EntryStat, err error) {
 	defer timer.ExecutionTime(time.Now(), "[Storage:StarredStatByCategory]")
 	query := `
 		SELECT c.id, c.title, count(e.id) s_count
 		FROM categories c
 			INNER JOIN feeds f on c.id=f.category_id
 			INNER JOIN entries e ON f.id=e.feed_id
-		WHERE c.user_id=$1 AND e.starred='T'
+		WHERE c.user_id=$1 AND e.starred='T' %s
 		GROUP BY c.id
 		ORDER BY s_count DESC NULLS LAST, c.title ASC`
+	nsfwCond := ""
+	if nsfw {
+		nsfwCond = "AND f.nsfw = 'f'"
+	}
+	query = fmt.Sprintf(query, nsfwCond)
 	return s.categoryStatistics(query, userID)
 }
 

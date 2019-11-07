@@ -259,6 +259,38 @@ func TestUserTheme(t *testing.T) {
 	}
 }
 
+func TestNSFW(t *testing.T) {
+	r, _ := http.NewRequest("GET", "http://example.org", nil)
+
+	result := IsNSFWEnabled(r)
+	expected := false
+
+	if result != expected {
+		t.Errorf(`Unexpected context value, got %t instead of %t`, result, expected)
+	}
+
+	ctx := r.Context()
+	ctx = context.WithValue(ctx, NSFWContextKey, "hide")
+	r = r.WithContext(ctx)
+
+	result = IsNSFWEnabled(r)
+	expected = true
+
+	if result != expected {
+		t.Errorf(`Unexpected context value, got %t instead of %t`, result, expected)
+	}
+
+	ctx = context.WithValue(ctx, NSFWContextKey, "show")
+	r = r.WithContext(ctx)
+
+	result = IsNSFWEnabled(r)
+	expected = false
+
+	if result != expected {
+		t.Errorf(`Unexpected context value, got %t instead of %t`, result, expected)
+	}
+}
+
 func TestCSRF(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.org", nil)
 

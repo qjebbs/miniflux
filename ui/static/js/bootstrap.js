@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
         keyboardHandler.on("/", (e) => setFocusToSearchInput(e));
         keyboardHandler.on("Escape", () => ModalHandler.close());
         keyboardHandler.on("P", () => forceProxyImages());
+        keyboardHandler.on("N", () => handleNSFW());
         keyboardHandler.listen();
     }
 
@@ -41,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
     onClick("a[data-action=setView]", (event) => handleSetView(event.target));
     onClick("a[data-action=markPageAsRead]", () => handleConfirmationMessage(event.target, () => markPageAsRead()));
     onClick("a[data-toggle-status]", (event) => handleEntryStatus(event.target));
+    onClick("a[data-action=nsfw]", () => handleNSFW());
 
     let tabHandler = new TabHandler();
     tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);

@@ -56,6 +56,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		Password:     feed.Password,
 		View:         feed.View,
 		Disabled:     feed.Disabled,
+		NSFW:         feed.NSFW,
 	}
 
 	all, count, size, err := h.store.MediaStatisticsByFeed(feedID)
@@ -72,7 +73,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("feed", feed)
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("defaultUserAgent", client.DefaultUserAgent)
 	view.Set("mediaCount", all)

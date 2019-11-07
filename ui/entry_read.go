@@ -68,7 +68,7 @@ func (h *handler) showReadEntryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("prevEntryRoute", prevEntryRoute)
 	view.Set("menu", "history")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 

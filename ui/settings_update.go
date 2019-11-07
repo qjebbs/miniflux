@@ -43,7 +43,7 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 	view.Set("timezones", timezones)
 	view.Set("menu", "settings")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 
 	if err := settingsForm.Validate(); err != nil {

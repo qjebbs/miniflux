@@ -7,9 +7,9 @@ package ui // import "miniflux.app/ui"
 import (
 	"net/http"
 
+	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
 	"miniflux.app/ui/session"
-	"miniflux.app/http/request"
 	"miniflux.app/ui/view"
 )
 
@@ -20,7 +20,8 @@ func (h *handler) showCategoryListPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	categories, err := h.store.CategoriesWithFeedCount(user.ID)
+	nsfw := request.IsNSFWEnabled(r)
+	categories, err := h.store.CategoriesWithFeedCount(user.ID, nsfw)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
@@ -32,7 +33,7 @@ func (h *handler) showCategoryListPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("total", len(categories))
 	view.Set("menu", "categories")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
 
 	html.OK(w, r, view.Render("categories"))

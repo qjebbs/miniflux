@@ -25,9 +25,13 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	offset := request.QueryIntParam(r, "offset", 0)
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithStatus(model.EntryStatusUnread)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	countUnread, err := builder.CountEntries()
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -44,6 +48,10 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 	builder.WithDirection(user.EntryDirection)
 	builder.WithOffset(offset)
 	builder.WithLimit(nbItemsPerPage)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
+
 	entries, err := builder.GetEntries()
 	if err != nil {
 		html.ServerError(w, r, err)

@@ -1,3 +1,30 @@
+# Miniflux Fork
+
+This is a Miniflux fork, ships with all upstream features, plus:
+
+- New home, an article statistics page where reading starts.
+- Masonry view with thumbnails.
+- NSFW Feature: Show / Hide content which is `Not Safe For Work`. 
+- Quickly toggle masonry / list view for every category / feed.
+- Action menu, with additinal action `Mark Above as Read`.
+- Save / Edit articles.
+- Image cache.
+
+### About the NSFW Mode
+
+The NSFW is designed to hide some content when you show `Miniflux` to others. 
+
+In the second demo below, a small dot near the `Miniflux` indicates that the NSFW mode is enabled.  
+
+- With `NSFW` mode enabled, all feeds (and their articles) marked as NSFW will not be shown.
+- Mark feeds' `NSFW` flags in the feed setting pages, before enable `NSFW` mode.
+- Switch `NSFW` Mode with keyboard shorcut <kbd>Shift + N</kbd> on PC, or the `NSFW` menu on mobile.
+
+![New home](https://user-images.githubusercontent.com/16953333/68272682-61460400-009f-11ea-9072-bd359ecfcb32.png)
+
+![Masonry view](https://user-images.githubusercontent.com/16953333/68272214-e03a3d00-009d-11ea-9a83-5b7c4fa2c5b4.png)
+
+
 Miniflux 2
 ==========
 [![GoDoc](https://godoc.org/miniflux.app?status.svg)](https://godoc.org/miniflux.app)

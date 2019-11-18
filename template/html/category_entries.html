@@ -13,6 +13,9 @@
         <li>
             <a href="{{ route "categoryEntriesAll" "categoryID" .category.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ t "menu.show_all_entries" }}</a>
         </li>
+        <li>
+            <a href="{{ route "categoryFeeds" "categoryID" .category.ID }}">{{ t "menu.feeds" }}</a>
+        </li>
     </ul>
     <ul class="right">
         <li>

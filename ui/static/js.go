@@ -112,7 +112,7 @@ function handleFetchOriginalContent(){if(isListView()){return;}
 let element=document.querySelector("a[data-fetch-content-entry]");if(!element){return;}
 if(element.dataset.completed){return;}
 element.innerHTML=element.dataset.labelLoading;let request=new RequestBuilder(element.dataset.fetchContentUrl);request.withCallback((response)=>{element.innerHTML=element.dataset.labelDone;element.dataset.completed=true;response.json().then((data)=>{if(data.hasOwnProperty("content")){document.querySelector(".entry-content").innerHTML=data.content;}});});request.execute();}
-function openOriginalLink(){let entryLink=document.querySelector(".entry h1 a");if(entryLink!==null){DomHelper.openNewTab(entryLink.getAttribute("href"));return;}
+function openOriginalLink(){let entryLink=document.querySelector(".entry h1 a");if(entryLink!==null){window.location.href=entryLink.getAttribute("href");return;}
 let currentItemOriginalLink=document.querySelector(".current-item a[data-original-link]");if(currentItemOriginalLink!==null){DomHelper.openNewTab(currentItemOriginalLink.getAttribute("href"));let currentItem=document.querySelector(".current-item");goToNextListItem();markEntryAsRead(currentItem);}}
 function openSelectedItem(){let currentItemLink=document.querySelector(".current-item .item-title a");if(currentItemLink!==null){window.location.href=currentItemLink.getAttribute("href");}}
 function unsubscribeFromFeed(){let unsubscribeLinks=document.querySelectorAll("[data-action=remove-feed]");if(unsubscribeLinks.length===1){let unsubscribeLink=unsubscribeLinks[0];let request=new RequestBuilder(unsubscribeLink.dataset.url);request.withCallback(()=>{if(unsubscribeLink.dataset.redirectUrl){window.location.href=unsubscribeLink.dataset.redirectUrl;}else{window.location.reload();}});request.execute();}}
@@ -162,6 +162,6 @@ if("serviceWorker"in navigator){let scriptElement=document.getElementById("servi
 }
 
 var JavascriptsChecksums = map[string]string{
-	"app": "4740ee372f91ad78da403911ac18e9c1b9d8f690b3201fede068c5833a3c9346",
+	"app": "b5f2d7cdd3a09e70a01a85f294e78d6e00a1aa4085897fd10c103a985f9de3ff",
 	"sw":  "55fffa223919cc18572788fb9c62fccf92166c0eb5d3a1d6f91c31f24d020be9",
 }

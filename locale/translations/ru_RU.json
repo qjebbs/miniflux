@@ -91,6 +91,7 @@
     "page.starred.title": "Избранное",
     "page.categories.title": "Категории",
     "page.categories.no_feed": "Нет подписок.",
+    "page.categories.feeds": "Посмотреть подписку",
     "page.categories.feed_count": [
         "Есть %d подписка.",
         "Есть %d подписки.",
@@ -102,7 +103,8 @@
     "page.edit_user.title": "Изменить пользователя: %s",
     "page.feeds.title": "Подписки",
     "page.feeds.last_check": "Последняя проверка:",
-    "page.feeds.unread": "Непрочитано:",
+    "page.feeds.unread_counter": "Количество непрочитанных записей",
+    "page.feeds.read_counter": "Количество прочитанных записей",
     "page.feeds.error_count": [
         "%d ошибка",
         "%d ошибки",
@@ -213,6 +215,7 @@
     "alert.no_unread_feed_entry": "Для этого канала нет непрочитанных статей.",
     "alert.no_starred_feed_entry": "Для этого канала нет помеченных статей.",
     "alert.no_feed": "У вас нет ни одной подписки.",
+    "alert.no_feed_in_category": "Для этой категории нет подписки.",
     "alert.no_history": "Истории пока нет.",
     "alert.feed_error": "С этой подпиской есть проблема",
     "alert.no_search_result": "Нет результатов для данного поискового запроса.",

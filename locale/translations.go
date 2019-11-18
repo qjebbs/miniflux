@@ -96,6 +96,7 @@ var translations = map[string]string{
     "page.starred.title": "Lesezeichen",
     "page.categories.title": "Kategorien",
     "page.categories.no_feed": "Kein Abonnement.",
+    "page.categories.feeds": "Siehe Abonnements",
     "page.categories.feed_count": [
         "Es gibt %d Abonnement.",
         "Es gibt %d Abonnements."
@@ -106,7 +107,8 @@ var translations = map[string]string{
     "page.edit_user.title": "Benutzer bearbeiten: %s",
     "page.feeds.title": "Abonnements",
     "page.feeds.last_check": "Letzte Aktualisierung:",
-    "page.feeds.unread": "Ungelesen:",
+    "page.feeds.unread_counter": "Anzahl der ungelesenen Einträge",
+    "page.feeds.read_counter": "Anzahl der gelesenen Einträge",
     "page.feeds.error_count": [
         "%d Fehler",
         "%d Fehler"
@@ -216,6 +218,7 @@ var translations = map[string]string{
     "alert.no_unread_feed_entry": "Es gibt keine ungelesenen Artikel für diesen Feed.",
     "alert.no_starred_feed_entry": "Es gibt keine markierten Artikel für diesen Feed.",
     "alert.no_feed": "Es sind keine Abonnements vorhanden.",
+    "alert.no_feed_in_category": "Für diese Kategorie gibt es kein Abonnement.",
     "alert.no_history": "Es existiert zur Zeit kein Verlauf.",
     "alert.feed_error": "Es gibt ein Problem mit diesem Abonnement",
     "alert.no_search_result": "Es gibt kein Ergebnis für diese Suche.",
@@ -236,7 +239,7 @@ var translations = map[string]string{
     "error.user_already_exists": "Dieser Benutzer existiert bereits.",
     "error.unable_to_create_user": "Dieser Benutzer kann nicht erstellt werden.",
     "error.unable_to_update_user": "Dieser Benutzer konnte nicht aktualisiert werden.",
-    "error.unable_to_update_feed": "Dieser Feed konnte nicht aktualisiert werden.",
+    "error.unable_to_update_feed": "Dieses Abonnement konnte nicht aktualisiert werden.",
     "error.subscription_not_found": "Es wurden keine Abonnements gefunden.",
     "error.empty_file": "Diese Datei ist leer.",
     "error.bad_credentials": "Benutzername oder Passwort ungültig.",
@@ -272,7 +275,7 @@ var translations = map[string]string{
     "form.entry.label.readability": "Parse with Readability",
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
-    "form.feed.label.disabled": "Aktualisieren Sie diesen Feed nicht",
+    "form.feed.label.disabled": "Dieses Abonnement nicht aktualisieren",
     "form.category.label.title": "Titel",
     "form.user.label.username": "Benutzername",
     "form.user.label.password": "Passwort",
@@ -465,6 +468,7 @@ var translations = map[string]string{
     "page.starred.title": "Starred",
     "page.categories.title": "Categories",
     "page.categories.no_feed": "No feed.",
+    "page.categories.feeds": "See subscriptions",
     "page.categories.feed_count": [
         "There is %d feed.",
         "There are %d feeds."
@@ -475,7 +479,8 @@ var translations = map[string]string{
     "page.edit_user.title": "Edit User: %s",
     "page.feeds.title": "Feeds",
     "page.feeds.last_check": "Last check:",
-    "page.feeds.unread": "Unread:",
+    "page.feeds.unread_counter": "Number of unread entries",
+    "page.feeds.read_counter": "Number of read entries",
     "page.feeds.error_count": [
         "%d error",
         "%d errors"
@@ -585,6 +590,7 @@ var translations = map[string]string{
     "alert.no_unread_feed_entry": "There are no unread articles for this feed.",
     "alert.no_starred_feed_entry": "There are no starred articles for this feed.",
     "alert.no_feed": "You don't have any subscriptions.",
+    "alert.no_feed_in_category": "There is no subscription for this category.",
     "alert.no_history": "There is no history at the moment.",
     "alert.feed_error": "There is a problem with this feed",
     "alert.no_search_result": "There are no results for this search.",
@@ -813,6 +819,7 @@ var translations = map[string]string{
     "page.starred.title": "Marcadores",
     "page.categories.title": "Categorias",
     "page.categories.no_feed": "No fuente.",
+    "page.categories.feeds": "Ver suscripciones",
     "page.categories.feed_count": [
         "Hay %d fuente.",
         "Hay %d fuentes."
@@ -823,7 +830,8 @@ var translations = map[string]string{
     "page.edit_user.title": "Editar usuario: %s",
     "page.feeds.title": "Fuentes",
     "page.feeds.last_check": "Última verificación:",
-    "page.feeds.unread": "No leídos:",
+    "page.feeds.unread_counter": "Número de entradas no leídas",
+    "page.feeds.read_counter": "Número de entradas leídas",
     "page.feeds.error_count": [
         "%d error",
         "%d errores"
@@ -933,6 +941,7 @@ var translations = map[string]string{
     "alert.no_unread_feed_entry": "No hay artículos no leídos para este feed.",
     "alert.no_starred_feed_entry": "No hay artículos destacados para este feed.",
     "alert.no_feed": "No tienes suscripciones.",
+    "alert.no_feed_in_category": "No hay suscripción para esta categoría.",
     "alert.no_history": "No hay historial en este momento.",
     "alert.feed_error": "Hay un problema con esta fuente.",
     "alert.no_search_result": "No hay resultados para esta búsqueda.",
@@ -1162,6 +1171,7 @@ var translations = map[string]string{
     "page.starred.title": "Favoris",
     "page.categories.title": "Catégories",
     "page.categories.no_feed": "Aucun abonnement.",
+    "page.categories.feeds": "Voir les abonnements",
     "page.categories.feed_count": [
         "Il y a %d abonnement.",
         "Il y a %d abonnements."
@@ -1172,7 +1182,8 @@ var translations = map[string]string{
     "page.edit_user.title": "Modification de l'utilisateur : %s",
     "page.feeds.title": "Abonnements",
     "page.feeds.last_check": "Dernière vérification :",
-    "page.feeds.unread": "Non lus:",
+    "page.feeds.unread_counter": "Nombre d'entrées non lues",
+    "page.feeds.read_counter": "Nombre d'entrées lues",
     "page.feeds.error_count": [
         "%d erreur",
         "%d erreurs"
@@ -1282,6 +1293,7 @@ var translations = map[string]string{
     "alert.no_unread_feed_entry": "Il n'y a pas d'articles non lus pour ce flux.",
     "alert.no_starred_feed_entry": "Il n'y a pas d'articles favoris pour ce flux.",
     "alert.no_feed": "Vous n'avez aucun abonnement.",
+    "alert.no_feed_in_category": "Il n'y a pas d'abonnement pour cette catégorie.",
     "alert.no_history": "Il n'y a aucun historique pour le moment.",
     "alert.feed_error": "Il y a un problème avec cet abonnement",
     "alert.no_search_result": "Il n'y a aucun résultat pour cette recherche.",
@@ -1531,6 +1543,7 @@ var translations = map[string]string{
     "page.starred.title": "Preferiti",
     "page.categories.title": "Categorie",
     "page.categories.no_feed": "Nessun feed.",
+    "page.categories.feeds": "Vedi abbonamenti",
     "page.categories.feed_count": [
         "C'è %d feed.",
         "Ci sono %d feed."
@@ -1541,7 +1554,8 @@ var translations = map[string]string{
     "page.edit_user.title": "Modifica utente: %s",
     "page.feeds.title": "Feed",
     "page.feeds.last_check": "Ultimo controllo:",
-    "page.feeds.unread": "Da leggere:",
+    "page.feeds.unread_counter": "Numero di voci non lette",
+    "page.feeds.read_counter": "Numero di voci lette",
     "page.feeds.error_count": [
         "%d errore",
         "%d errori"
@@ -1651,6 +1665,7 @@ var translations = map[string]string{
     "alert.no_unread_feed_entry": "Non ci sono articoli non letti per questo feed.",
     "alert.no_starred_feed_entry": "Non ci sono articoli speciali per questo feed.",
     "alert.no_feed": "Nessun feed disponibile.",
+    "alert.no_feed_in_category": "Non esiste un abbonamento per questa categoria.",
     "alert.no_history": "La tua cronologia al momento è vuota.",
     "alert.feed_error": "Sembra ci sia un problema con questo feed",
     "alert.no_search_result": "La ricerca non ha prodotto risultati.",
@@ -1880,6 +1895,7 @@ var translations = map[string]string{
     "page.starred.title": "Favorieten",
     "page.categories.title": "Categorieën",
     "page.categories.no_feed": "Geen feeds.",
+    "page.categories.feeds": "Zie abonnementen",
     "page.categories.feed_count": [
         "Er is %d feed.",
         "Er zijn %d feeds."
@@ -1890,7 +1906,8 @@ var translations = map[string]string{
     "page.edit_user.title": "Bewerk gebruiker: %s",
     "page.feeds.title": "Feeds",
     "page.feeds.last_check": "Laatste update:",
-    "page.feeds.unread": "Ongelezen:",
+    "page.feeds.unread_counter": "Aantal ongelezen vermeldingen",
+    "page.feeds.read_counter": "Aantal gelezen vermeldingen",
     "page.feeds.error_count": [
         "%d error",
         "%d errors"
@@ -2000,6 +2017,7 @@ var translations = map[string]string{
     "alert.no_unread_feed_entry": "Er zijn geen ongelezen artikelen voor deze feed.",
     "alert.no_starred_feed_entry": "Er zijn geen artikelen met ster voor deze feed.",
     "alert.no_feed": "Je hebt nog geen feeds geabboneerd staan.",
+    "alert.no_feed_in_category": "Er is geen abonnement voor deze categorie.",
     "alert.no_history": "Geschiedenis is op dit moment leeg.",
     "alert.feed_error": "Er is een probleem met deze feed",
     "alert.no_search_result": "Er is geen resultaat voor deze zoekopdracht.",
@@ -2247,6 +2265,7 @@ var translations = map[string]string{
     "page.starred.title": "Oznaczone gwiazdką",
     "page.categories.title": "Kategorie",
     "page.categories.no_feed": "Brak kanałów.",
+    "page.categories.feeds": "Zobacz subskrypcje",
     "page.categories.feed_count": [
         "Jest %d kanał.",
         "Są %d kanały.",
@@ -2258,7 +2277,8 @@ var translations = map[string]string{
     "page.edit_user.title": "Edytuj użytkownika: %s",
     "page.feeds.title": "Kanały",
     "page.feeds.last_check": "Ostatnia aktualizacja:",
-    "page.feeds.unread": "Nieprzeczytane:",
+    "page.feeds.unread_counter": "Liczba nieprzeczytanych wpisów",
+    "page.feeds.read_counter": "Liczba przeczytanych wpisów",
     "page.feeds.error_count": [
         "%d błąd",
         "%d błąd",
@@ -2369,6 +2389,7 @@ var translations = map[string]string{
     "alert.no_unread_feed_entry": "Brak nieprzeczytanych artykułów dla tego kanału.",
     "alert.no_starred_feed_entry": "Dla tego kanału nie ma artykułów oznaczonych gwiazdką.",
     "alert.no_feed": "Nie masz żadnej subskrypcji.",
+    "alert.no_feed_in_category": "Nie ma subskrypcji dla tej kategorii.",
     "alert.no_history": "Obecnie nie ma żadnej historii.",
     "alert.feed_error": "Z tym kanałem jest problem",
     "alert.no_search_result": "Brak wyników dla tego wyszukiwania.",
@@ -2622,6 +2643,7 @@ var translations = map[string]string{
     "page.starred.title": "Избранное",
     "page.categories.title": "Категории",
     "page.categories.no_feed": "Нет подписок.",
+    "page.categories.feeds": "Посмотреть подписку",
     "page.categories.feed_count": [
         "Есть %d подписка.",
         "Есть %d подписки.",
@@ -2633,7 +2655,8 @@ var translations = map[string]string{
     "page.edit_user.title": "Изменить пользователя: %s",
     "page.feeds.title": "Подписки",
     "page.feeds.last_check": "Последняя проверка:",
-    "page.feeds.unread": "Непрочитано:",
+    "page.feeds.unread_counter": "Количество непрочитанных записей",
+    "page.feeds.read_counter": "Количество прочитанных записей",
     "page.feeds.error_count": [
         "%d ошибка",
         "%d ошибки",
@@ -2744,6 +2767,7 @@ var translations = map[string]string{
     "alert.no_unread_feed_entry": "Для этого канала нет непрочитанных статей.",
     "alert.no_starred_feed_entry": "Для этого канала нет помеченных статей.",
     "alert.no_feed": "У вас нет ни одной подписки.",
+    "alert.no_feed_in_category": "Для этой категории нет подписки.",
     "alert.no_history": "Истории пока нет.",
     "alert.feed_error": "С этой подпиской есть проблема",
     "alert.no_search_result": "Нет результатов для данного поискового запроса.",
@@ -2979,6 +3003,7 @@ var translations = map[string]string{
     "page.starred.title": "星标",
     "page.categories.title": "分类",
     "page.categories.no_feed": "没有源",
+    "page.categories.feeds": "查看订阅",
     "page.categories.feed_count": [
         "有 %d 个源"
     ],
@@ -2988,7 +3013,8 @@ var translations = map[string]string{
     "page.edit_user.title": "编辑用户 : %s",
     "page.feeds.title": "源",
     "page.feeds.last_check": "最后检查时间：",
-    "page.feeds.unread": "未读:",
+    "page.feeds.unread_counter": "未读文章数量",
+    "page.feeds.read_counter": "已读文章数量",
     "page.feeds.error_count": [
         "%d 错误"
     ],
@@ -3098,6 +3124,7 @@ var translations = map[string]string{
     "alert.no_history": "目前没有历史",
     "alert.feed_error": "该源存在问题",
     "alert.no_search_result": "该搜索没有结果",
+    "alert.no_feed_in_category": "没有该类别的订阅。",
     "alert.no_unread_entry": "目前没有未读文章",
     "alert.no_user": "您是目前仅有的用户",
     "alert.account_unlinked": "您的外部帐户现已解除关联！",
@@ -3246,13 +3273,13 @@ var translations = map[string]string{
 }
 
 var translationsChecksums = map[string]string{
-	"de_DE": "873a6f639dd41dc68c72e0baff44b87ac8c84385e3a066f8a4b515e60680915a",
-	"en_US": "7ef46ed89a122329c567753f845df5ffc149779ece6afa63d108744e7bf1afdf",
-	"es_ES": "5aa539b021729e6f25e54f6f6d4d5ff507e1c9bbb9f612f72e4b2e455ff2af11",
-	"fr_FR": "b0d9451927e3a195c804795b654bbdd4feb20624a1b9a7c04f6b7074a0667967",
-	"it_IT": "e3e4997533b593808fd3cba00d497ee1a5779ce46447da58e0a747629e205f41",
-	"nl_NL": "4a7faf146012ed0baed1b5b42f19c73c8d7ba4b93845380481f45eadd32d6ac8",
-	"pl_PL": "7bc368efc5a204a42c93c3cccb614b1fab385d309b542255687e7bf0db23b65a",
-	"ru_RU": "64d37195e92aae552f2b6964a6ec345be23d582753c5a5f8c06fe298cf07a833",
-	"zh_CN": "e1bb13cc6250eb18b55f3e9ca94c267d8fad0bd4f76711811bae87ce96163a6c",
+	"de_DE": "54d2f1625736dcd41ccde113eddc315af417877f1fb0a202ddd789f47937374c",
+	"en_US": "8244ac21925e7da3455444a555f35504f4f815886cff81121e55e3075f8b9713",
+	"es_ES": "29f008d53fbf9f04da551473fd75a793c5ab02de129504e7bb5a6db4f3dc44d5",
+	"fr_FR": "d39a30a02339ab413e161c4cb708a734c6d7603af6592e03a6e178a8b0c6f6d7",
+	"it_IT": "942364882177e6a8dbcf5e98c984f086040c55006cb930a65f7e1ee5c0d9ee6f",
+	"nl_NL": "3b741d81d5db9e70473ded43e234fa435564603764f6e5f667f7df2cec5821a8",
+	"pl_PL": "ebd72c76c8c9a25f2f150ff392cd38b72a0382726bab11e122426b804c5dbaf3",
+	"ru_RU": "d74c6f3f584210728175012de05afe0f9f9292eece9b5bba77ca6ab8addc7e84",
+	"zh_CN": "2bc4b3a7b413caeadb697c7b0553a49bd3a6eb7b7efcc6c2a023d5c250e326b3",
 }

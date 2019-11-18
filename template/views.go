@@ -8,22 +8,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.about.title" }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "settings" }}">{{ t "menu.preferences" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "integrations" }}">{{ t "menu.integrations" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "sessions" }}">{{ t "menu.sessions" }}</a>
-        </li>
-        {{ if .user.IsAdmin }}
-        <li>
-            <a href="{{ route "users" }}">{{ t "menu.users" }}</a>
-        </li>
-        {{ end }}
-    </ul>
+    {{ template "settings_menu" dict "user" .user }}
 </section>
 
 <div class="panel">
@@ -229,18 +214,13 @@ var templateViewsMap = map[string]string{
                 <span class="item-title">
                     <a href="{{ route "categoryEntries" "categoryID" .ID }}">{{ .Title }}</a>
                 </span>
+                (<span title="{{ if eq .FeedCount 0 }}{{ t "page.categories.no_feed" }}{{ else }}{{ plural "page.categories.feed_count" .FeedCount .FeedCount }}{{ end }}">{{ .FeedCount }}</span>)
             </div>
             <div class="item-meta">
                 <ul>
                     <li>
-                        {{ if eq .FeedCount 0 }}
-                            {{ t "page.categories.no_feed" }}
-                        {{ else }}
-                            {{ plural "page.categories.feed_count" .FeedCount .FeedCount }}
-                        {{ end }}
+                        <a href="{{ route "categoryFeeds" "categoryID" .ID }}">{{ t "page.categories.feeds" }}</a>
                     </li>
-                </ul>
-                <ul>
                     <li>
                         <a href="{{ route "editCategory" "categoryID" .ID }}">{{ t "menu.edit_category" }}</a>
                     </li>
@@ -278,6 +258,9 @@ var templateViewsMap = map[string]string{
         </li>
         <li>
             <a href="{{ route "categoryEntriesAll" "categoryID" .category.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ t "menu.show_all_entries" }}</a>
+        </li>
+        <li>
+            <a href="{{ route "categoryFeeds" "categoryID" .category.ID }}">{{ t "menu.feeds" }}</a>
         </li>
     </ul>
     <ul class="right">
@@ -371,6 +354,41 @@ var templateViewsMap = map[string]string{
 
 {{ end }}
 `,
+	"category_feeds": `{{ define "title"}}{{ .category.Title }} &gt; {{ t "page.feeds.title" }} ({{ .total }}){{ end }}
+
+{{ define "content"}}
+<section class="page-header">
+    <h1>{{ .category.Title }} &gt; {{ t "page.feeds.title" }} ({{ .total }})</h1>
+    <ul>
+        <li>
+            <a href="{{ route "categories" }}">{{ t "menu.categories" }}</a>
+        </li>
+        <li>
+            <a href="{{ route "editCategory" "categoryID" .category.ID }}">{{ t "menu.edit_category" }}</a>
+        </li>
+        {{ if eq .total 0 }}
+        <li>
+            <a href="#"
+                data-confirm="true"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}"
+                data-redirect-url="{{ route "categories" }}"
+                data-url="{{ route "removeCategory" "categoryID" .category.ID }}">{{ t "action.remove" }}</a>
+        </li>
+        {{ end }}
+    </ul>
+</section>
+
+{{ if not .feeds }}
+    <p class="alert">{{ t "alert.no_feed_in_category" }}</p>
+{{ else }}
+    {{ template "feed_list" dict "user" .user "feeds" .feeds "ParsingErrorCount" .ParsingErrorCount }}
+{{ end }}
+
+{{ end }}
+`,
 	"choose_subscription": `{{ define "title"}}{{ t "page.add_feed.title" }}{{ end }}
 
 {{ define "content"}}
@@ -454,23 +472,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.new_user.title" }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "settings" }}">{{ t "menu.settings" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "integrations" }}">{{ t "menu.integrations" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "sessions" }}">{{ t "menu.sessions" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "users" }}">{{ t "menu.users" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "about" }}">{{ t "menu.about" }}</a>
-        </li>
-    </ul>
+    {{ template "settings_menu" dict "user" .user }}
 </section>
 
 <form action="{{ route "saveUser" }}" method="post" autocomplete="off">
@@ -507,6 +509,9 @@ var templateViewsMap = map[string]string{
             <a href="{{ route "categories" }}">{{ t "menu.categories" }}</a>
         </li>
         <li>
+            <a href="{{ route "categoryFeeds" "categoryID" .category.ID }}">{{ t "menu.feeds" }}</a>
+        </li>
+        <li>
             <a href="{{ route "createCategory" }}">{{ t "menu.create_category" }}</a>
         </li>
     </ul>
@@ -530,7 +535,7 @@ var templateViewsMap = map[string]string{
     </select>
 
     <div class="buttons">
-        <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="{{ route "categories" }}">{{ t "action.cancel" }}</a>
+        <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button>
     </div>
 </form>
 {{ end }}
@@ -731,26 +736,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.edit_user.title" .selected_user.Username }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "settings" }}">{{ t "menu.settings" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "integrations" }}">{{ t "menu.integrations" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "sessions" }}">{{ t "menu.sessions" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "users" }}">{{ t "menu.users" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "createUser" }}">{{ t "menu.add_user" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "about" }}">{{ t "menu.about" }}</a>
-        </li>
-    </ul>
+    {{ template "settings_menu" dict "user" .user }}
 </section>
 
 <form action="{{ route "updateUser" "userID" .selected_user.ID }}" method="post" autocomplete="off">
@@ -1079,62 +1065,7 @@ var templateViewsMap = map[string]string{
 {{ if not .feeds }}
     <p class="alert">{{ t "alert.no_feed" }}</p>
 {{ else }}
-    <div class="items">
-        {{ range .feeds }}
-        <article class="item {{ if ne .ParsingErrorCount 0 }}feed-parsing-error{{ end }}">
-            <div class="item-header">
-                <span class="item-title">
-                    {{ if .Icon }}
-                        <img src="{{ route "icon" "iconID" .Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .Title }}">
-                    {{ end }}
-                    {{ if .Disabled }} 🚫 {{ end }}
-                    <a href="{{ route "feedEntries" "feedID" .ID }}">{{ .Title }}</a>
-                </span>
-                <span class="category">
-                    <a href="{{ route "categoryEntries" "categoryID" .Category.ID }}">{{ .Category.Title }}</a>
-                </span>
-            </div>
-            <div class="item-meta">
-                <ul>
-                    <li>
-                        <a href="{{ .SiteURL }}" title="{{ .SiteURL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-original-link="true">{{ domain .SiteURL }}</a>
-                    </li>
-                    <li>
-                        {{ t "page.feeds.last_check" }} <time datetime="{{ isodate .CheckedAt }}" title="{{ isodate .CheckedAt }}">{{ elapsed $.user.Timezone .CheckedAt }}</time>
-                    </li>
-                    {{ if gt .UnreadCount 0 }}
-                    <li>
-                        {{ t "page.feeds.unread" }} <span class="unread-counter">{{ .UnreadCount }}</span>
-                    </li>
-                    {{ end }}
-                </ul>
-                <ul>
-                    <li>
-                        <a href="{{ route "refreshFeed" "feedID" .ID }}">{{ t "menu.refresh_feed" }}</a>
-                    </li>
-                    <li>
-                        <a href="{{ route "editFeed" "feedID" .ID }}">{{ t "menu.edit_feed" }}</a>
-                    </li>
-                    <li>
-                        <a href="#"
-                            data-confirm="true"
-                            data-label-question="{{ t "confirm.question" }}"
-                            data-label-yes="{{ t "confirm.yes" }}"
-                            data-label-no="{{ t "confirm.no" }}"
-                            data-label-loading="{{ t "confirm.loading" }}"
-                            data-url="{{ route "removeFeed" "feedID" .ID }}">{{ t "action.remove" }}</a>
-                    </li>
-                </ul>
-            </div>
-            {{ if ne .ParsingErrorCount 0 }}
-                <div class="parsing-error">
-                    <strong title="{{ .ParsingErrorMsg }}" class="parsing-error-count">{{ plural "page.feeds.error_count" .ParsingErrorCount .ParsingErrorCount }}</strong>
-                    - <small class="parsing-error-message">{{ .ParsingErrorMsg }}</small>
-                </div>
-            {{ end }}
-        </article>
-        {{ end }}
-    </div>
+    {{ template "feed_list" dict "user" .user "feeds" .feeds "ParsingErrorCount" .ParsingErrorCount }}
 {{ end }}
 
 {{ end }}
@@ -1252,22 +1183,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.integrations.title" }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "settings" }}">{{ t "menu.settings" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "sessions" }}">{{ t "menu.sessions" }}</a>
-        </li>
-        {{ if .user.IsAdmin }}
-        <li>
-            <a href="{{ route "users" }}">{{ t "menu.users" }}</a>
-        </li>
-        {{ end }}
-        <li>
-            <a href="{{ route "about" }}">{{ t "menu.about" }}</a>
-        </li>
-    </ul>
+    {{ template "settings_menu" dict "user" .user }}
 </section>
 
 <form method="post" autocomplete="off" action="{{ route "updateIntegration" }}">
@@ -1500,25 +1416,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.sessions.title" }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "settings" }}">{{ t "menu.settings" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "integrations" }}">{{ t "menu.integrations" }}</a>
-        </li>
-        {{ if .user.IsAdmin }}
-        <li>
-            <a href="{{ route "users" }}">{{ t "menu.users" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "createUser" }}">{{ t "menu.add_user" }}</a>
-        </li>
-        {{ end }}
-        <li>
-            <a href="{{ route "about" }}">{{ t "menu.about" }}</a>
-        </li>
-    </ul>
+    {{ template "settings_menu" dict "user" .user }}
 </section>
 
 <table>
@@ -1557,22 +1455,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.settings.title" }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "integrations" }}">{{ t "menu.integrations" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "sessions" }}">{{ t "menu.sessions" }}</a>
-        </li>
-        {{ if .user.IsAdmin }}
-        <li>
-            <a href="{{ route "users" }}">{{ t "menu.users" }}</a>
-        </li>
-        {{ end }}
-        <li>
-            <a href="{{ route "about" }}">{{ t "menu.about" }}</a>
-        </li>
-    </ul>
+    {{ template "settings_menu" dict "user" .user }}
 </section>
 
 <form method="post" autocomplete="off" action="{{ route "updateSettings" }}">
@@ -1854,23 +1737,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.users.title" }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "settings" }}">{{ t "menu.settings" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "integrations" }}">{{ t "menu.integrations" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "sessions" }}">{{ t "menu.sessions" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "createUser" }}">{{ t "menu.add_user" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "about" }}">{{ t "menu.about" }}</a>
-        </li>
-    </ul>
+    {{ template "settings_menu" dict "user" .user }}
 </section>
 
 {{ if eq (len .users) 1 }}
@@ -1916,30 +1783,31 @@ var templateViewsMap = map[string]string{
 }
 
 var templateViewsMapChecksums = map[string]string{
-	"about":               "844e3313c33ae31a74b904f6ef5d60299773620d8450da6f760f9f317217c51e",
+	"about":               "4035658497363d7af7f79be83190404eb21ec633fe8ec636bdfc219d9fc78cfc",
 	"add_entry":           "6a5c1b88ef5090c5bec82924fc2727c3548e3cd31f0c8bf963630420301c696b",
 	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
 	"bookmark_entries":    "3b845054c20053908bd6a1ea1c0b1dd472a3b1c6a7732cd0e5b067d58663e846",
-	"categories":          "642ee3cddbd825ee6ab5a77caa0d371096b55de0f1bd4ae3055b8c8a70507d8d",
-	"category_entries":    "3ffb2334d1f7d7122cd7df70d87f13d2f7acfdf2f7f8b6319951da69b9d39840",
+	"categories":          "2c5dd0ed6355bd5acc393bbf6117d20458b5581aab82036008324f6bbbe2af75",
+	"category_entries":    "4d60ef3458b35fb6617f8afd6ca1e0025e78c8f9e457e0d2d92237b271dddc34",
+	"category_feeds":      "527c2ffbc4fcec775071424ba1022ae003525dba53a28cc41f48fb7b30aa984b",
 	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
 	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
-	"create_user":         "1e940be3afefc0a5c6273bbadcddc1e29811e9548e5227ac2adfe697ca5ce081",
-	"edit_category":       "9b336d6781c56c3256b3bfdb391cf0e2799475faf1952160398199e075580163",
+	"create_user":         "9b73a55233615e461d1f07d99ad1d4d3b54532588ab960097ba3e090c85aaf3a",
+	"edit_category":       "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
 	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
 	"edit_feed":           "2bdbda4629571b27670d5b69711edbe1c5ba3842f3693a0cd8577fedbe72cc05",
-	"edit_user":           "f4f99412ba771cfca2a2a42778b023b413c5494e9a287053ba8cf380c2865c5f",
+	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
 	"entry":               "b53ecc9afa8daa414b714a0f29d8ef5dcc3a31601adc042742b13502c7ed290c",
 	"feed_entries":        "e6c62ef14304aaf8fc1509b22535cfd46b3f600ffa662682204e9fa60d747935",
-	"feeds":               "55317035a4c008a720294c1858e9dc626f19e222ae41498db67dbb537ba7a456",
+	"feeds":               "fa06cd1e1e3fec79132386972c640a2fe91237f5dba572389d5f45be74545f25",
 	"history_entries":     "f7b272ff7b6f30f7da7548e43a9a79f022281eb55545bf3c31f15d019ca668bc",
 	"import":              "5eb56cecaa4d369b9acc991a82be7617710c551089a2e99d34ce8b6e5c37df0a",
-	"integrations":        "d73ad06ca242f39f4575c30e4b357d9ee058973ccd82312a86955fe4a24b36cf",
+	"integrations":        "f3302ec7a0bee59eea41b34f520096864b261cc8b5bcde17ee84ec1301a0f241",
 	"login":               "2e72d2d4b9786641b696bedbed5e10b04bdfd68254ddbbdb0a53cca621d200c7",
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",
-	"sessions":            "1b3ec0970a4111b81f86d6ed187bb410f88972e2ede6723b9febcc4c7e5fc921",
-	"settings":            "f17db61211493ece9b760465f44d0ea6213f51f507946bf36a5472a1ad5deb23",
+	"sessions":            "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
+	"settings":            "2cec1b41a647c1ba387b226f6cdb2ffc783d1c3cd0f5a37ac30c53ec3d7a8888",
 	"stat":                "78a6d8989f09ae30811c8ea0d9952d499e8890b8e08c2883642aaec808ed96e8",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
-	"users":               "4b56cc76fbcc424e7c870d0efca93bb44dbfcc2a08b685cf799c773fbb8dfb2f",
+	"users":               "17d0b7c760557e20f888d83d6a1b0d4506dab071a593cc42080ec0dbf16adf9e",
 }

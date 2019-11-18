@@ -91,6 +91,7 @@
     "page.starred.title": "Marcadores",
     "page.categories.title": "Categorias",
     "page.categories.no_feed": "No fuente.",
+    "page.categories.feeds": "Ver suscripciones",
     "page.categories.feed_count": [
         "Hay %d fuente.",
         "Hay %d fuentes."
@@ -101,7 +102,8 @@
     "page.edit_user.title": "Editar usuario: %s",
     "page.feeds.title": "Fuentes",
     "page.feeds.last_check": "Última verificación:",
-    "page.feeds.unread": "No leídos:",
+    "page.feeds.unread_counter": "Número de entradas no leídas",
+    "page.feeds.read_counter": "Número de entradas leídas",
     "page.feeds.error_count": [
         "%d error",
         "%d errores"
@@ -211,6 +213,7 @@
     "alert.no_unread_feed_entry": "No hay artículos no leídos para este feed.",
     "alert.no_starred_feed_entry": "No hay artículos destacados para este feed.",
     "alert.no_feed": "No tienes suscripciones.",
+    "alert.no_feed_in_category": "No hay suscripción para esta categoría.",
     "alert.no_history": "No hay historial en este momento.",
     "alert.feed_error": "Hay un problema con esta fuente.",
     "alert.no_search_result": "No hay resultados para esta búsqueda.",

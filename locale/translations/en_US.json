@@ -91,6 +91,7 @@
     "page.starred.title": "Starred",
     "page.categories.title": "Categories",
     "page.categories.no_feed": "No feed.",
+    "page.categories.feeds": "See subscriptions",
     "page.categories.feed_count": [
         "There is %d feed.",
         "There are %d feeds."
@@ -101,7 +102,8 @@
     "page.edit_user.title": "Edit User: %s",
     "page.feeds.title": "Feeds",
     "page.feeds.last_check": "Last check:",
-    "page.feeds.unread": "Unread:",
+    "page.feeds.unread_counter": "Number of unread entries",
+    "page.feeds.read_counter": "Number of read entries",
     "page.feeds.error_count": [
         "%d error",
         "%d errors"
@@ -211,6 +213,7 @@
     "alert.no_unread_feed_entry": "There are no unread articles for this feed.",
     "alert.no_starred_feed_entry": "There are no starred articles for this feed.",
     "alert.no_feed": "You don't have any subscriptions.",
+    "alert.no_feed_in_category": "There is no subscription for this category.",
     "alert.no_history": "There is no history at the moment.",
     "alert.feed_error": "There is a problem with this feed",
     "alert.no_search_result": "There are no results for this search.",

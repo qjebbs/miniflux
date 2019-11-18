@@ -1028,7 +1028,6 @@ article.feed-parsing-error {
     margin-left: 20px;
     margin-top: 20px;
     margin-bottom: 20px;
-    color: #888;
     line-height: 1.4em;
     font-family: var(--entry-content-quote-font-family);
 }
@@ -1063,7 +1062,6 @@ article.feed-parsing-error {
 }
 
 .entry-content table {
-    table-layout: fixed;
     max-width: 100%;
 }
 

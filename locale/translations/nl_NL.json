@@ -91,6 +91,7 @@
     "page.starred.title": "Favorieten",
     "page.categories.title": "Categorieën",
     "page.categories.no_feed": "Geen feeds.",
+    "page.categories.feeds": "Zie abonnementen",
     "page.categories.feed_count": [
         "Er is %d feed.",
         "Er zijn %d feeds."
@@ -101,7 +102,8 @@
     "page.edit_user.title": "Bewerk gebruiker: %s",
     "page.feeds.title": "Feeds",
     "page.feeds.last_check": "Laatste update:",
-    "page.feeds.unread": "Ongelezen:",
+    "page.feeds.unread_counter": "Aantal ongelezen vermeldingen",
+    "page.feeds.read_counter": "Aantal gelezen vermeldingen",
     "page.feeds.error_count": [
         "%d error",
         "%d errors"
@@ -211,6 +213,7 @@
     "alert.no_unread_feed_entry": "Er zijn geen ongelezen artikelen voor deze feed.",
     "alert.no_starred_feed_entry": "Er zijn geen artikelen met ster voor deze feed.",
     "alert.no_feed": "Je hebt nog geen feeds geabboneerd staan.",
+    "alert.no_feed_in_category": "Er is geen abonnement voor deze categorie.",
     "alert.no_history": "Geschiedenis is op dit moment leeg.",
     "alert.feed_error": "Er is een probleem met deze feed",
     "alert.no_search_result": "Er is geen resultaat voor deze zoekopdracht.",

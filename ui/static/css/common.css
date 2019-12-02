@@ -544,7 +544,7 @@ a.button {
     position: fixed;
     top: 0;
     bottom: 0;
-    width: 360px;
+    width: 380px;
     max-width: 80%;
     overflow: auto;
     color: var(--modal-color);
@@ -1086,8 +1086,13 @@ article.feed-parsing-error {
     font-weight: 600;
 }
 
-.entry-enclosures h3 {
+details.entry-enclosures {
+    margin-top: 25px;
+}
+
+.entry-enclosures summary {
     font-weight: 500;
+    font-size: 1.2em;
 }
 
 .entry-enclosure {

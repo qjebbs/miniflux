@@ -132,6 +132,12 @@ var templateViewsMap = map[string]string{
                     - Using a different input name doesn't change anything
                 -->
                 <input type="text" name="feed_password" id="form-feed-password" value="{{ .form.Password }}">
+
+                <label for="form-scraper-rules">{{ t "form.feed.label.scraper_rules" }}</label>
+                <input type="text" name="scraper_rules" id="form-scraper-rules" value="{{ .form.ScraperRules }}">
+
+                <label for="form-rewrite-rules">{{ t "form.feed.label.rewrite_rules" }}</label>
+                <input type="text" name="rewrite_rules" id="form-rewrite-rules" value="{{ .form.RewriteRules }}">
             </div>
         </details>
 
@@ -413,6 +419,8 @@ var templateViewsMap = map[string]string{
     <input type="hidden" name="user_agent" value="{{ .form.UserAgent }}">
     <input type="hidden" name="feed_username" value="{{ .form.Username }}">
     <input type="hidden" name="feed_password" value="{{ .form.Password }}">
+    <input type="hidden" name="scraper_rules" value="{{ .form.ScraperRules }}">
+    <input type="hidden" name="rewrite_rules" value="{{ .form.RewriteRules }}">
     {{ if .form.Crawler }}
         <input type="hidden" name="crawler" value="1">
     {{ end }}
@@ -874,8 +882,8 @@ var templateViewsMap = map[string]string{
         {{ noescape (proxyFilter .entry.Content) }}
     </article>
     {{ if .entry.Enclosures }}
-    <aside class="entry-enclosures">
-        <h3>{{ t "page.entry.attachments" }}</h3>
+    <details class="entry-enclosures">
+        <summary>{{ t "page.entry.attachments" }} ({{ len .entry.Enclosures }})</summary>
         {{ range .entry.Enclosures }}
             <div class="entry-enclosure">
                 {{ if hasPrefix .MimeType "audio/" }}
@@ -897,12 +905,12 @@ var templateViewsMap = map[string]string{
                 {{ end }}
 
                 <div class="entry-enclosure-download">
-                    <a href="{{ .URL }}" title="{{ .URL }} ({{ .MimeType }})" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ t "action.download" }}</a>
-                    <small>({{ .URL }})</small>
+                    <a href="{{ .URL }}" title="{{ t "action.download" }}{{ if gt .Size 0 }} - {{ formatFileSize .Size }}{{ end }} ({{ .MimeType }})" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .URL }}</a>
+                    <small>{{ if gt .Size 0 }} - <strong>{{ formatFileSize .Size }}</strong>{{ end }}</small>
                 </div>
             </div>
         {{ end }}
-    </aside>
+        </details>
     {{ end }}
 </section>
 
@@ -1785,19 +1793,19 @@ var templateViewsMap = map[string]string{
 var templateViewsMapChecksums = map[string]string{
 	"about":               "4035658497363d7af7f79be83190404eb21ec633fe8ec636bdfc219d9fc78cfc",
 	"add_entry":           "6a5c1b88ef5090c5bec82924fc2727c3548e3cd31f0c8bf963630420301c696b",
-	"add_subscription":    "a0f1d2bc02b6adc83dbeae593f74d9b936102cd6dd73302cdbec2137cafdcdd9",
+	"add_subscription":    "5bae8c60989593257f515f9c73b35c854a94bee4b2fb08ad38aa93b17be9c1b5",
 	"bookmark_entries":    "3b845054c20053908bd6a1ea1c0b1dd472a3b1c6a7732cd0e5b067d58663e846",
 	"categories":          "2c5dd0ed6355bd5acc393bbf6117d20458b5581aab82036008324f6bbbe2af75",
 	"category_entries":    "4d60ef3458b35fb6617f8afd6ca1e0025e78c8f9e457e0d2d92237b271dddc34",
 	"category_feeds":      "527c2ffbc4fcec775071424ba1022ae003525dba53a28cc41f48fb7b30aa984b",
-	"choose_subscription": "33c04843d7c1b608d034e605e52681822fc6d79bc6b900c04915dd9ebae584e2",
+	"choose_subscription": "5f21556e6cecfd64b1cff30e22ef313d2f09698cebb03f711cbac8ec7f2c1d04",
 	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
 	"create_user":         "9b73a55233615e461d1f07d99ad1d4d3b54532588ab960097ba3e090c85aaf3a",
 	"edit_category":       "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
 	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
 	"edit_feed":           "2bdbda4629571b27670d5b69711edbe1c5ba3842f3693a0cd8577fedbe72cc05",
 	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
-	"entry":               "b53ecc9afa8daa414b714a0f29d8ef5dcc3a31601adc042742b13502c7ed290c",
+	"entry":               "b37b02b1d8d631c0be9c9251041c3682cec6c1aad1e1debaba22de77af3cba5d",
 	"feed_entries":        "e6c62ef14304aaf8fc1509b22535cfd46b3f600ffa662682204e9fa60d747935",
 	"feeds":               "fa06cd1e1e3fec79132386972c640a2fe91237f5dba572389d5f45be74545f25",
 	"history_entries":     "f7b272ff7b6f30f7da7548e43a9a79f022281eb55545bf3c31f15d019ca668bc",

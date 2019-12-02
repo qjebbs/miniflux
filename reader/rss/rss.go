@@ -15,6 +15,7 @@ import (
 	"miniflux.app/logger"
 	"miniflux.app/model"
 	"miniflux.app/reader/date"
+	"miniflux.app/reader/media"
 	"miniflux.app/reader/sanitizer"
 	"miniflux.app/url"
 )
@@ -56,6 +57,14 @@ type rssEnclosure struct {
 	Length string `xml:"length,attr"`
 }
 
+func (enclosure *rssEnclosure) Size() int64 {
+	if enclosure.Length == "" {
+		return 0
+	}
+	size, _ := strconv.ParseInt(enclosure.Length, 10, 0)
+	return size
+}
+
 type rssItem struct {
 	GUID              string           `xml:"guid"`
 	Title             string           `xml:"title"`
@@ -70,6 +79,7 @@ type rssItem struct {
 	Creator           string           `xml:"http://purl.org/dc/elements/1.1/ creator"`
 	EnclosureLinks    []rssEnclosure   `xml:"enclosure"`
 	OrigEnclosureLink string           `xml:"http://rssnamespace.org/feedburner/ext/1.0 origEnclosureLink"`
+	media.Element
 }
 
 func (r *rssFeed) SiteURL() string {
@@ -200,9 +210,20 @@ func (r *rssItem) URL() string {
 
 func (r *rssItem) Enclosures() model.EnclosureList {
 	enclosures := make(model.EnclosureList, 0)
+	duplicates := make(map[string]bool, 0)
+
+	for _, mediaThumbnail := range r.AllMediaThumbnails() {
+		if _, found := duplicates[mediaThumbnail.URL]; !found {
+			duplicates[mediaThumbnail.URL] = true
+			enclosures = append(enclosures, &model.Enclosure{
+				URL:      mediaThumbnail.URL,
+				MimeType: mediaThumbnail.MimeType(),
+				Size:     mediaThumbnail.Size(),
+			})
+		}
+	}
 
 	for _, enclosure := range r.EnclosureLinks {
-		length, _ := strconv.ParseInt(enclosure.Length, 10, 0)
 		enclosureURL := enclosure.URL
 
 		if r.OrigEnclosureLink != "" {
@@ -212,11 +233,37 @@ func (r *rssItem) Enclosures() model.EnclosureList {
 			}
 		}
 
-		enclosures = append(enclosures, &model.Enclosure{
-			URL:      enclosureURL,
-			MimeType: enclosure.Type,
-			Size:     length,
-		})
+		if _, found := duplicates[enclosureURL]; !found {
+			duplicates[enclosureURL] = true
+
+			enclosures = append(enclosures, &model.Enclosure{
+				URL:      enclosureURL,
+				MimeType: enclosure.Type,
+				Size:     enclosure.Size(),
+			})
+		}
+	}
+
+	for _, mediaContent := range r.AllMediaContents() {
+		if _, found := duplicates[mediaContent.URL]; !found {
+			duplicates[mediaContent.URL] = true
+			enclosures = append(enclosures, &model.Enclosure{
+				URL:      mediaContent.URL,
+				MimeType: mediaContent.MimeType(),
+				Size:     mediaContent.Size(),
+			})
+		}
+	}
+
+	for _, mediaPeerLink := range r.AllMediaPeerLinks() {
+		if _, found := duplicates[mediaPeerLink.URL]; !found {
+			duplicates[mediaPeerLink.URL] = true
+			enclosures = append(enclosures, &model.Enclosure{
+				URL:      mediaPeerLink.URL,
+				MimeType: mediaPeerLink.MimeType(),
+				Size:     mediaPeerLink.Size(),
+			})
+		}
 	}
 
 	return enclosures

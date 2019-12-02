@@ -36,8 +36,8 @@ func TestRewriteWithNoMatchingRule(t *testing.T) {
 }
 
 func TestRewriteWithYoutubeLink(t *testing.T) {
-	output := Rewriter("https://www.youtube.com/watch?v=1234", "Video Description\nhttp://example.org/path", ``)
-	expected := `<iframe width="650" height="350" frameborder="0" src="https://www.youtube-nocookie.com/embed/1234" allowfullscreen></iframe><p>Video Description<br><a href="http://example.org/path">http://example.org/path</a></p>`
+	output := Rewriter("https://www.youtube.com/watch?v=1234", "Video Description", ``)
+	expected := `<iframe width="650" height="350" frameborder="0" src="https://www.youtube-nocookie.com/embed/1234" allowfullscreen></iframe><br>Video Description`
 
 	if expected != output {
 		t.Errorf(`Not expected output: got "%s" instead of "%s"`, output, expected)
@@ -154,5 +154,25 @@ func TestRewriteWithUnknownLazyNoScriptImage(t *testing.T) {
 
 	if expected != output {
 		t.Errorf(`Not expected output: got "%s" instead of "%s"`, output, expected)
+	}
+}
+
+func TestNewLineRewriteRule(t *testing.T) {
+	description := "A\nB\nC"
+	output := Rewriter("https://example.org/article", description, "nl2br")
+	expected := `A<br>B<br>C`
+
+	if expected != output {
+		t.Errorf(`Not expected output: got %q instead of %q`, output, expected)
+	}
+}
+
+func TestConvertTextLinkRewriteRule(t *testing.T) {
+	description := "Test: http://example.org/a/b"
+	output := Rewriter("https://example.org/article", description, "convert_text_link")
+	expected := `Test: <a href="http://example.org/a/b">http://example.org/a/b</a>`
+
+	if expected != output {
+		t.Errorf(`Not expected output: got %q instead of %q`, output, expected)
 	}
 }

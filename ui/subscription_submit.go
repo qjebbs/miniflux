@@ -80,6 +80,8 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 			subscriptionForm.UserAgent,
 			subscriptionForm.Username,
 			subscriptionForm.Password,
+			subscriptionForm.ScraperRules,
+			subscriptionForm.RewriteRules,
 		)
 		if err != nil {
 			v.Set("form", subscriptionForm)

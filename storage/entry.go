@@ -273,11 +273,17 @@ func (s *Storage) ArchiveEntries(days int) error {
 		WHERE
 			id=ANY(SELECT id FROM entries WHERE status='read' AND starred is false AND published_at < now () - '%d days'::interval LIMIT 5000)
 	`
-	if _, err := s.db.Exec(fmt.Sprintf(query, days)); err != nil {
+	result, err := s.db.Exec(fmt.Sprintf(query, days))
+	if err != nil {
 		return fmt.Errorf(`store: unable to archive read entries: %v`, err)
 	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf(`store: unable to archive read entries: %v`, err)
+	}
+	logger.Info("%d articles archived.", count)
 
-	return nil
+	return s.cleanMediaReferences()
 }
 
 // SetEntriesStatus update the status of the given list of entries.

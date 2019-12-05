@@ -9,6 +9,7 @@ import (
 
 	"miniflux.app/config"
 	"miniflux.app/filesystem"
+	"miniflux.app/logger"
 	"miniflux.app/model"
 	"miniflux.app/reader/media"
 	"miniflux.app/timer"
@@ -287,8 +288,30 @@ func (s *Storage) UpdateEntriesMedia(entries model.Entries) error {
 	return s.CreateEntriesMedia(entries)
 }
 
-// CleanupMedias deletes from the database medias those don't belong to any entries.
-func (s *Storage) CleanupMedias() error {
+// cleanMediaReferences removes entry_medias records which belong to entries that are marked as removed.
+func (s *Storage) cleanMediaReferences() error {
+	query := `
+		DELETE FROM entry_medias
+		WHERE entry_id IN (
+			SELECT id FROM entries WHERE status=$1
+		)
+	`
+	result, err := s.db.Exec(query, model.EntryStatusRemoved)
+	if err != nil {
+		return fmt.Errorf("store: unable to clean media references: %v", err)
+	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf(`store:unable to clean media references: %v`, err)
+	}
+	logger.Info("%d unused media references removed.", count)
+
+	return nil
+}
+
+// cleanMediaRecords removes media records which has no reference record at all.
+// Important: this should always run after CleanMediaCaches(), or caches in disk will be orphan files.
+func (s *Storage) cleanMediaRecords() error {
 	query := `
 		DELETE FROM medias
 		WHERE id IN (
@@ -298,9 +321,15 @@ func (s *Storage) CleanupMedias() error {
 			WHERE em.entry_id IS NULL
 		)
 	`
-	if _, err := s.db.Exec(query); err != nil {
-		return fmt.Errorf("unable to cleanup medias: %v", err)
+	result, err := s.db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("unable to clean media records: %v", err)
+	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("unable to clean media records: %v", err)
 	}
 
+	logger.Info("%d unused media records removed.", count)
 	return nil
 }

@@ -247,6 +247,9 @@ func (s *Storage) CleanMediaCaches() error {
 	}
 
 	logger.Info("%d media cache removed.", count)
+
+	// step 2: Remove media records which has no reference record at all.
+	err = s.cleanMediaRecords()
 	return nil
 }
 

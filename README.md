@@ -8,7 +8,20 @@ This is a Miniflux fork, ships with all upstream features, plus:
 - Quickly toggle masonry / list view for every category / feed.
 - Action menu, with additinal action `Mark Above as Read`.
 - Save / Edit articles.
-- Image cache.
+- Cache images to disk/database according to feeds settings
+
+### Environment Variables Added
+
+| Variable Name         | Description                                 | Default Value |
+| --------------------- | ------------------------------------------- | ------------- |
+| DISABLE_CACHE_SERVICE | Set the value to 1 to disable cache service | None          |
+| CACHE_FREQUENCY       | Caching job frequency                       | 24 (hours)    |
+| CACHE_LOCATION        | Where to save caches, "disk" or "database"  | disk          |
+| DISK_STORAGE_ROOT     | The path where the disk storage located     | ./            |
+
+> Disable HTTP service (with `DISABLE_HTTP_SERVICE`), will disable cache service on anyway.
+
+See all other variables [here](https://miniflux.app/docs/configuration.html).
 
 ### About the NSFW Mode
 

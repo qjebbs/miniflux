@@ -26,6 +26,9 @@ const (
 	flagDebugModeHelp       = "Show debug logs"
 	flagConfigFileHelp      = "Load configuration file"
 	flagConfigDumpHelp      = "Print parsed configuration values"
+	flagCacheToDiskHelp     = "Move media caches from database to disk"
+	flagCleanCacheHelp      = "Remove unused caches from disk and database"
+	flagArchiveReadHelp     = "Archive read articles"
 )
 
 // Parse parses command line arguments.
@@ -42,6 +45,9 @@ func Parse() {
 		flagDebugMode       bool
 		flagConfigFile      string
 		flagConfigDump      bool
+		flagCacheToDisk     bool
+		flagCleanCache      bool
+		flagArchiveRead     bool
 	)
 
 	flag.BoolVar(&flagInfo, "info", false, flagInfoHelp)
@@ -57,6 +63,9 @@ func Parse() {
 	flag.StringVar(&flagConfigFile, "config-file", "", flagConfigFileHelp)
 	flag.StringVar(&flagConfigFile, "c", "", flagConfigFileHelp)
 	flag.BoolVar(&flagConfigDump, "config-dump", false, flagConfigDumpHelp)
+	flag.BoolVar(&flagCacheToDisk, "cache-to-disk", false, flagCacheToDiskHelp)
+	flag.BoolVar(&flagCleanCache, "cache-clean", false, flagCleanCacheHelp)
+	flag.BoolVar(&flagArchiveRead, "archive-read", false, flagArchiveReadHelp)
 	flag.Parse()
 
 	cfg := config.NewParser()
@@ -134,6 +143,30 @@ func Parse() {
 
 	if flagResetPassword {
 		resetPassword(store)
+		return
+	}
+
+	if flagCacheToDisk {
+		err = store.MoveCacheToDisk()
+		if err != nil {
+			logger.Error("%v", err)
+		}
+		return
+	}
+
+	if flagCleanCache {
+		err = store.CleanMediaCaches()
+		if err != nil {
+			logger.Error("%v", err)
+		}
+		return
+	}
+
+	if flagArchiveRead {
+		err = store.ArchiveEntries(config.Opts.CleanupArchiveReadDays())
+		if err != nil {
+			logger.Error("%v", err)
+		}
 		return
 	}
 

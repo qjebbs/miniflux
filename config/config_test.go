@@ -604,6 +604,39 @@ func TestCacheFrequency(t *testing.T) {
 	}
 }
 
+func TestDefaultCacheLocation(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+	expected := "disk"
+	result := opts.CacheLocation()
+
+	if result != expected {
+		t.Fatalf(`Unexpected CACHE_LOCATION value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestCacheLocation(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("CACHE_LOCATION", "database")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+	expected := "database"
+	result := opts.CacheLocation()
+
+	if result != expected {
+		t.Fatalf(`Unexpected CACHE_LOCATION value, got %v instead of %v`, result, expected)
+	}
+}
+
 func TestDefaultWorkerPoolSizeValue(t *testing.T) {
 	os.Clearenv()
 
@@ -1275,6 +1308,40 @@ func TestDefaultHTTPClientMaxBodySizeValue(t *testing.T) {
 
 	if result != expected {
 		t.Fatalf(`Unexpected HTTP_CLIENT_MAX_BODY_SIZE value, got %d instead of %d`, result, expected)
+	}
+}
+func TestDefaultDiskStorageRoot(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := "./"
+	result := opts.DiskStorageRoot()
+
+	if result != expected {
+		t.Fatalf(`Unexpected FILE_SYSTEM_STORAGE_ROOT value, got %s instead of %s`, result, expected)
+	}
+}
+
+func TestDiskStorageRoot(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("DISK_STORAGE_ROOT", "/some/path")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := "/some/path"
+	result := opts.DiskStorageRoot()
+
+	if result != expected {
+		t.Fatalf(`Unexpected FILE_SYSTEM_STORAGE_ROOT value, got %s instead of %s`, result, expected)
 	}
 }
 

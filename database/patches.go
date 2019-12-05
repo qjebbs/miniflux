@@ -16,7 +16,7 @@ func (p *patcher) do() error {
 			url text not null,
 			url_hash text not null unique,
 			mime_type text default '',
-			content bytea default E''::bytea,
+			content bytea default null,
 			size int8 default 0,
 			cached bool default 'f',
 			created_at timestamp with time zone default current_timestamp,

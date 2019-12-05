@@ -16,10 +16,12 @@ const (
 	defaultHTTPService               = true
 	defaultSchedulerService          = true
 	defaultCacheService              = true
+	defaultCacheLocation             = "disk"
 	defaultDebug                     = false
 	defaultBaseURL                   = "http://localhost"
 	defaultRootURL                   = "http://localhost"
 	defaultBasePath                  = ""
+	defaultDiskStorageRoot           = "./"
 	defaultWorkerPoolSize            = 5
 	defaultPollingFrequency          = 60
 	defaultBatchSize                 = 10
@@ -56,10 +58,12 @@ type Options struct {
 	httpService               bool
 	schedulerService          bool
 	cacheService              bool
+	cacheLocation             string
 	debug                     bool
 	baseURL                   string
 	rootURL                   string
 	basePath                  string
+	diskStorageRoot           string
 	databaseURL               string
 	databaseMaxConns          int
 	databaseMinConns          int
@@ -97,10 +101,12 @@ func NewOptions() *Options {
 		httpService:               defaultHTTPService,
 		schedulerService:          defaultSchedulerService,
 		cacheService:              defaultCacheService,
+		cacheLocation:             defaultCacheLocation,
 		debug:                     defaultDebug,
 		baseURL:                   defaultBaseURL,
 		rootURL:                   defaultRootURL,
 		basePath:                  defaultBasePath,
+		diskStorageRoot:           defaultDiskStorageRoot,
 		databaseURL:               defaultDatabaseURL,
 		databaseMaxConns:          defaultDatabaseMaxConns,
 		databaseMinConns:          defaultDatabaseMinConns,
@@ -153,6 +159,11 @@ func (o *Options) RootURL() string {
 // BasePath returns the application base path according to the base URL.
 func (o *Options) BasePath() string {
 	return o.basePath
+}
+
+// DiskStorageRoot returns the root path of file system storage.
+func (o *Options) DiskStorageRoot() string {
+	return o.diskStorageRoot
 }
 
 // IsDefaultDatabaseURL returns true if the default database URL is used.
@@ -295,6 +306,11 @@ func (o *Options) HasCacheService() bool {
 	return o.cacheService && o.httpService
 }
 
+// CacheLocation returns where to save caches.
+func (o *Options) CacheLocation() string {
+	return o.cacheLocation
+}
+
 // PocketConsumerKey returns the Pocket Consumer Key if configured.
 func (o *Options) PocketConsumerKey(defaultValue string) string {
 	if o.pocketConsumerKey != "" {
@@ -320,12 +336,14 @@ func (o *Options) String() string {
 	builder.WriteString(fmt.Sprintf("HTTP_SERVICE: %v\n", o.httpService))
 	builder.WriteString(fmt.Sprintf("SCHEDULER_SERVICE: %v\n", o.schedulerService))
 	builder.WriteString(fmt.Sprintf("CACHE_SERVICE: %v\n", o.cacheService))
+	builder.WriteString(fmt.Sprintf("CACHE_LOCATION: %v\n", o.cacheLocation))
 	builder.WriteString(fmt.Sprintf("CACHE_FREQUENCY: %v\n", o.cacheFrequency))
 	builder.WriteString(fmt.Sprintf("HTTPS: %v\n", o.HTTPS))
 	builder.WriteString(fmt.Sprintf("HSTS: %v\n", o.hsts))
 	builder.WriteString(fmt.Sprintf("BASE_URL: %v\n", o.baseURL))
 	builder.WriteString(fmt.Sprintf("ROOT_URL: %v\n", o.rootURL))
 	builder.WriteString(fmt.Sprintf("BASE_PATH: %v\n", o.basePath))
+	builder.WriteString(fmt.Sprintf("DISK_STORAGE_ROOT: %v\n", o.diskStorageRoot))
 	builder.WriteString(fmt.Sprintf("LISTEN_ADDR: %v\n", o.listenAddr))
 	builder.WriteString(fmt.Sprintf("DATABASE_URL: %v\n", o.databaseURL))
 	builder.WriteString(fmt.Sprintf("DATABASE_MAX_CONNS: %v\n", o.databaseMaxConns))

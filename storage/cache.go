@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"miniflux.app/filesystem"
 	"miniflux.app/logger"
 	"miniflux.app/model"
 	"miniflux.app/reader/media"
@@ -53,6 +54,8 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
 	mediaEntries := make(map[int64]string, 0)
 	// FIXME: use created_at to ignore failed medias could have problem
 	// when caching medias which created long time ago but never requires cache
+	// TODO: If an image is cached in disk, but user switch cache location to database,
+	// the record cached=true, but content=null, should recache in this case.
 	query := `
 	SELECT m.id, m.url, m.url_hash, m.cached, max(e.url) as referrer, string_agg(cast(e.id as TEXT),',') as eids
     FROM feeds f
@@ -167,7 +170,9 @@ func (s *Storage) getEntryMedias(userID, EntryID int64) (model.Medias, error) {
 	return medias, nil
 }
 
-// RemoveFeedCaches removes all caches of a feed.
+// RemoveFeedCaches removes all caches references of a feed.
+// It doesn't really remove the caches in database or file system.
+// The unreferred caches will be remove by CleanMediaCaches() later.
 func (s *Storage) RemoveFeedCaches(userID, feedID int64) error {
 	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:RemoveFeedCaches] userID=%d, feedID=%d", userID, feedID))
 
@@ -198,13 +203,16 @@ func (s *Storage) RemoveFeedCaches(userID, feedID int64) error {
 	return nil
 }
 
-// CleanupCaches removes caches that has no entry refer to.
-func (s *Storage) CleanupCaches() error {
-	defer timer.ExecutionTime(time.Now(), "[Storage:CleanupCaches]")
-
-	result, err := s.db.Exec(`
+// CleanMediaCaches removes caches that no entry claims to use.
+func (s *Storage) CleanMediaCaches() error {
+	defer timer.ExecutionTime(time.Now(), "[Storage:CleanMediaCaches]")
+	// Step 1: clean media which has no 'use cache' reference, which applies to 2 cases:
+	// 1. media which has reference records, but no 'use cache' record.
+	// 2. media which has no reference record at all.
+	// After this step, all unused cache content (in database and disk) are removed
+	query := `
 		UPDATE medias 
-		SET mime_type='', content = E''::bytea, size=0, cached='f'
+		SET content = NULL, cached='f'
 		WHERE id in (
 			SELECT id
 			FROM medias
@@ -212,14 +220,30 @@ func (s *Storage) CleanupCaches() error {
 				SELECT media_id from entry_medias WHERE use_cache='t'
 			)
 		)
-	`)
-	if err != nil {
-		return fmt.Errorf("unable to remove CleanupCaches: %v", err)
+		RETURNING url_hash
+	`
+	rows, err := s.db.Query(query)
+	defer rows.Close()
+	if err == sql.ErrNoRows {
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("unable to clean up caches: %v", err)
 	}
 
-	count, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("unable to remove CleanupCaches: %v", err)
+	count := 0
+	for rows.Next() {
+		var urlHash string
+		err := rows.Scan(&urlHash)
+		if err != nil {
+			logger.Error("unable to fetch unused cache info: %v", err)
+			continue
+		}
+		err = filesystem.RemoveMediaFile(urlHash)
+		if err != nil {
+			logger.Error("unable to remove cache file (%s): %v", urlHash, err)
+			continue
+		}
+		count++
 	}
 
 	logger.Info("%d media cache removed.", count)
@@ -228,6 +252,7 @@ func (s *Storage) CleanupCaches() error {
 
 // ClearAllCaches clears caches of all user and all entries.
 func (s *Storage) ClearAllCaches() error {
+	// TODO: Before the method is used, clean filesystem cache files should be implemented.
 	query := `
 		UPDATE medias SET mime_type='', content = E''::bytea, size=0, cached='f' WHERE cached='t';
 		UPDATE entry_medias set use_cache='f' WHERE use_cache='t';
@@ -273,4 +298,49 @@ func (s *Storage) ToggleEntryCache(userID int64, entryID int64) error {
 	}
 
 	return s.CacheEntryMedias(userID, entryID)
+}
+
+// MoveCacheToDisk move all caches in database to disk
+func (s *Storage) MoveCacheToDisk() error {
+	query := `
+		SELECT id, url_hash, content
+		FROM medias
+		WHERE cached='t' and content IS NOT NULL
+	`
+	rows, err := s.db.Query(query)
+	defer rows.Close()
+	if err == sql.ErrNoRows {
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("unable to move cache: %v", err)
+	}
+
+	var media model.Media
+	var countSaved int64
+	for rows.Next() {
+		err := rows.Scan(&media.ID, &media.URLHash, &media.Content)
+		if err != nil {
+			return fmt.Errorf("unable to fetch media row: %v", err)
+		}
+		err = filesystem.SaveMediaFile(&media)
+		if err != nil {
+			return fmt.Errorf("unable to save media file: %v", err)
+		}
+		countSaved++
+	}
+	query = `
+		UPDATE medias 
+		SET content=NULL
+		WHERE content IS NOT NULL
+	`
+	result, err := s.db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("unable to clear data base cache: %v", err)
+	}
+	countAll, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("unable to clear data base cache: %v", err)
+	}
+	logger.Info("%d cache(s) moved to disk, %d unused cache(s) removed", countSaved, countAll-countSaved)
+	return nil
 }

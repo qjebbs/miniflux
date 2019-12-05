@@ -56,13 +56,14 @@ func cleanupScheduler(store *storage.Storage, frequency int, archiveDays int, se
 		logger.Info("[Scheduler:Cleanup] Cleaned %d sessions and %d user sessions", nbSessions, nbUserSessions)
 
 		if err := store.ArchiveEntries(archiveDays); err != nil {
-			logger.Error("[Scheduler:Cleanup] %v", err)
+			logger.Error("[Scheduler:Cleanup:ArchiveEntries] %v", err)
+		}
+		// Important: clean caches before media, or caches in disk will be orphan files.
+		if err := store.CleanMediaCaches(); err != nil {
+			logger.Error("[Scheduler:Cleanup:Caches] %v", err)
 		}
 		if err := store.CleanupMedias(); err != nil {
-			logger.Error("[Scheduler:Cleanup] %v", err)
-		}
-		if err := store.CleanupCaches(); err != nil {
-			logger.Error("[Scheduler:Cleanup] %v", err)
+			logger.Error("[Scheduler:Cleanup:Medias] %v", err)
 		}
 	}
 }

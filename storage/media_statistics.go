@@ -53,7 +53,7 @@ func (s *Storage) MediaStatisticsByEntry(entryID int64) (count int, cacheCount i
 func (s *Storage) mediaStatisticsByCond(cond string) (count int, cacheCount int, cacheSize int, err error) {
 
 	query := fmt.Sprintf(`
-	SELECT count(m.id) count
+	SELECT count(DISTINCT m.id) count
 	FROM feeds f
 		INNER JOIN entries e on f.id=e.feed_id
 		INNER JOIN entry_medias em on e.id=em.entry_id
@@ -66,7 +66,7 @@ func (s *Storage) mediaStatisticsByCond(cond string) (count int, cacheCount int,
 	}
 
 	query = fmt.Sprintf(`
-	SELECT count(m.id) count, coalesce(sum(m.size),0) size
+	SELECT count(DISTINCT m.id) count, coalesce(sum(m.size),0) size
 	FROM feeds f
 		INNER JOIN entries e on f.id=e.feed_id
 		INNER JOIN entry_medias em on e.id=em.entry_id

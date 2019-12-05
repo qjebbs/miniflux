@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"miniflux.app/config"
+	"miniflux.app/filesystem"
 	"miniflux.app/model"
 	"miniflux.app/reader/media"
 	"miniflux.app/timer"
@@ -102,7 +104,7 @@ func (s *Storage) UserMediaByHash(media *model.Media, userID int64) error {
 	return nil
 }
 
-// CreateMedia creates a new media cache.
+// CreateMedia creates a new media item.
 func (s *Storage) CreateMedia(media *model.Media) error {
 	defer timer.ExecutionTime(time.Now(), "[Storage:CreateMedia]")
 	query := `
@@ -205,14 +207,31 @@ func (s *Storage) UpdateMedia(media *model.Media) error {
 	SET mime_type=$2, content=$3, size=$4, cached=$5
 	WHERE id = $1
 `
-	_, err := s.db.Exec(
-		query,
-		media.ID,
-		normalizeMimeType(media.MimeType),
-		media.Content,
-		media.Size,
-		media.Cached,
-	)
+
+	var err error
+	if config.Opts.CacheLocation() != "database" {
+		err = filesystem.SaveMediaFile(media)
+		if err != nil {
+			return fmt.Errorf("Unable to update media: %v", err)
+		}
+		_, err = s.db.Exec(
+			query,
+			media.ID,
+			normalizeMimeType(media.MimeType),
+			nil,
+			media.Size,
+			media.Cached,
+		)
+	} else {
+		_, err = s.db.Exec(
+			query,
+			media.ID,
+			normalizeMimeType(media.MimeType),
+			media.Content,
+			media.Size,
+			media.Cached,
+		)
+	}
 
 	if err != nil {
 		return fmt.Errorf("Unable to update media: %v", err)
@@ -273,7 +292,7 @@ func (s *Storage) CleanupMedias() error {
 	query := `
 		DELETE FROM medias
 		WHERE id IN (
-			SELECT id 
+			SELECT m.id 
 			FROM medias m
 			LEFT JOIN entry_medias em on m.id=em.media_id
 			WHERE em.entry_id IS NULL

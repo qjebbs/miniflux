@@ -162,6 +162,10 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.httpClientTimeout = parseInt(value, defaultHTTPClientTimeout)
 		case "HTTP_CLIENT_MAX_BODY_SIZE":
 			p.opts.httpClientMaxBodySize = int64(parseInt(value, defaultHTTPClientMaxBodySize) * 1024 * 1024)
+		case "DISK_STORAGE_ROOT":
+			p.opts.diskStorageRoot = parseString(value, defaultDiskStorageRoot)
+		case "CACHE_LOCATION":
+			p.opts.cacheLocation = parseString(value, defaultCacheLocation)
 		}
 	}
 

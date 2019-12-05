@@ -8,9 +8,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"miniflux.app/config"
+	"miniflux.app/filesystem"
 
 	"miniflux.app/url"
 
@@ -43,17 +45,34 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 	imageURL := string(decodedURL)
 
 	userID := request.UserID(r)
-	media, err := h.store.UserMediaByURL(imageURL, userID)
 	etag := crypto.HashFromBytes(decodedURL)
+	media, err := h.store.UserMediaByURL(imageURL, userID)
 
 	if err == nil && media.Cached {
-		response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
-			b.WithHeader("Content-Type", media.MimeType)
-			b.WithBody(media.Content)
-			b.WithoutCompression()
-			b.Write()
-		})
-		return
+		if media.Content != nil {
+			logger.Debug(`[Proxy] From database cache, for %q`, imageURL)
+			response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+				b.WithHeader("Content-Type", media.MimeType)
+				b.WithBody(media.Content)
+				b.WithoutCompression()
+				b.Write()
+			})
+			return
+		}
+		// cache is located in file system
+		var file *os.File
+		file, err = filesystem.MediaFileByHash(media.URLHash)
+		if err == nil {
+			defer file.Close()
+			logger.Debug(`[Proxy] From filesystem cache, for %q`, imageURL)
+			response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+				b.WithHeader("Content-Type", media.MimeType)
+				b.WithBody(file)
+				b.WithoutCompression()
+				b.Write()
+			})
+			return
+		}
 	}
 	proxyParam := request.QueryStringParam(r, "proxy", "auto")
 	proxyImages := config.Opts.ProxyImages()
@@ -83,9 +102,9 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
 		req.Header.Add("Referer", media.Referrer)
 		resp, err = clt.Do(req)
 		if err != nil {
@@ -97,6 +116,7 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	defer resp.Body.Close()
 
 	response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
 		b.WithHeader("Content-Type", resp.Header.Get("Content-Type"))

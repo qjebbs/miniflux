@@ -29,9 +29,15 @@ func (s *Storage) CacheMedias(days int) error {
 		logger.Debug("[Storage:CacheMedias] caching medias (%d of %d) %s", i+1, len(medias), m.URL)
 		entries, _ := mEntries[m.ID]
 		if !m.Cached {
-			if err = media.FindMedia(m); err != nil {
-				logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
-				continue
+			// try load media from disk cache first
+			if err = filesystem.MediaFromCache(m); err != nil {
+				logger.Debug("[Storage:CacheMedias] unable to load disk cache, try internet for %s: %v", m.URL, err)
+				if err = media.FindMedia(m); err != nil {
+					logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
+					continue
+				}
+			} else {
+				logger.Debug("[Storage:CacheMedias] loaded from disk cache: %s", m.URL)
 			}
 			m.Cached = true
 			err = s.UpdateMedia(m)
@@ -54,10 +60,15 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
 	mediaEntries := make(map[int64]string, 0)
 	// FIXME: use created_at to ignore failed medias could have problem
 	// when caching medias which created long time ago but never requires cache
-	// TODO: If an image is cached in disk, but user switch cache location to database,
-	// the record cached=true, but content=null, should recache in this case.
 	query := `
-	SELECT m.id, m.url, m.url_hash, m.cached, max(e.url) as referrer, string_agg(cast(e.id as TEXT),',') as eids
+	SELECT 
+		m.id,
+		m.url,
+		m.url_hash,
+		m.mime_type,
+		m.cached,
+		max(e.url) as referrer,
+		string_agg(cast(e.id as TEXT),',') as eids
     FROM feeds f
         INNER JOIN entries e ON f.id=e.feed_id
         INNER JOIN entry_medias em ON e.id=em.entry_id
@@ -84,7 +95,15 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
 	for rows.Next() {
 		var media model.Media
 		var entryIDs string
-		err := rows.Scan(&media.ID, &media.URL, &media.URLHash, &media.Cached, &media.Referrer, &entryIDs)
+		err := rows.Scan(
+			&media.ID,
+			&media.URL,
+			&media.URLHash,
+			&media.MimeType,
+			&media.Cached,
+			&media.Referrer,
+			&entryIDs,
+		)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to fetch uncached medias row: %v", err)
 		}

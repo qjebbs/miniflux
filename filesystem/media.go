@@ -2,12 +2,49 @@ package filesystem // import "miniflux.app/filesystem"
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"miniflux.app/model"
 	"miniflux.app/reader/media"
 )
+
+// MediaFromCache loads media from disk cache
+func MediaFromCache(m *model.Media) error {
+	if strings.HasPrefix(m.URL, "data:") {
+		return fmt.Errorf("refuse to cache 'data' scheme media")
+	}
+	if m.URLHash == "" {
+		m.URLHash = media.URLHash(m.URL)
+	}
+	// logger.Debug("[MediaByHash] Fetching media => %s", media.URL)
+	if m.URLHash == "" || m.MimeType == "" {
+		return fmt.Errorf("unable to load media cache for empty url or mimetype media")
+	}
+
+	fi, err := MediaFileByHash(m.URLHash)
+	if err != nil {
+		return err
+	}
+	defer fi.Close()
+	chunks := make([]byte, 1024, 1024)
+	buf := make([]byte, 1024)
+	for {
+		n, err := fi.Read(buf)
+		if err != nil && err != io.EOF {
+			return err
+		}
+		if 0 == n {
+			break
+		}
+		chunks = append(chunks, buf[:n]...)
+	}
+	m.Size = len(chunks)
+	m.Content = chunks
+	return nil
+}
 
 // MediaFileByURL returns an *os.File instance from given URL.
 func MediaFileByURL(URL string) (fi *os.File, err error) {
@@ -16,7 +53,6 @@ func MediaFileByURL(URL string) (fi *os.File, err error) {
 
 // MediaFileByHash returns an *os.File instance from given URL hash.
 func MediaFileByHash(hash string) (fi *os.File, err error) {
-	// TODO: update cached flag if file not exists
 	return os.Open(MediaFilePath(hash))
 }
 

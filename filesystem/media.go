@@ -36,13 +36,19 @@ func SaveMediaFile(media *model.Media) error {
 		return fmt.Errorf("Invalid media url hash: '%s'", media.URLHash)
 	}
 	fpath := MediaFilePath(media.URLHash)
-	_, err := os.Stat(fpath)
-	if err == nil || os.IsExist(err) {
+	exists, err := Exists(fpath)
+	if err != nil {
+		return err
+	}
+	if exists {
 		return nil
 	}
 	fdir := filepath.Dir(fpath)
-	_, err = os.Stat(fdir)
-	if os.IsNotExist(err) {
+	exists, err = Exists(fdir)
+	if err != nil {
+		return err
+	}
+	if !exists {
 		err = os.MkdirAll(fdir, os.ModePerm)
 		if err != nil {
 			return fmt.Errorf("Unable to create media folders: %v", err)
@@ -63,9 +69,28 @@ func SaveMediaFile(media *model.Media) error {
 // RemoveMediaFile removes a media file from file system by given hash
 func RemoveMediaFile(hash string) error {
 	fpath := MediaFilePath(hash)
-	_, err := os.Stat(fpath)
-	if os.IsNotExist(err) {
+	exists, err := Exists(fpath)
+	if err != nil {
+		return err
+	}
+	if !exists {
 		return nil
 	}
 	return os.Remove(MediaFilePath(hash))
+}
+
+// ExistMediaFile removes a media file from file system by given hash
+func ExistMediaFile(hash string) (bool, error) {
+	return Exists(MediaFilePath(hash))
+}
+
+// Exists tests if a path exists
+func Exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil || os.IsExist(err) {
+		return true, nil
+	} else if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }

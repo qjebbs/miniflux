@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"miniflux.app/filesystem"
@@ -16,6 +17,9 @@ import (
 
 // CacheMedias caches recently created medias of starred entries.
 // the days limit is to avoid always trying to cache failed medias
+// caching task has two parts:
+// 1. make sure the media is cached
+// 2. the entry_medias record claims to use the media, by setting 'use_cache' to true
 func (s *Storage) CacheMedias(days int) error {
 	medias, mEntries, err := s.getUncachedMedias(days)
 	if err != nil {
@@ -45,11 +49,7 @@ func (s *Storage) CacheMedias(days int) error {
 	return nil
 }
 
-// getUncachedMedias gets medias which should be but not yet cached
-// set entryID=0 to get all uncached medias.
-// caching task for an entry has two parts:
-// 1. make sure the media is cached
-// 2. has an entry_medias record refers to the media and use_cache='T'
+// getUncachedMedias gets medias which should be but not yet cached, together with their entry referrers' IDs
 func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, error) {
 	mediaEntries := make(map[int64]string, 0)
 	// FIXME: use created_at to ignore failed medias could have problem
@@ -97,14 +97,15 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
 
 // HasEntryCache indicates if an entry has cache.
 func (s *Storage) HasEntryCache(entryID int64) (bool, error) {
-	var result int
+	var result bool
 	query := `
-		SELECT count(*) as c 
+		SELECT true
 		FROM entry_medias em
 			INNER JOIN medias m on em.media_id=m.id
-		WHERE em.entry_id=$1 AND em.use_cache='T' AND m.cached='T'`
+		WHERE em.entry_id=$1 AND em.use_cache='T' AND m.cached='T'
+	`
 	err := s.db.QueryRow(query, entryID).Scan(&result)
-	return result > 0, err
+	return result, err
 }
 
 // CacheEntryMedias caches media of an entry.
@@ -119,6 +120,9 @@ func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
 	var buf bytes.Buffer
 	for _, m := range medias {
 		if !m.Cached {
+			// TODO: FindMedia() doesn't always need to fetch media from internet,
+			// when user backup and restore the media storage to another machine,
+			// we can try to load from disk first
 			if err = media.FindMedia(m); err != nil {
 				return err
 			}
@@ -170,9 +174,9 @@ func (s *Storage) getEntryMedias(userID, EntryID int64) (model.Medias, error) {
 	return medias, nil
 }
 
-// RemoveFeedCaches removes all caches references of a feed.
-// It doesn't really remove the caches in database or file system.
-// The unreferred caches will be remove by CleanMediaCaches() later.
+// RemoveFeedCaches update all cache references of a feed, to not claim to use the cache of media.
+// It doesn't really remove the caches in database or disk.
+// Unclaimed caches will be remove by CleanMediaCaches() later.
 func (s *Storage) RemoveFeedCaches(userID, feedID int64) error {
 	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:RemoveFeedCaches] userID=%d, feedID=%d", userID, feedID))
 
@@ -253,21 +257,13 @@ func (s *Storage) CleanMediaCaches() error {
 	return nil
 }
 
-// ClearAllCaches clears caches of all user and all entries.
-func (s *Storage) ClearAllCaches() error {
-	// TODO: Before the method is used, clean filesystem cache files should be implemented.
-	query := `
-		UPDATE medias SET mime_type='', content = E''::bytea, size=0, cached='f' WHERE cached='t';
-		UPDATE entry_medias set use_cache='f' WHERE use_cache='t';
-	`
-	if _, err := s.db.Exec(query); err != nil {
-		return fmt.Errorf("unable to clear all caches: %v", err)
-	}
-
-	return nil
-}
-
 // ToggleEntryCache toggles entry cache.
+// Toggle off: update all cache references of the entry, to not claim to use the cache of media.
+// It doesn't really remove the caches in database or disk.
+// Unclaimed caches will be remove by CleanMediaCaches() later.
+// Toggle on: Cache media and set use_cache of cache references to true
+// Usually, since toggle off doesn't really remove the caches,
+// it just update the use_cache flag to true with very low cost
 func (s *Storage) ToggleEntryCache(userID int64, entryID int64) error {
 	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:ToggleEntryCache] userID=%d, entryID=%d", userID, entryID))
 
@@ -346,4 +342,71 @@ func (s *Storage) MoveCacheToDisk() error {
 	}
 	logger.Info("%d cache(s) moved to disk, %d unused cache(s) removed", countSaved, countAll-countSaved)
 	return nil
+}
+
+// ValidateCaches finds missing caches and tags cached to false
+func (s *Storage) ValidateCaches() error {
+	var count int64
+	defer func() {
+		if count > 0 {
+			logger.Info("tagged %d invalid cache(s) as uncached", count)
+			return
+		}
+		// logger.Info("caches are good :)")
+	}()
+	var offset int64
+	var limit int64 = 5000
+	for {
+		// we only have to validate caches on disk
+		rows, err := s.db.Query(`
+			SELECT id, url_hash
+			FROM medias 
+			WHERE cached='t' AND content IS NULL
+			OFFSET $1
+			LIMIT $2
+		`, offset, limit)
+		// doesn't always returl sql.ErrNoRows when no rows
+		if err == sql.ErrNoRows || !rows.Next() {
+			return nil
+		} else if err != nil {
+			return fmt.Errorf("unable to fetch cached media: %v", err)
+		}
+
+		var invalidIDsBuf bytes.Buffer
+		for {
+			var id int64
+			var urlHash string
+			err := rows.Scan(&id, &urlHash)
+			if err != nil {
+				return fmt.Errorf("unable to fetch cache info: %v", err)
+			}
+			exists, err := filesystem.ExistMediaFile(urlHash)
+			if err != nil {
+				return fmt.Errorf("unable to validate disk cached: %v", err)
+			}
+			if !exists {
+				invalidIDsBuf.WriteString(strconv.Itoa(int(id)))
+				invalidIDsBuf.WriteByte(',')
+			}
+			if !rows.Next() {
+				break
+			}
+		}
+		rows.Close()
+		offset += limit
+		if invalidIDsBuf.Len() > 0 {
+			invalidIDs := invalidIDsBuf.String()[:invalidIDsBuf.Len()-1]
+			query := fmt.Sprintf(`UPDATE medias SET cached='f' WHERE id in (%s)`, invalidIDs)
+			result, err := s.db.Exec(query)
+			if err != nil {
+				return fmt.Errorf("Unable to update media table for invalid caches: %v", err)
+			}
+			affected, err := result.RowsAffected()
+			if err != nil {
+				return fmt.Errorf("Unable to update media table for invalid caches: %v", err)
+			}
+			count += affected
+			offset -= affected
+		}
+	}
 }

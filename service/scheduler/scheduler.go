@@ -67,8 +67,11 @@ func cleanupScheduler(store *storage.Storage, frequency int, archiveDays int, se
 func cacheScheduler(store *storage.Storage, frequency int) {
 	c := time.Tick(time.Duration(frequency) * time.Hour)
 	for range c {
+		if err := store.ValidateCaches(); err != nil {
+			logger.Error("[Scheduler:ValidateCaches] %v", err)
+		}
 		if err := store.CacheMedias(30); err != nil {
-			logger.Error("[Scheduler:Cache] %v", err)
+			logger.Error("[Scheduler:CacheMedias] %v", err)
 		}
 	}
 }

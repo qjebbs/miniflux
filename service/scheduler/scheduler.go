@@ -70,7 +70,7 @@ func cacheScheduler(store *storage.Storage, frequency int) {
 		if err := store.ValidateCaches(); err != nil {
 			logger.Error("[Scheduler:ValidateCaches] %v", err)
 		}
-		if err := store.CacheMedias(30); err != nil {
+		if err := store.CacheMedias(); err != nil {
 			logger.Error("[Scheduler:CacheMedias] %v", err)
 		}
 	}

@@ -19,6 +19,7 @@ func (p *patcher) do() error {
 			content bytea default null,
 			size int8 default 0,
 			cached bool default 'f',
+			error_count int default 0,
 			created_at timestamp with time zone default current_timestamp,
 			primary key (id)
 		);
@@ -59,6 +60,12 @@ func (p *patcher) do() error {
 	}
 	if !p.columnExists("feeds", "nsfw") {
 		_, err = p.db.Exec("alter table feeds add column nsfw bool default 'f';")
+		if err != nil {
+			return err
+		}
+	}
+	if !p.columnExists("medias", "error_count") {
+		_, err = p.db.Exec("alter table medias add column error_count int default 0;")
 		if err != nil {
 			return err
 		}

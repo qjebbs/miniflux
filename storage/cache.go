@@ -15,18 +15,23 @@ import (
 	"miniflux.app/timer"
 )
 
-// CacheMedias caches recently created medias of starred entries.
-// the days limit is to avoid always trying to cache failed medias
+const maxCachingError = 3
+
+// CacheMedias caches medias of starred entries, 5000 media a time.
 // caching task has two parts:
 // 1. make sure the media is cached
 // 2. the entry_medias record claims to use the media, by setting 'use_cache' to true
-func (s *Storage) CacheMedias(days int) error {
-	medias, mEntries, err := s.getUncachedMedias(days)
+func (s *Storage) CacheMedias() error {
+	medias, mEntries, err := s.getUncachedMedias(5000)
 	if err != nil {
 		return err
 	}
+	count := 0
+	defer func() {
+		logger.Info("%d media newly cached, %d failed", count, len(medias)-count)
+	}()
 	for i, m := range medias {
-		logger.Debug("[Storage:CacheMedias] caching medias (%d of %d) %s", i+1, len(medias), m.URL)
+		logger.Debug("[Storage:CacheMedias] caching medias (%d of %d) #%d: %s", i+1, len(medias), m.ID, m.URL)
 		entries, _ := mEntries[m.ID]
 		if !m.Cached {
 			// try load media from disk cache first
@@ -34,32 +39,32 @@ func (s *Storage) CacheMedias(days int) error {
 				logger.Debug("[Storage:CacheMedias] unable to load disk cache, try internet for %s: %v", m.URL, err)
 				if err = media.FindMedia(m); err != nil {
 					logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
+					m.ErrorCount++
+					if err = s.UpdateMediaError(m); err != nil {
+						return fmt.Errorf("[Storage:CacheMedias] unable to update media error %s: %v", m.URL, err)
+					}
 					continue
 				}
 			} else {
 				logger.Debug("[Storage:CacheMedias] loaded from disk cache: %s", m.URL)
 			}
 			m.Cached = true
-			err = s.UpdateMedia(m)
-			if err != nil {
-				logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
-				continue
+			if err = s.UpdateMedia(m); err != nil {
+				return fmt.Errorf("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
 			}
 		}
 		sql := fmt.Sprintf(`UPDATE entry_medias set use_cache='t' WHERE media_id=%d AND entry_id in (%s)`, m.ID, entries)
-		_, err := s.db.Exec(sql)
-		if err != nil {
-			logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
+		if _, err = s.db.Exec(sql); err != nil {
+			return fmt.Errorf("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
 		}
+		count++
 	}
 	return nil
 }
 
 // getUncachedMedias gets medias which should be but not yet cached, together with their entry referrers' IDs
-func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, error) {
+func (s *Storage) getUncachedMedias(limit int) (model.Medias, map[int64]string, error) {
 	mediaEntries := make(map[int64]string, 0)
-	// FIXME: use created_at to ignore failed medias could have problem
-	// when caching medias which created long time ago but never requires cache
 	query := `
 	SELECT 
 		m.id,
@@ -67,6 +72,7 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
 		m.url_hash,
 		m.mime_type,
 		m.cached,
+		m.error_count,
 		max(e.url) as referrer,
 		string_agg(cast(e.id as TEXT),',') as eids
     FROM feeds f
@@ -77,14 +83,13 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
         f.cache_media='T' 
         AND e.starred='T' 
 		AND (em.use_cache='F' OR m.cached='F')
-		AND created_at > now()-'%d days'::interval
+		AND m.error_count < $1
 	GROUP BY m.id
-    LIMIT 5000
+    LIMIT $2
 `
-	query = fmt.Sprintf(query, days)
 
 	medias := make(model.Medias, 0)
-	rows, err := s.db.Query(query)
+	rows, err := s.db.Query(query, maxCachingError, limit)
 	defer rows.Close()
 	if err == sql.ErrNoRows {
 		return medias, mediaEntries, nil
@@ -101,6 +106,7 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
 			&media.URLHash,
 			&media.MimeType,
 			&media.Cached,
+			&media.ErrorCount,
 			&media.Referrer,
 			&entryIDs,
 		)
@@ -115,7 +121,7 @@ func (s *Storage) getUncachedMedias(days int) (model.Medias, map[int64]string, e
 }
 
 // HasEntryCache indicates if an entry has cache.
-func (s *Storage) HasEntryCache(entryID int64) (bool, error) {
+func (s *Storage) HasEntryCache(entryID int64) bool {
 	var result bool
 	query := `
 		SELECT true
@@ -123,8 +129,8 @@ func (s *Storage) HasEntryCache(entryID int64) (bool, error) {
 			INNER JOIN medias m on em.media_id=m.id
 		WHERE em.entry_id=$1 AND em.use_cache='T' AND m.cached='T'
 	`
-	err := s.db.QueryRow(query, entryID).Scan(&result)
-	return result, err
+	s.db.QueryRow(query, entryID).Scan(&result)
+	return result
 }
 
 // CacheEntryMedias caches media of an entry.
@@ -286,12 +292,7 @@ func (s *Storage) CleanMediaCaches() error {
 func (s *Storage) ToggleEntryCache(userID int64, entryID int64) error {
 	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:ToggleEntryCache] userID=%d, entryID=%d", userID, entryID))
 
-	has, err := s.HasEntryCache(entryID)
-	if err != nil {
-		return fmt.Errorf("unable to toggle cache for entry #%d: %v", entryID, err)
-	}
-
-	if has {
+	if s.HasEntryCache(entryID) {
 		query := `
 			UPDATE entry_medias SET use_cache='f' WHERE entry_id in (
 				SELECT e.id

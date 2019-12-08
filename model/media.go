@@ -12,15 +12,16 @@ import (
 
 // Media represents a entry media cache
 type Media struct {
-	ID        int64     `json:"id"`
-	URL       string    `json:"url"`
-	URLHash   string    `json:"url_hash"`
-	Referrer  string    `json:"referrer"`
-	MimeType  string    `json:"mime_type"`
-	Content   []byte    `json:"content"`
-	Size      int       `json:"size"`
-	Cached    bool      `json:"cached"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         int64     `json:"id"`
+	URL        string    `json:"url"`
+	URLHash    string    `json:"url_hash"`
+	Referrer   string    `json:"referrer"`
+	MimeType   string    `json:"mime_type"`
+	Content    []byte    `json:"content"`
+	Size       int       `json:"size"`
+	Cached     bool      `json:"cached"`
+	ErrorCount int       `json:"error_count"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 // DataURL returns the data URL of the media cache.

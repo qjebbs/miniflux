@@ -241,6 +241,28 @@ func (s *Storage) UpdateMedia(media *model.Media) error {
 	return nil
 }
 
+// UpdateMediaError updates media errors.
+func (s *Storage) UpdateMediaError(m *model.Media) (err error) {
+	query := `
+		UPDATE
+			medias
+		SET
+			error_count=$1
+		WHERE
+			id=$2
+	`
+	_, err = s.db.Exec(query,
+		m.ErrorCount,
+		m.ID,
+	)
+
+	if err != nil {
+		return fmt.Errorf(`store: unable to update media error #%d: %v`, m.ID, err)
+	}
+
+	return nil
+}
+
 // Medias returns all media caches tht belongs to a user.
 func (s *Storage) Medias(userID int64) (model.Medias, error) {
 	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:Medias] userID=%d", userID))

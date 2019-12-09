@@ -17,53 +17,71 @@ import (
 
 const maxCachingError = 3
 
-// CacheMedias caches medias of starred entries, 5000 media a time.
+// CacheMedias caches medias of starred entries.
 // caching task has two parts:
 // 1. make sure the media is cached
 // 2. the entry_medias record claims to use the media, by setting 'use_cache' to true
 func (s *Storage) CacheMedias() error {
-	medias, mEntries, err := s.getUncachedMedias(5000)
-	if err != nil {
-		return err
-	}
+	offset := 0
+	limit := 5000
 	count := 0
+	failedCount := 0
 	defer func() {
-		logger.Info("%d media newly cached, %d failed", count, len(medias)-count)
+		logger.Info("%d media newly cached, %d failed", count, failedCount)
 	}()
-	for i, m := range medias {
-		logger.Debug("[Storage:CacheMedias] caching medias (%d of %d) #%d: %s", i+1, len(medias), m.ID, m.URL)
-		entries, _ := mEntries[m.ID]
-		if !m.Cached {
-			// try load media from disk cache first
-			if err = filesystem.MediaFromCache(m); err != nil {
-				logger.Debug("[Storage:CacheMedias] unable to load disk cache, try internet for %s: %v", m.URL, err)
-				if err = media.FindMedia(m); err != nil {
-					logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
-					m.ErrorCount++
-					if err = s.UpdateMediaError(m); err != nil {
-						return fmt.Errorf("[Storage:CacheMedias] unable to update media error %s: %v", m.URL, err)
+
+	var (
+		medias   model.Medias
+		mEntries map[int64]string
+		err      error
+	)
+	for flag := true; flag || len(medias) > 0; medias, mEntries, err = s.getUncachedMedias(offset, limit) {
+		flag = false
+		if err != nil {
+			return err
+		}
+		for i, m := range medias {
+			logger.Debug("[Storage:CacheMedias] caching media (%d of %d) #%d: %s", i+1, len(medias), m.ID, m.URL)
+			entries, _ := mEntries[m.ID]
+			if !m.Cached {
+				// try load media from disk cache first
+				if err = filesystem.MediaFromCache(m); err != nil {
+					logger.Debug("[Storage:CacheMedias] unable to load disk cache, try internet for %s: %v", m.URL, err)
+					if err = media.FindMedia(m); err != nil {
+						logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
+						m.ErrorCount++
+						if err = s.UpdateMediaError(m); err != nil {
+							return fmt.Errorf("[Storage:CacheMedias] unable to update media error %s: %v", m.URL, err)
+						}
+						// make sure this media not selected again
+						// ErrorCount >= maxCachingError are excluded already,
+						// we only have to move offset when it is smaller
+						if m.ErrorCount < maxCachingError {
+							offset++
+						}
+						failedCount++
+						continue
 					}
-					continue
+				} else {
+					logger.Debug("[Storage:CacheMedias] loaded from disk cache: %s", m.URLHash)
 				}
-			} else {
-				logger.Debug("[Storage:CacheMedias] loaded from disk cache: %s", m.URL)
+				m.Cached = true
+				if err = s.UpdateMedia(m); err != nil {
+					return fmt.Errorf("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
+				}
 			}
-			m.Cached = true
-			if err = s.UpdateMedia(m); err != nil {
+			sql := fmt.Sprintf(`UPDATE entry_medias set use_cache='t' WHERE media_id=%d AND entry_id in (%s)`, m.ID, entries)
+			if _, err = s.db.Exec(sql); err != nil {
 				return fmt.Errorf("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
 			}
+			count++
 		}
-		sql := fmt.Sprintf(`UPDATE entry_medias set use_cache='t' WHERE media_id=%d AND entry_id in (%s)`, m.ID, entries)
-		if _, err = s.db.Exec(sql); err != nil {
-			return fmt.Errorf("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
-		}
-		count++
 	}
 	return nil
 }
 
 // getUncachedMedias gets medias which should be but not yet cached, together with their entry referrers' IDs
-func (s *Storage) getUncachedMedias(limit int) (model.Medias, map[int64]string, error) {
+func (s *Storage) getUncachedMedias(offset int, limit int) (model.Medias, map[int64]string, error) {
 	mediaEntries := make(map[int64]string, 0)
 	query := `
 	SELECT 
@@ -85,11 +103,12 @@ func (s *Storage) getUncachedMedias(limit int) (model.Medias, map[int64]string, 
 		AND (em.use_cache='F' OR m.cached='F')
 		AND m.error_count < $1
 	GROUP BY m.id
-    LIMIT $2
+	OFFSET $2
+    LIMIT $3
 `
 
 	medias := make(model.Medias, 0)
-	rows, err := s.db.Query(query, maxCachingError, limit)
+	rows, err := s.db.Query(query, maxCachingError, offset, limit)
 	defer rows.Close()
 	if err == sql.ErrNoRows {
 		return medias, mediaEntries, nil

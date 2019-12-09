@@ -66,6 +66,8 @@ func (s *Storage) CacheMedias() error {
 					logger.Debug("[Storage:CacheMedias] loaded from disk cache: %s", m.URLHash)
 				}
 				m.Cached = true
+				// reset error count on success
+				m.ErrorCount = 0
 				if err = s.UpdateMedia(m); err != nil {
 					return fmt.Errorf("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
 				}

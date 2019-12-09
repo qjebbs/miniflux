@@ -46,12 +46,12 @@ func (s *Storage) CacheMedias() error {
 			if !m.Cached {
 				// try load media from disk cache first
 				if err = filesystem.MediaFromCache(m); err != nil {
-					logger.Debug("[Storage:CacheMedias] unable to load disk cache, try internet for %s: %v", m.URL, err)
+					logger.Debug("[Storage:CacheMedias] unable to load disk cache, fetch from internet: %v", err)
 					if err = media.FindMedia(m); err != nil {
-						logger.Error("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
+						logger.Error("[Storage:CacheMedias] unable to fetch media %s: %v", m.URL, err)
 						m.ErrorCount++
 						if err = s.UpdateMediaError(m); err != nil {
-							return fmt.Errorf("[Storage:CacheMedias] unable to update media error %s: %v", m.URL, err)
+							return fmt.Errorf("[Storage:CacheMedias] unable to update media error #%d: %v", m.ID, err)
 						}
 						// make sure this media not selected again
 						// ErrorCount >= maxCachingError are excluded already,
@@ -69,12 +69,12 @@ func (s *Storage) CacheMedias() error {
 				// reset error count on success
 				m.ErrorCount = 0
 				if err = s.UpdateMedia(m); err != nil {
-					return fmt.Errorf("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
+					return fmt.Errorf("[Storage:CacheMedias] unable to update media #%d: %v", m.ID, err)
 				}
 			}
 			sql := fmt.Sprintf(`UPDATE entry_medias set use_cache='t' WHERE media_id=%d AND entry_id in (%s)`, m.ID, entries)
 			if _, err = s.db.Exec(sql); err != nil {
-				return fmt.Errorf("[Storage:CacheMedias] unable to cache media %s: %v", m.URL, err)
+				return fmt.Errorf("[Storage:CacheMedias] unable to update media references media_id=%d, entry_id=(%s) : %v", m.ID, entries, err)
 			}
 			count++
 		}
@@ -166,15 +166,25 @@ func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
 	var buf bytes.Buffer
 	for _, m := range medias {
 		if !m.Cached {
-			// TODO: FindMedia() doesn't always need to fetch media from internet,
-			// when user backup and restore the media storage to another machine,
-			// we can try to load from disk first
-			if err = media.FindMedia(m); err != nil {
-				return err
+			logger.Debug("[Storage:CacheEntryMedias] caching media #%d: %v", m.ID, m.URL)
+			// try load media from disk cache first
+			if err = filesystem.MediaFromCache(m); err != nil {
+				logger.Debug("[Storage:CacheEntryMedias] unable to load disk cache, fetch from internet: %v", err)
+				if err = media.FindMedia(m); err != nil {
+					logger.Error("[Storage:CacheEntryMedias] unable to fetch media %s: %v", m.URL, err)
+					m.ErrorCount++
+					if err = s.UpdateMediaError(m); err != nil {
+						return fmt.Errorf("[Storage:CacheEntryMedias] unable to update media error #%d: %v", m.ID, err)
+					}
+					continue
+				}
+			} else {
+				logger.Debug("[Storage:CacheEntryMedias] loaded from disk cache: %s", m.URLHash)
 			}
 			m.Cached = true
+			m.ErrorCount = 0
 			if err = s.UpdateMedia(m); err != nil {
-				return err
+				return fmt.Errorf("[Storage:CacheEntryMedias] unable to update media #%d: %v", m.ID, err)
 			}
 		}
 		buf.WriteString(fmt.Sprintf("('%v','%v','T'),", EntryID, m.ID))
@@ -187,20 +197,23 @@ func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
 			SET use_cache='T'
 	`, vals)
 	_, err = s.db.Exec(sql)
-	return err
+	if err != nil {
+		return fmt.Errorf("[Storage:CacheEntryMedias] unable to update cache references: %v", err)
+	}
+	return nil
 }
 
 func (s *Storage) getEntryMedias(userID, EntryID int64) (model.Medias, error) {
 	query := `
-		SELECT m.id, m.url, m.url_hash, m.cached, e.url
+		SELECT m.id, m.url, m.url_hash, m.mime_type , m.cached, e.url
 		FROM feeds f
 			INNER JOIN entries e on f.id=e.feed_id
 			INNER JOIN entry_medias em on e.id=em.entry_id
 			INNER JOIN medias m on m.id=em.media_id
-		WHERE f.user_id=$1 AND e.id=$2
+		WHERE f.user_id=$1 AND e.id=$2 AND m.error_count < $3
 `
 	medias := make(model.Medias, 0)
-	rows, err := s.db.Query(query, userID, EntryID)
+	rows, err := s.db.Query(query, userID, EntryID, maxCachingError)
 	defer rows.Close()
 	if err == sql.ErrNoRows {
 		return medias, nil
@@ -210,7 +223,7 @@ func (s *Storage) getEntryMedias(userID, EntryID int64) (model.Medias, error) {
 
 	for rows.Next() {
 		var media model.Media
-		err := rows.Scan(&media.ID, &media.URL, &media.URLHash, &media.Cached, &media.Referrer)
+		err := rows.Scan(&media.ID, &media.URL, &media.URLHash, &media.MimeType, &media.Cached, &media.Referrer)
 		if err != nil {
 			return nil, fmt.Errorf("unable to fetch entry medias row: %v", err)
 		}

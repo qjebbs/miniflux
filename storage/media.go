@@ -132,6 +132,67 @@ func (s *Storage) CreateMedia(media *model.Media) error {
 	return nil
 }
 
+// CreateEntryMedia creates media for a single entry, and it won't replace existed media or media references
+func (s *Storage) CreateEntryMedia(entry *model.Entry) ([]int64, error) {
+	cap := 15
+	medias := make(map[string]string, cap)
+	var mediaIDs []int64
+
+	urls, err := media.ParseDocument(entry)
+	if err != nil || len(urls) == 0 {
+		return nil, err
+	}
+	for _, u := range urls {
+		hash := media.URLHash(u)
+		if _, ok := medias[hash]; !ok {
+			medias[hash] = fmt.Sprintf("('%v','%v'),", strings.Replace(u, "'", "''", -1), hash)
+		}
+	}
+
+	if len(medias) == 0 {
+		return nil, nil
+	}
+	// insert medias records
+	var buf bytes.Buffer
+	for _, em := range medias {
+		buf.WriteString(em)
+	}
+	vals := buf.String()[:buf.Len()-1]
+	sql := fmt.Sprintf(`
+		INSERT INTO medias (url, url_hash)
+		VALUES %s
+		ON CONFLICT (url_hash) DO UPDATE
+			SET created_at=current_timestamp
+		RETURNING id, url_hash
+	`, vals)
+	rows, err := s.db.Query(sql)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var m model.Media
+		err = rows.Scan(&m.ID, &m.URLHash)
+		if err != nil {
+			return nil, err
+		}
+		mediaIDs = append(mediaIDs, m.ID)
+	}
+
+	// insert entry_medias records
+	buf.Reset()
+	for _, id := range mediaIDs {
+		buf.WriteString(fmt.Sprintf("(%v,%v),", entry.ID, id))
+	}
+	vals = buf.String()[:buf.Len()-1]
+	sql = fmt.Sprintf(`
+		INSERT INTO entry_medias (entry_id, media_id) 
+		VALUES %s
+		ON CONFLICT DO NOTHING`, vals)
+	_, err = s.db.Exec(sql)
+	return mediaIDs, err
+}
+
 // CreateEntriesMedia creates media for a slice of entries at a time
 func (s *Storage) CreateEntriesMedia(entries model.Entries) error {
 	var err error
@@ -149,7 +210,9 @@ func (s *Storage) CreateEntriesMedia(entries model.Entries) error {
 		}
 		for _, u := range urls {
 			hash := media.URLHash(u)
-			medias[hash] = fmt.Sprintf("('%v','%v'),", strings.Replace(u, "'", "''", -1), hash)
+			if _, ok := medias[hash]; !ok {
+				medias[hash] = fmt.Sprintf("('%v','%v'),", strings.Replace(u, "'", "''", -1), hash)
+			}
 			if _, ok := urlEntries[hash]; !ok {
 				urlEntries[hash] = make(IDSet, 0)
 			}
@@ -195,7 +258,10 @@ func (s *Storage) CreateEntriesMedia(entries model.Entries) error {
 		}
 	}
 	vals = buf.String()[:buf.Len()-1]
-	sql = fmt.Sprintf(`INSERT INTO entry_medias (entry_id, media_id) VALUES %s`, vals)
+	sql = fmt.Sprintf(`
+		INSERT INTO entry_medias (entry_id, media_id) 
+		VALUES %s
+		ON CONFLICT DO NOTHING`, vals)
 	_, err = s.db.Exec(sql)
 	return err
 }
@@ -294,20 +360,39 @@ func (s *Storage) Medias(userID int64) (model.Medias, error) {
 	return medias, nil
 }
 
-// UpdateEntriesMedia updates media records for given entries
-func (s *Storage) UpdateEntriesMedia(entries model.Entries) error {
+// UpdateEntryMedia updates media records for given entries
+func (s *Storage) UpdateEntryMedia(entry *model.Entry) error {
 	defer timer.ExecutionTime(time.Now(), "[Storage:UpdateEntryMedias]")
-
-	var buf bytes.Buffer
-	for _, entry := range entries {
-		buf.WriteString(fmt.Sprintf("%d,", entry.ID))
+	if entry.Status == "" {
+		err := s.db.QueryRow(`SELECT status FROM entries WHERE id=$1`, entry.ID).Scan(&entry.Status)
+		if err != nil {
+			return fmt.Errorf("[Storage:UpdateEntryMedias] unable to fetch entry status #%d: %v", entry.ID, err)
+		}
 	}
-	vals := buf.String()[:buf.Len()-1]
-	_, err := s.db.Exec(`DELETE FROM entry_medias WHERE entry_id in ($1)`, vals)
+	if entry.Status == model.EntryStatusRemoved {
+		return nil
+	}
+	mediaIDs, err := s.CreateEntryMedia(entry)
 	if err != nil {
-		return err
+		return fmt.Errorf("[Storage:UpdateEntryMedias] unable to create media for entry #%d: %v", entry.ID, err)
 	}
-	return s.CreateEntriesMedia(entries)
+	if len(mediaIDs) == 0 {
+		// no media for update entry, remove all its references
+		_, err = s.db.Exec(`DELETE FROM entry_medias WHERE entry_id = $1`, entry.ID)
+	} else {
+		// remove references of removed media
+		var buf bytes.Buffer
+		for _, id := range mediaIDs {
+			buf.WriteString(fmt.Sprintf("%d,", id))
+		}
+		vals := buf.String()[:buf.Len()-1]
+		query := fmt.Sprintf(`DELETE FROM entry_medias WHERE entry_id = %d AND media_id not in (%s)`, entry.ID, vals)
+		_, err = s.db.Exec(query)
+	}
+	if err != nil {
+		return fmt.Errorf("unable to clean media for entry #%d: %v", entry.ID, err)
+	}
+	return nil
 }
 
 // cleanMediaReferences removes entry_medias records which belong to entries that are marked as removed.

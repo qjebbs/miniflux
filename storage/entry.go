@@ -58,7 +58,7 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
 	}
 
-	err = s.UpdateEntriesMedia(model.Entries{entry})
+	err = s.UpdateEntryMedia(entry)
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
@@ -165,7 +165,7 @@ func (s *Storage) updateEntry(entry *model.Entry) error {
 		enclosure.EntryID = entry.ID
 	}
 
-	err = s.UpdateEntriesMedia(model.Entries{entry})
+	err = s.UpdateEntryMedia(entry)
 	if err != nil {
 		return fmt.Errorf(`unable to update entry medias %q: %v`, entry.URL, err)
 	}
@@ -198,7 +198,7 @@ func (s *Storage) UpdateEntryByID(entry *model.Entry) error {
 		return fmt.Errorf(`unable to update entry %d: %v`, entry.ID, err)
 	}
 
-	err = s.UpdateEntriesMedia(model.Entries{entry})
+	err = s.UpdateEntryMedia(entry)
 	if err != nil {
 		return fmt.Errorf(`unable to update entry medias %d: %v`, entry.ID, err)
 	}

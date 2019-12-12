@@ -199,6 +199,49 @@ a:hover {
    100% {visibility: hidden; opacity: 0; z-index: 0}
 }
 
+/* Statistics List */
+.statistics-list ul,
+.statistics-list li {
+    list-style-type: none;
+}
+
+.statistics-list .list-header {
+    padding: 0.5em;
+    color: var(--category-color);
+}
+
+.statistics-list .list-item {
+    border: solid var(--header-list-border-color);
+    border-width: 0 0 1px 0;
+    padding: 0.5em;
+    line-height: 2.5em;
+}
+
+.statistics-list a {
+    text-decoration: none;
+}
+
+.statistics-list .list-item:last-child {
+    border-width: 0;
+}
+
+.statistics-list .list-item .title {
+    display: inline-block;
+    /* fix line-height for inline-block */
+    /* https://stackoverflow.com/questions/5373400/why-does-setting-line-height-for-one-of-two-inline-block-sibling-divs-effect-bot */
+    vertical-align: top;
+    width: 80%;
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+}
+
+.statistics-list .list-item .count {
+    float: right;
+    width: 20%;
+    text-align: right;
+}
+
 @media (min-width: 600px) {
     body {
         margin: auto;
@@ -284,6 +327,10 @@ a:hover {
 
     .search-form.has-search-query {
         display: block;
+    }
+
+    .statistics-list .list-item {
+        line-height: 1.5em;
     }
 }
 
@@ -850,41 +897,6 @@ article.feed-parsing-error {
     font-size: 0.85em;
     margin-top: 2px;
     color: var(--parsing-error-color);
-}
-
-/* Statistics List */
-.statistics-list ul,
-.statistics-list li {
-    list-style-type: none;
-}
-
-.statistics-list .list-header {
-    padding: 0.5em;
-    color: var(--category-color);
-}
-
-.statistics-list .list-item {
-    border: solid var(--header-list-border-color);
-    border-width: 0 0 1px 0;
-    padding: 0.5em;
-}
-
-.statistics-list .list-item:last-child {
-    border-width: 0;
-}
-
-.statistics-list .list-item .title {
-    display: inline-block;
-    width: 80%;
-    overflow: hidden;
-    text-overflow:ellipsis;
-    white-space: nowrap;
-}
-
-.statistics-list .list-item .count {
-    float: right;
-    width: 20%;
-    text-align: right;
 }
 
 .parsing-error-count {

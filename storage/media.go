@@ -271,7 +271,7 @@ func (s *Storage) UpdateMedia(media *model.Media) error {
 	defer timer.ExecutionTime(time.Now(), "[Storage:UpdateMedia]")
 	query := `
 	UPDATE medias
-	SET mime_type=$2, content=$3, size=$4, cached=$5
+	SET mime_type=$2, content=$3, size=$4, cached=$5, error_count=$6
 	WHERE id = $1
 `
 
@@ -288,6 +288,7 @@ func (s *Storage) UpdateMedia(media *model.Media) error {
 			nil,
 			media.Size,
 			media.Cached,
+			media.ErrorCount,
 		)
 	} else {
 		_, err = s.db.Exec(

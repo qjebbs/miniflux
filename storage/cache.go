@@ -46,7 +46,7 @@ func (s *Storage) CacheMedias() error {
 			if !m.Cached {
 				// try load media from disk cache first
 				if err = filesystem.MediaFromCache(m); err != nil {
-					logger.Debug("[Storage:CacheMedias] unable to load disk cache, fetch from internet: %v", err)
+					logger.Debug("[Storage:CacheMedias] unable to load disk cache: %v", err)
 					if err = media.FindMedia(m); err != nil {
 						logger.Error("[Storage:CacheMedias] unable to fetch media %s: %v", m.URL, err)
 						m.ErrorCount++
@@ -169,7 +169,7 @@ func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
 			logger.Debug("[Storage:CacheEntryMedias] caching media #%d: %v", m.ID, m.URL)
 			// try load media from disk cache first
 			if err = filesystem.MediaFromCache(m); err != nil {
-				logger.Debug("[Storage:CacheEntryMedias] unable to load disk cache, fetch from internet: %v", err)
+				logger.Debug("[Storage:CacheEntryMedias] unable to load disk cache: %v", err)
 				if err = media.FindMedia(m); err != nil {
 					logger.Error("[Storage:CacheEntryMedias] unable to fetch media %s: %v", m.URL, err)
 					m.ErrorCount++

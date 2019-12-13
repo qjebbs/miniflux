@@ -37,14 +37,15 @@ func (h *handler) updateCategory(w http.ResponseWriter, r *http.Request) {
 
 	categoryForm := form.NewCategoryForm(r)
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("form", categoryForm)
 	view.Set("category", category)
 	view.Set("menu", "categories")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
 
 	if err := categoryForm.Validate(); err != nil {
 		view.Set("errorMessage", err.Error())

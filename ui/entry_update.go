@@ -49,13 +49,14 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 	}
 	entryForm.Content = sanitizer.Sanitize(entryForm.URL, entryForm.Content)
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("form", entryForm)
 	view.Set("feeds", feeds)
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
 
 	if err := entryForm.ValidateModification(); err != nil {
 		view.Set("errorMessage", err.Error())

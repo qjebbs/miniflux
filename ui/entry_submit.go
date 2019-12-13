@@ -22,6 +22,7 @@ import (
 )
 
 func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	v := view.New(h.tpl, r, sess)
 
@@ -42,8 +43,8 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 	v.Set("form", entryForm)
 	v.Set("feeds", feeds)
 	v.Set("user", user)
-	v.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
-	v.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	v.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	v.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
 	v.Set("defaultUserAgent", client.DefaultUserAgent)
 
 	if err := entryForm.Validate(); err != nil {

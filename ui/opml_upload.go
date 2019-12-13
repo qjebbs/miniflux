@@ -39,12 +39,13 @@ func (h *handler) uploadOPML(w http.ResponseWriter, r *http.Request) {
 		fileHeader.Size,
 	)
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
 
 	if fileHeader.Size == 0 {
 		view.Set("errorMessage", "error.empty_file")
@@ -80,12 +81,13 @@ func (h *handler) fetchOPML(w http.ResponseWriter, r *http.Request) {
 		url,
 	)
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
 
 	clt := client.New(url)
 	resp, err := clt.Get()

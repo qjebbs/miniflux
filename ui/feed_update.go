@@ -44,6 +44,7 @@ func (h *handler) updateFeed(w http.ResponseWriter, r *http.Request) {
 
 	feedForm := form.NewFeedForm(r)
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("form", feedForm)
@@ -51,8 +52,8 @@ func (h *handler) updateFeed(w http.ResponseWriter, r *http.Request) {
 	view.Set("feed", feed)
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
 	view.Set("defaultUserAgent", client.DefaultUserAgent)
 
 	if err := feedForm.ValidateModification(); err != nil {

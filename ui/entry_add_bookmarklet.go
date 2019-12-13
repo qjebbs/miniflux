@@ -16,6 +16,7 @@ import (
 )
 
 func (h *handler) bookmarkletEntry(w http.ResponseWriter, r *http.Request) {
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 
@@ -34,8 +35,8 @@ func (h *handler) bookmarkletEntry(w http.ResponseWriter, r *http.Request) {
 
 	view.Set("feeds", feeds)
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
 	view.Set("defaultUserAgent", client.DefaultUserAgent)
 	view.Set("form", &form.EntryForm{URL: bookmarkletURL})
 

@@ -92,7 +92,7 @@ func (h *handler) showStatPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("user", user)
 	view.Set("countUnread", countUnread)
 	view.Set("countStarred", countStarred)
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 
 	html.OK(w, r, view.Render("stat"))

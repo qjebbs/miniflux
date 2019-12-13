@@ -41,8 +41,14 @@ func (s *Storage) CountFeeds(userID int64) int {
 }
 
 // CountErrorFeeds returns the number of feeds with parse errors that belong to the given user.
-func (s *Storage) CountErrorFeeds(userID int64) int {
-	query := `SELECT count(*) FROM feeds WHERE user_id=$1 AND parsing_error_count>=$2`
+// If nsfw is enabled, it doesn't take nsfw feeds into count
+func (s *Storage) CountErrorFeeds(userID int64, nsfw bool) int {
+	var query string
+	if nsfw {
+		query = `SELECT count(*) FROM feeds WHERE user_id=$1 AND parsing_error_count>=$2 AND nsfw = 'f'`
+	} else {
+		query = `SELECT count(*) FROM feeds WHERE user_id=$1 AND parsing_error_count>=$2`
+	}
 	var result int
 	err := s.db.QueryRow(query, userID, maxParsingError).Scan(&result)
 	if err != nil {

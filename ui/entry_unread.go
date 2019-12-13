@@ -76,6 +76,7 @@ func (h *handler) showUnreadEntryPage(w http.ResponseWriter, r *http.Request) {
 	}
 	entry.Status = model.EntryStatusRead
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("entry", entry)
@@ -86,7 +87,7 @@ func (h *handler) showUnreadEntryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("menu", "unread")
 	view.Set("user", user)
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID))
+	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
 
 	if config.Opts.HasCacheService() {
 		countMedias, countCached, _, err := h.store.MediaStatisticsByEntry(entryID)
@@ -102,7 +103,7 @@ func (h *handler) showUnreadEntryPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetching the counter here avoid to be off by one.
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, request.IsNSFWEnabled(r)))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("entry"))
 }

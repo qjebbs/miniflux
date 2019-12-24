@@ -210,4 +210,8 @@
 
         --counter-color: #bbb;
     }
+
+    img {
+        background-color: white;
+    }
 }

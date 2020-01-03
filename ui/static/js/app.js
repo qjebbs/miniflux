@@ -346,11 +346,11 @@ function setEntriesAboveStatusRead(element) {
     let targetItems = [];
     let entryIds = [];
     for (let i = 0; i < items.length; i++) {
-        targetItems.push(items[i]);
-        entryIds.push(parseInt(items[i].dataset.id, 10));
         if (items[i] == currentItem) {
             break;
         }
+        targetItems.push(items[i]);
+        entryIds.push(parseInt(items[i].dataset.id, 10));
     }
     updateEntriesStatus(entryIds, "read", () => {
         targetItems.map(item => {

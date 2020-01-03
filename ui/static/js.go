@@ -105,7 +105,8 @@ link=element.querySelector("a[data-toggle-status]");if(link&&link.dataset.value=
 if(element&&element.classList.contains("item-status-unread")){element.classList.remove("item-status-unread");element.classList.add("item-status-read");updateUnreadCounterValue
 decrementUnreadCounter(1);}}
 function setEntriesAboveStatusRead(element){let currentItem=findEntry(element);let items=DomHelper.getVisibleElements(".items .item");if(!currentItem||items.length===0){return;}
-let targetItems=[];let entryIds=[];for(let i=0;i<items.length;i++){targetItems.push(items[i]);entryIds.push(parseInt(items[i].dataset.id,10));if(items[i]==currentItem){break;}}
+let targetItems=[];let entryIds=[];for(let i=0;i<items.length;i++){if(items[i]==currentItem){break;}
+targetItems.push(items[i]);entryIds.push(parseInt(items[i].dataset.id,10));}
 updateEntriesStatus(entryIds,"read",()=>{targetItems.map(item=>{let link=item.querySelector("a[data-toggle-status]");if(link&&link.dataset.value==="unread"){link.innerHTML=link.dataset.labelUnread;link.dataset.value="read";}
 if(item&&item.classList.contains("item-status-unread")){item.classList.remove("item-status-unread");item.classList.add("item-status-read");decrementUnreadCounter(1);}});});}
 function handleFetchOriginalContent(){if(isListView()){return;}
@@ -163,6 +164,6 @@ if("serviceWorker"in navigator){let scriptElement=document.getElementById("servi
 }
 
 var JavascriptsChecksums = map[string]string{
-	"app": "320113118ea720941c69c16becc0ea651306cd3a022c1be8e76b03ba9af6bb88",
+	"app": "07eba82a83d9ea054e7021f07db0fcc24872fa411b434b76989bcddd2b5bd2a2",
 	"sw":  "55fffa223919cc18572788fb9c62fccf92166c0eb5d3a1d6f91c31f24d020be9",
 }

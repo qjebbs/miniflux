@@ -48,6 +48,7 @@
     "menu.add_user": "Benutzer anlegen",
     "menu.flush_history": "Verlauf leeren",
     "menu.nsfw": "NSFW",
+    "menu.feed_entries": "Artikel",
     "search.label": "Suche",
     "search.placeholder": "Suche...",
     "pagination.next": "Nächste",

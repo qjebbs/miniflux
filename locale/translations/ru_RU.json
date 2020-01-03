@@ -48,6 +48,7 @@
     "menu.add_user": "Добавить пользователя",
     "menu.flush_history": "Отчистить историю",
     "menu.nsfw": "NSFW",
+    "menu.feed_entries": "статьи",
     "search.label": "Поиск",
     "search.placeholder": "Поиск…",
     "pagination.next": "Следующая",

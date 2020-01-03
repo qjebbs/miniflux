@@ -79,17 +79,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.add_feed.title" }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "feeds" }}">{{ t "menu.feeds" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "export" }}">{{ t "menu.export" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "import" }}">{{ t "menu.import" }}</a>
-        </li>
-    </ul>
+    {{ template "feed_menu" }}
 </section>
 
 {{ if not .categories }}
@@ -400,17 +390,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.add_feed.title" }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "feeds" }}">{{ t "menu.feeds" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "export" }}">{{ t "menu.export" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "import" }}">{{ t "menu.import" }}</a>
-        </li>
-    </ul>
+    {{ template "feed_menu" }}
 </section>
 
 <form action="{{ route "chooseSubscription" }}" method="POST">
@@ -429,8 +409,8 @@ var templateViewsMap = map[string]string{
 
     {{ range .subscriptions }}
         <div class="radio-group">
-            <label title="{{ .URL }}"><input type="radio" name="url" value="{{ .URL }}"> {{ .Title }}</label> ({{ .Type }})
-            <small title="Type = {{ .Type }}"><a href="{{ .URL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .URL }}</a></small>
+            <label title="{{ .URL | safeURL  }}"><input type="radio" name="url" value="{{ .URL | safeURL  }}"> {{ .Title }}</label> ({{ .Type }})
+            <small title="Type = {{ .Type }}"><a href="{{ .URL | safeURL  }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .URL | safeURL  }}</a></small>
         </div>
     {{ end }}
 
@@ -624,13 +604,10 @@ var templateViewsMap = map[string]string{
             <a href="{{ route "feeds" }}">{{ t "menu.feeds" }}</a>
         </li>
         <li>
-            <a href="{{ route "addSubscription" }}">{{ t "menu.add_feed" }}</a>
+            <a href="{{ route "feedEntries" "feedID" .feed.ID }}">{{ t "menu.feed_entries" }}</a>
         </li>
         <li>
-            <a href="{{ route "export" }}">{{ t "menu.export" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "import" }}">{{ t "menu.import" }}</a>
+            <a href="{{ route "refreshFeed" "feedID" .feed.ID }}">{{ t "menu.refresh_feed" }}</a>
         </li>
     </ul>
 </section>
@@ -777,7 +754,7 @@ var templateViewsMap = map[string]string{
 <section class="entry touch-item" data-id="{{ .entry.ID }}">
     <header class="entry-header">
         <h1>
-            <a href="{{ .entry.URL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .entry.Title }}</a>
+            <a href="{{ .entry.URL | safeURL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .entry.Title }}</a>
         </h1>
         <div class="entry-actions">
             <ul>
@@ -832,7 +809,7 @@ var templateViewsMap = map[string]string{
                 </li>
                 {{ if .entry.CommentsURL }}
                     <li>
-                        <a href="{{ .entry.CommentsURL }}" title="{{ t "entry.comments.title" }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ t "entry.comments.label" }}</a>
+                        <a href="{{ .entry.CommentsURL | safeURL }}" title="{{ t "entry.comments.title" }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ t "entry.comments.label" }}</a>
                     </li>
                 {{ end }}
                 {{ if .hasCacheService }}
@@ -905,7 +882,7 @@ var templateViewsMap = map[string]string{
                 {{ end }}
 
                 <div class="entry-enclosure-download">
-                    <a href="{{ .URL }}" title="{{ t "action.download" }}{{ if gt .Size 0 }} - {{ formatFileSize .Size }}{{ end }} ({{ .MimeType }})" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .URL }}</a>
+                    <a href="{{ .URL | safeURL }}" title="{{ t "action.download" }}{{ if gt .Size 0 }} - {{ formatFileSize .Size }}{{ end }} ({{ .MimeType }})" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .URL | safeURL  }}</a>
                     <small>{{ if gt .Size 0 }} - <strong>{{ formatFileSize .Size }}</strong>{{ end }}</small>
                 </div>
             </div>
@@ -1054,20 +1031,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.feeds.title" }} ({{ .total }})</h1>
-    <ul>
-        <li>
-            <a href="{{ route "addSubscription" }}">{{ t "menu.add_feed" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "export" }}">{{ t "menu.export" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "import" }}">{{ t "menu.import" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "refreshAllFeeds" }}">{{ t "menu.refresh_all_feeds" }}</a>
-        </li>
-    </ul>
+    {{ template "feed_menu" }}
 </section>
 
 {{ if not .feeds }}
@@ -1145,17 +1109,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header">
     <h1>{{ t "page.import.title" }}</h1>
-    <ul>
-        <li>
-            <a href="{{ route "feeds" }}">{{ t "menu.feeds" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "addSubscription" }}">{{ t "menu.add_feed" }}</a>
-        </li>
-        <li>
-            <a href="{{ route "export" }}">{{ t "menu.export" }}</a>
-        </li>
-    </ul>
+    {{ template "feed_menu" }}
 </section>
 
 {{ if .errorMessage }}
@@ -1793,23 +1747,23 @@ var templateViewsMap = map[string]string{
 var templateViewsMapChecksums = map[string]string{
 	"about":               "4035658497363d7af7f79be83190404eb21ec633fe8ec636bdfc219d9fc78cfc",
 	"add_entry":           "6a5c1b88ef5090c5bec82924fc2727c3548e3cd31f0c8bf963630420301c696b",
-	"add_subscription":    "5bae8c60989593257f515f9c73b35c854a94bee4b2fb08ad38aa93b17be9c1b5",
+	"add_subscription":    "0dbea93b6fc07423fa066122ad960c69616b829533371a2dbadec1e22d4f1ae0",
 	"bookmark_entries":    "3b845054c20053908bd6a1ea1c0b1dd472a3b1c6a7732cd0e5b067d58663e846",
 	"categories":          "2c5dd0ed6355bd5acc393bbf6117d20458b5581aab82036008324f6bbbe2af75",
 	"category_entries":    "4d60ef3458b35fb6617f8afd6ca1e0025e78c8f9e457e0d2d92237b271dddc34",
 	"category_feeds":      "527c2ffbc4fcec775071424ba1022ae003525dba53a28cc41f48fb7b30aa984b",
-	"choose_subscription": "5f21556e6cecfd64b1cff30e22ef313d2f09698cebb03f711cbac8ec7f2c1d04",
+	"choose_subscription": "84c9730cadd78e6ee5a6b4c499aab33acddb4324ac01924d33387543eec4d702",
 	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
 	"create_user":         "9b73a55233615e461d1f07d99ad1d4d3b54532588ab960097ba3e090c85aaf3a",
 	"edit_category":       "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
 	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
-	"edit_feed":           "2bdbda4629571b27670d5b69711edbe1c5ba3842f3693a0cd8577fedbe72cc05",
+	"edit_feed":           "82c8c6bbcc58d7797406bb1131cf83b3b836633e0641e4d3f61600a72f5d00f5",
 	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
-	"entry":               "b37b02b1d8d631c0be9c9251041c3682cec6c1aad1e1debaba22de77af3cba5d",
+	"entry":               "3874fb213e24e9aa4ecf35cecf3f49c319af1488159b30566c4638ac8e69e247",
 	"feed_entries":        "e6c62ef14304aaf8fc1509b22535cfd46b3f600ffa662682204e9fa60d747935",
-	"feeds":               "fa06cd1e1e3fec79132386972c640a2fe91237f5dba572389d5f45be74545f25",
+	"feeds":               "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
 	"history_entries":     "f7b272ff7b6f30f7da7548e43a9a79f022281eb55545bf3c31f15d019ca668bc",
-	"import":              "5eb56cecaa4d369b9acc991a82be7617710c551089a2e99d34ce8b6e5c37df0a",
+	"import":              "1b59b3bd55c59fcbc6fbb346b414dcdd26d1b4e0c307e437bb58b3f92ef01ad1",
 	"integrations":        "f3302ec7a0bee59eea41b34f520096864b261cc8b5bcde17ee84ec1301a0f241",
 	"login":               "2e72d2d4b9786641b696bedbed5e10b04bdfd68254ddbbdb0a53cca621d200c7",
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",

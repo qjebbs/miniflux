@@ -13,6 +13,8 @@ func TestAbsoluteURL(t *testing.T) {
 		[]string{"https://example.org/path/file.ext", "https://example.org/folder", "path/file.ext"},
 		[]string{"https://example.org/path/file.ext", "https://example.org/folder/", "https://example.org/path/file.ext"},
 		[]string{"https://static.example.org/path/file.ext", "https://www.example.org/", "//static.example.org/path/file.ext"},
+		[]string{"magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a", "https://www.example.org/", "magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a"},
+		[]string{"magnet:?xt.1=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C&xt.2=urn:sha1:TXGCZQTH26NL6OUQAJJPFALHG2LTGBC7", "https://www.example.org/", "magnet:?xt.1=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C&xt.2=urn:sha1:TXGCZQTH26NL6OUQAJJPFALHG2LTGBC7"},
 	}
 
 	for _, scenario := range scenarios {
@@ -66,6 +68,28 @@ func TestDomain(t *testing.T) {
 
 	for input, expected := range scenarios {
 		actual := Domain(input)
+		if actual != expected {
+			t.Errorf(`Unexpected result, got %q instead of %q`, actual, expected)
+		}
+	}
+}
+
+func TestRequestURI(t *testing.T) {
+	scenarios := map[string]string{
+		"https://www.example.org":                                                   "https://www.example.org",
+		"https://user:password@www.example.org":                                     "https://user:password@www.example.org",
+		"https://www.example.org/path with spaces":                                  "https://www.example.org/path%20with%20spaces",
+		"https://www.example.org/path#test":                                         "https://www.example.org/path",
+		"https://www.example.org/path?abc#test":                                     "https://www.example.org/path?abc",
+		"https://www.example.org/path?a=b&a=c":                                      "https://www.example.org/path?a=b&a=c",
+		"https://www.example.org/path?a=b&a=c&d":                                    "https://www.example.org/path?a=b&a=c&d",
+		"https://www.example.org/path?atom":                                         "https://www.example.org/path?atom",
+		"https://www.example.org/path?测试=测试":                                        "https://www.example.org/path?%E6%B5%8B%E8%AF%95=%E6%B5%8B%E8%AF%95",
+		"https://www.example.org/url=http%3A%2F%2Fwww.example.com%2Ffeed%2F&max=20": "https://www.example.org/url=http%3A%2F%2Fwww.example.com%2Ffeed%2F&max=20",
+	}
+
+	for input, expected := range scenarios {
+		actual := RequestURI(input)
 		if actual != expected {
 			t.Errorf(`Unexpected result, got %q instead of %q`, actual, expected)
 		}

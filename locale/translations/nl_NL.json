@@ -48,6 +48,7 @@
     "menu.add_user": "Gebruiker toevoegen",
     "menu.flush_history": "Verwijder geschiedenis",
     "menu.nsfw": "NSFW",
+    "menu.feed_entries": "Lidwoord",
     "search.label": "Zoeken",
     "search.placeholder": "Zoeken...",
     "pagination.next": "Volgende",

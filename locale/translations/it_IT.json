@@ -48,6 +48,7 @@
     "menu.add_user": "Aggiungi utente",
     "menu.flush_history": "Svuota la cronologia",
     "menu.nsfw": "NSFW",
+    "menu.feed_entries": "Articoli",
     "search.label": "Cerca",
     "search.placeholder": "Cerca...",
     "pagination.next": "Successivo",

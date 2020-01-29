@@ -809,7 +809,7 @@ var templateViewsMap = map[string]string{
                 </li>
                 {{ if .entry.CommentsURL }}
                     <li>
-                        <a href="{{ .entry.CommentsURL | safeURL }}" title="{{ t "entry.comments.title" }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ t "entry.comments.label" }}</a>
+                        <a href="{{ .entry.CommentsURL | safeURL }}" title="{{ t "entry.comments.title" }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-comments-link="true">{{ t "entry.comments.label" }}</a>
                     </li>
                 {{ end }}
                 {{ if .hasCacheService }}
@@ -1759,7 +1759,7 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
 	"edit_feed":           "82c8c6bbcc58d7797406bb1131cf83b3b836633e0641e4d3f61600a72f5d00f5",
 	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
-	"entry":               "3874fb213e24e9aa4ecf35cecf3f49c319af1488159b30566c4638ac8e69e247",
+	"entry":               "238b0af8256c7234fe0eddc4c3191d4a148eb8c210f75981fe6c8a0ad111d1b3",
 	"feed_entries":        "e6c62ef14304aaf8fc1509b22535cfd46b3f600ffa662682204e9fa60d747935",
 	"feeds":               "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
 	"history_entries":     "f7b272ff7b6f30f7da7548e43a9a79f022281eb55545bf3c31f15d019ca668bc",

@@ -84,7 +84,7 @@ func (a *atom10Entry) Transform() *model.Entry {
 	entry.Content = a.entryContent()
 	entry.Title = a.entryTitle()
 	entry.Enclosures = a.entryEnclosures()
-	entry.CommentsURL = a.Links.firstLinkWithRelationAndType("replies", "text/html")
+	entry.CommentsURL = a.entryCommentsURL()
 	return entry
 }
 
@@ -192,6 +192,17 @@ func (a *atom10Entry) entryEnclosures() model.EnclosureList {
 	}
 
 	return enclosures
+}
+
+// See https://tools.ietf.org/html/rfc4685#section-4
+// If the type attribute of the atom:link is omitted, its value is assumed to be "application/atom+xml".
+// We accept only HTML or XHTML documents for now since the intention is to have the same behavior as RSS.
+func (a *atom10Entry) entryCommentsURL() string {
+	commentsURL := a.Links.firstLinkWithRelationAndType("replies", "text/html", "application/xhtml+xml")
+	if url.IsAbsoluteURL(commentsURL) {
+		return commentsURL
+	}
+	return ""
 }
 
 type atom10Text struct {

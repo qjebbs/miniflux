@@ -414,10 +414,31 @@ function openOriginalLink(openLinkInCurrentTab) {
     if (currentItemOriginalLink !== null) {
         DomHelper.openNewTab(currentItemOriginalLink.getAttribute("href"));
 
-        // Move to the next item and if we are on the unread page mark this item as read.
         let currentItem = document.querySelector(".current-item");
-        goToNextListItem();
+        // If we are not on the list of starred items, move to the next item
+        if (document.location.href != document.querySelector('a[data-page=starred]').href){
+            goToNextListItem();
+        }
         markEntryAsRead(currentItem);
+    }
+}
+
+function openCommentLink(openLinkInCurrentTab) {
+    if (!isListView()) {
+        let entryLink = document.querySelector("a[data-comments-link]");
+        if (entryLink !== null) {
+            if (openLinkInCurrentTab) {
+                window.location.href = entryLink.getAttribute("href");
+            } else {
+                DomHelper.openNewTab(entryLink.getAttribute("href"));
+            }
+            return;
+        }
+    } else {
+        let currentItemCommentsLink = document.querySelector(".current-item a[data-comments-link]");
+        if (currentItemCommentsLink !== null) {
+            DomHelper.openNewTab(currentItemCommentsLink.getAttribute("href"));
+        }
     }
 }
 
@@ -502,11 +523,16 @@ function goToPreviousListItem() {
         if (items[i].classList.contains("current-item")) {
             items[i].classList.remove("current-item");
 
+            let nextItem;
             if (i - 1 >= 0) {
-                items[i - 1].classList.add("current-item");
-                DomHelper.scrollPageTo(items[i - 1]);
-                items[i - 1].querySelector('.item-header a').focus();
+                nextItem = items[i - 1];
+            } else {
+                nextItem = items[items.length - 1];
             }
+
+            nextItem.classList.add("current-item");
+            DomHelper.scrollPageTo(nextItem);
+            nextItem.querySelector('.item-header a').focus();
 
             break;
         }
@@ -514,13 +540,12 @@ function goToPreviousListItem() {
 }
 
 function goToNextListItem() {
-    let currentItem = document.querySelector(".current-item");
     let items = DomHelper.getVisibleElements(".items .item");
     if (items.length === 0) {
         return;
     }
 
-    if (currentItem === null) {
+    if (document.querySelector(".current-item") === null) {
         items[0].classList.add("current-item");
         items[0].querySelector('.item-header a').focus();
         return;
@@ -530,11 +555,16 @@ function goToNextListItem() {
         if (items[i].classList.contains("current-item")) {
             items[i].classList.remove("current-item");
 
+            let nextItem;
             if (i + 1 < items.length) {
-                items[i + 1].classList.add("current-item");
-                DomHelper.scrollPageTo(items[i + 1]);
-                items[i + 1].querySelector('.item-header a').focus();
+                nextItem = items[i + 1];
+            } else {
+                nextItem = items[0];
             }
+
+            nextItem.classList.add("current-item");
+            DomHelper.scrollPageTo(nextItem);
+            nextItem.querySelector('.item-header a').focus();
 
             break;
         }

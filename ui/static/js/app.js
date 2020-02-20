@@ -111,6 +111,7 @@ function markPageAsRead() {
             }
 
             if (showOnlyUnread) {
+                window.scrollTo(0, 0);
                 window.location.reload();
             } else {
                 goToPage("next", true);
@@ -176,7 +177,10 @@ function markEntryAsRead(element) {
 function updateEntriesStatus(entryIDs, status, callback) {
     let url = document.body.dataset.entriesStatusUrl;
     let request = new RequestBuilder(url);
-    request.withBody({ entry_ids: entryIDs, status: status });
+    request.withBody({
+        entry_ids: entryIDs,
+        status: status
+    });
     request.withCallback(callback);
     request.execute();
 
@@ -202,7 +206,9 @@ function handleSetView(element) {
         return;
     }
     let request = new RequestBuilder(element.dataset.url);
-    request.withForm({ view: element.dataset.value });
+    request.withForm({
+        view: element.dataset.value
+    });
     request.withCallback((response) => {
         if (response.ok) location.reload();
     });
@@ -416,7 +422,7 @@ function openOriginalLink(openLinkInCurrentTab) {
 
         let currentItem = document.querySelector(".current-item");
         // If we are not on the list of starred items, move to the next item
-        if (document.location.href != document.querySelector('a[data-page=starred]').href){
+        if (document.location.href != document.querySelector('a[data-page=starred]').href) {
             goToNextListItem();
         }
         markEntryAsRead(currentItem);

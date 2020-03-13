@@ -10,129 +10,138 @@ import (
 )
 
 const (
-	defaultHTTPS                     = false
-	defaultLogDateTime               = false
-	defaultHSTS                      = true
-	defaultHTTPService               = true
-	defaultSchedulerService          = true
-	defaultCacheService              = true
-	defaultCacheLocation             = "disk"
-	defaultDebug                     = false
-	defaultBaseURL                   = "http://localhost"
-	defaultRootURL                   = "http://localhost"
-	defaultBasePath                  = ""
-	defaultDiskStorageRoot           = "./"
-	defaultWorkerPoolSize            = 5
-	defaultPollingFrequency          = 60
-	defaultBatchSize                 = 10
-	defaultRunMigrations             = false
-	defaultDatabaseURL               = "user=postgres password=postgres dbname=miniflux2 sslmode=disable"
-	defaultDatabaseMaxConns          = 20
-	defaultDatabaseMinConns          = 1
-	defaultListenAddr                = "127.0.0.1:8080"
-	defaultCertFile                  = ""
-	defaultKeyFile                   = ""
-	defaultCertDomain                = ""
-	defaultCertCache                 = "/tmp/cert_cache"
-	defaultCleanupFrequencyHours     = 24
-	defaultCleanupArchiveReadDays    = 60
-	defaultCleanupRemoveSessionsDays = 30
-	defaultCacheFrequency            = 24
-	defaultProxyImages               = "http-only"
-	defaultCreateAdmin               = false
-	defaultOAuth2UserCreation        = false
-	defaultOAuth2ClientID            = ""
-	defaultOAuth2ClientSecret        = ""
-	defaultOAuth2RedirectURL         = ""
-	defaultOAuth2Provider            = ""
-	defaultPocketConsumerKey         = ""
-	defaultHTTPClientTimeout         = 20
-	defaultHTTPClientMaxBodySize     = 15
+	defaultHTTPS                       = false
+	defaultLogDateTime                 = false
+	defaultHSTS                        = true
+	defaultHTTPService                 = true
+	defaultSchedulerService            = true
+	defaultDebug                       = false
+	defaultBaseURL                     = "http://localhost"
+	defaultRootURL                     = "http://localhost"
+	defaultBasePath                    = ""
+	defaultWorkerPoolSize              = 5
+	defaultPollingFrequency            = 60
+	defaultBatchSize                   = 10
+	defaultRunMigrations               = false
+	defaultDatabaseURL                 = "user=postgres password=postgres dbname=miniflux2 sslmode=disable"
+	defaultDatabaseMaxConns            = 20
+	defaultDatabaseMinConns            = 1
+	defaultListenAddr                  = "127.0.0.1:8080"
+	defaultCertFile                    = ""
+	defaultKeyFile                     = ""
+	defaultCertDomain                  = ""
+	defaultCertCache                   = "/tmp/cert_cache"
+	defaultCleanupFrequencyHours       = 24
+	defaultCleanupArchiveReadDays      = 60
+	defaultCleanupRemoveSessionsDays   = 30
+	defaultProxyImages                 = "http-only"
+	defaultCreateAdmin                 = false
+	defaultOAuth2UserCreation          = false
+	defaultOAuth2ClientID              = ""
+	defaultOAuth2ClientSecret          = ""
+	defaultOAuth2RedirectURL           = ""
+	defaultOAuth2Provider              = ""
+	defaultOAuth2OidcDiscoveryEndpoint = ""
+	defaultPocketConsumerKey           = ""
+	defaultHTTPClientTimeout           = 20
+	defaultHTTPClientMaxBodySize       = 15
+	defaultAuthProxyHeader             = ""
+	defaultAuthProxyUserCreation       = false
+	defaultCacheService                = true
+	defaultCacheLocation               = "disk"
+	defaultCacheFrequency              = 24
+	defaultDiskStorageRoot             = "./"
 )
 
 // Options contains configuration options.
 type Options struct {
-	HTTPS                     bool
-	logDateTime               bool
-	hsts                      bool
-	httpService               bool
-	schedulerService          bool
-	cacheService              bool
-	cacheLocation             string
-	debug                     bool
-	baseURL                   string
-	rootURL                   string
-	basePath                  string
-	diskStorageRoot           string
-	databaseURL               string
-	databaseMaxConns          int
-	databaseMinConns          int
-	runMigrations             bool
-	listenAddr                string
-	certFile                  string
-	certDomain                string
-	certCache                 string
-	certKeyFile               string
-	cleanupFrequencyHours     int
-	cleanupArchiveReadDays    int
-	cleanupRemoveSessionsDays int
-	cacheFrequency            int
-	pollingFrequency          int
-	batchSize                 int
-	workerPoolSize            int
-	createAdmin               bool
-	proxyImages               string
-	oauth2UserCreationAllowed bool
-	oauth2ClientID            string
-	oauth2ClientSecret        string
-	oauth2RedirectURL         string
-	oauth2Provider            string
-	pocketConsumerKey         string
-	httpClientTimeout         int
-	httpClientMaxBodySize     int64
+	HTTPS                       bool
+	logDateTime                 bool
+	hsts                        bool
+	httpService                 bool
+	schedulerService            bool
+	debug                       bool
+	baseURL                     string
+	rootURL                     string
+	basePath                    string
+	databaseURL                 string
+	databaseMaxConns            int
+	databaseMinConns            int
+	runMigrations               bool
+	listenAddr                  string
+	certFile                    string
+	certDomain                  string
+	certCache                   string
+	certKeyFile                 string
+	cleanupFrequencyHours       int
+	cleanupArchiveReadDays      int
+	cleanupRemoveSessionsDays   int
+	pollingFrequency            int
+	batchSize                   int
+	workerPoolSize              int
+	createAdmin                 bool
+	proxyImages                 string
+	oauth2UserCreationAllowed   bool
+	oauth2ClientID              string
+	oauth2ClientSecret          string
+	oauth2RedirectURL           string
+	oauth2OidcDiscoveryEndpoint string
+	oauth2Provider              string
+	pocketConsumerKey           string
+	httpClientTimeout           int
+	httpClientMaxBodySize       int64
+	authProxyHeader             string
+	authProxyUserCreation       bool
+	cacheService                bool
+	cacheLocation               string
+	diskStorageRoot             string
+	cacheFrequency              int
 }
 
 // NewOptions returns Options with default values.
 func NewOptions() *Options {
 	return &Options{
-		HTTPS:                     defaultHTTPS,
-		logDateTime:               defaultLogDateTime,
-		hsts:                      defaultHSTS,
-		httpService:               defaultHTTPService,
-		schedulerService:          defaultSchedulerService,
-		cacheService:              defaultCacheService,
-		cacheLocation:             defaultCacheLocation,
-		debug:                     defaultDebug,
-		baseURL:                   defaultBaseURL,
-		rootURL:                   defaultRootURL,
-		basePath:                  defaultBasePath,
-		diskStorageRoot:           defaultDiskStorageRoot,
-		databaseURL:               defaultDatabaseURL,
-		databaseMaxConns:          defaultDatabaseMaxConns,
-		databaseMinConns:          defaultDatabaseMinConns,
-		runMigrations:             defaultRunMigrations,
-		listenAddr:                defaultListenAddr,
-		certFile:                  defaultCertFile,
-		certDomain:                defaultCertDomain,
-		certCache:                 defaultCertCache,
-		certKeyFile:               defaultKeyFile,
-		cleanupFrequencyHours:     defaultCleanupFrequencyHours,
-		cleanupArchiveReadDays:    defaultCleanupArchiveReadDays,
-		cleanupRemoveSessionsDays: defaultCleanupRemoveSessionsDays,
-		cacheFrequency:            defaultCacheFrequency,
-		pollingFrequency:          defaultPollingFrequency,
-		batchSize:                 defaultBatchSize,
-		workerPoolSize:            defaultWorkerPoolSize,
-		createAdmin:               defaultCreateAdmin,
-		proxyImages:               defaultProxyImages,
-		oauth2UserCreationAllowed: defaultOAuth2UserCreation,
-		oauth2ClientID:            defaultOAuth2ClientID,
-		oauth2ClientSecret:        defaultOAuth2ClientSecret,
-		oauth2RedirectURL:         defaultOAuth2RedirectURL,
-		oauth2Provider:            defaultOAuth2Provider,
-		pocketConsumerKey:         defaultPocketConsumerKey,
-		httpClientTimeout:         defaultHTTPClientTimeout,
-		httpClientMaxBodySize:     defaultHTTPClientMaxBodySize * 1024 * 1024,
+		HTTPS:                       defaultHTTPS,
+		logDateTime:                 defaultLogDateTime,
+		hsts:                        defaultHSTS,
+		httpService:                 defaultHTTPService,
+		schedulerService:            defaultSchedulerService,
+		debug:                       defaultDebug,
+		baseURL:                     defaultBaseURL,
+		rootURL:                     defaultRootURL,
+		basePath:                    defaultBasePath,
+		databaseURL:                 defaultDatabaseURL,
+		databaseMaxConns:            defaultDatabaseMaxConns,
+		databaseMinConns:            defaultDatabaseMinConns,
+		runMigrations:               defaultRunMigrations,
+		listenAddr:                  defaultListenAddr,
+		certFile:                    defaultCertFile,
+		certDomain:                  defaultCertDomain,
+		certCache:                   defaultCertCache,
+		certKeyFile:                 defaultKeyFile,
+		cleanupFrequencyHours:       defaultCleanupFrequencyHours,
+		cleanupArchiveReadDays:      defaultCleanupArchiveReadDays,
+		cleanupRemoveSessionsDays:   defaultCleanupRemoveSessionsDays,
+		pollingFrequency:            defaultPollingFrequency,
+		batchSize:                   defaultBatchSize,
+		workerPoolSize:              defaultWorkerPoolSize,
+		createAdmin:                 defaultCreateAdmin,
+		proxyImages:                 defaultProxyImages,
+		oauth2UserCreationAllowed:   defaultOAuth2UserCreation,
+		oauth2ClientID:              defaultOAuth2ClientID,
+		oauth2ClientSecret:          defaultOAuth2ClientSecret,
+		oauth2RedirectURL:           defaultOAuth2RedirectURL,
+		oauth2OidcDiscoveryEndpoint: defaultOAuth2OidcDiscoveryEndpoint,
+		oauth2Provider:              defaultOAuth2Provider,
+		pocketConsumerKey:           defaultPocketConsumerKey,
+		httpClientTimeout:           defaultHTTPClientTimeout,
+		httpClientMaxBodySize:       defaultHTTPClientMaxBodySize * 1024 * 1024,
+		authProxyHeader:             defaultAuthProxyHeader,
+		authProxyUserCreation:       defaultAuthProxyUserCreation,
+		cacheService:                defaultCacheService,
+		cacheLocation:               defaultCacheLocation,
+		diskStorageRoot:             defaultDiskStorageRoot,
+		cacheFrequency:              defaultCacheFrequency,
 	}
 }
 
@@ -266,6 +275,11 @@ func (o *Options) OAuth2RedirectURL() string {
 	return o.oauth2RedirectURL
 }
 
+// OAuth2OidcDiscoveryEndpoint returns the OAuth2 OIDC discovery endpoint.
+func (o *Options) OAuth2OidcDiscoveryEndpoint() string {
+	return o.oauth2OidcDiscoveryEndpoint
+}
+
 // OAuth2Provider returns the name of the OAuth2 provider configured.
 func (o *Options) OAuth2Provider() string {
 	return o.oauth2Provider
@@ -329,6 +343,18 @@ func (o *Options) HTTPClientMaxBodySize() int64 {
 	return o.httpClientMaxBodySize
 }
 
+// AuthProxyHeader returns an HTTP header name that contains username for
+// authentication using auth proxy.
+func (o *Options) AuthProxyHeader() string {
+	return o.authProxyHeader
+}
+
+// IsAuthProxyUserCreationAllowed returns true if user creation is allowed for
+// users authenticated using auth proxy.
+func (o *Options) IsAuthProxyUserCreationAllowed() bool {
+	return o.authProxyUserCreation
+}
+
 func (o *Options) String() string {
 	var builder strings.Builder
 	builder.WriteString(fmt.Sprintf("LOG_DATE_TIME: %v\n", o.logDateTime))
@@ -366,8 +392,11 @@ func (o *Options) String() string {
 	builder.WriteString(fmt.Sprintf("OAUTH2_CLIENT_ID: %v\n", o.oauth2ClientID))
 	builder.WriteString(fmt.Sprintf("OAUTH2_CLIENT_SECRET: %v\n", o.oauth2ClientSecret))
 	builder.WriteString(fmt.Sprintf("OAUTH2_REDIRECT_URL: %v\n", o.oauth2RedirectURL))
+	builder.WriteString(fmt.Sprintf("OAUTH2_OIDC_DISCOVERY_ENDPOINT: %v\n", o.oauth2OidcDiscoveryEndpoint))
 	builder.WriteString(fmt.Sprintf("OAUTH2_PROVIDER: %v\n", o.oauth2Provider))
 	builder.WriteString(fmt.Sprintf("HTTP_CLIENT_TIMEOUT: %v\n", o.httpClientTimeout))
 	builder.WriteString(fmt.Sprintf("HTTP_CLIENT_MAX_BODY_SIZE: %v\n", o.httpClientMaxBodySize))
+	builder.WriteString(fmt.Sprintf("AUTH_PROXY_HEADER: %v\n", o.authProxyHeader))
+	builder.WriteString(fmt.Sprintf("AUTH_PROXY_USER_CREATION: %v\n", o.authProxyUserCreation))
 	return builder.String()
 }

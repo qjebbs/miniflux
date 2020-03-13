@@ -882,6 +882,41 @@ func TestDefaultOAuth2RedirectURLValue(t *testing.T) {
 	}
 }
 
+func TestOAuth2OidcDiscoveryEndpoint(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("OAUTH2_OIDC_DISCOVERY_ENDPOINT", "http://example.org")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := "http://example.org"
+	result := opts.OAuth2OidcDiscoveryEndpoint()
+
+	if result != expected {
+		t.Fatalf(`Unexpected OAUTH2_OIDC_DISCOVERY_ENDPOINT value, got %q instead of %q`, result, expected)
+	}
+}
+
+func TestDefaultOAuth2OidcDiscoveryEndpointValue(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := defaultOAuth2OidcDiscoveryEndpoint
+	result := opts.OAuth2OidcDiscoveryEndpoint()
+
+	if result != expected {
+		t.Fatalf(`Unexpected OAUTH2_REDIRECT_URL value, got %q instead of %q`, result, expected)
+	}
+}
+
 func TestOAuth2Provider(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("OAUTH2_PROVIDER", "google")
@@ -1389,5 +1424,75 @@ Invalid text
 
 	if err := os.Remove(tmpfile.Name()); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestAuthProxyHeader(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("AUTH_PROXY_HEADER", "X-Forwarded-User")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := "X-Forwarded-User"
+	result := opts.AuthProxyHeader()
+
+	if result != expected {
+		t.Fatalf(`Unexpected AUTH_PROXY_HEADER value, got %q instead of %q`, result, expected)
+	}
+}
+
+func TestDefaultAuthProxyHeaderValue(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := defaultAuthProxyHeader
+	result := opts.AuthProxyHeader()
+
+	if result != expected {
+		t.Fatalf(`Unexpected AUTH_PROXY_HEADER value, got %q instead of %q`, result, expected)
+	}
+}
+
+func TestAuthProxyUserCreationWhenUnset(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := false
+	result := opts.IsAuthProxyUserCreationAllowed()
+
+	if result != expected {
+		t.Fatalf(`Unexpected AUTH_PROXY_USER_CREATION value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestAuthProxyUserCreationAdmin(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("AUTH_PROXY_USER_CREATION", "1")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := true
+	result := opts.IsAuthProxyUserCreationAllowed()
+
+	if result != expected {
+		t.Fatalf(`Unexpected AUTH_PROXY_USER_CREATION value, got %v instead of %v`, result, expected)
 	}
 }

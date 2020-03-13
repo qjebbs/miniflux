@@ -139,6 +139,79 @@ var templateViewsMap = map[string]string{
 
 {{ end }}
 `,
+	"api_keys": `{{ define "title"}}{{ t "page.api_keys.title" }}{{ end }}
+
+{{ define "content"}}
+<section class="page-header">
+    <h1>{{ t "page.api_keys.title" }}</h1>
+    {{ template "settings_menu" dict "user" .user }}
+</section>
+
+{{ if .apiKeys }}
+{{ range .apiKeys }}
+    <table>
+    <tr>
+        <th class="column-25">{{ t "page.api_keys.table.description" }}</th>
+        <td>{{ .Description }}</td>
+    </tr>
+    <tr>
+        <th>{{ t "page.api_keys.table.token" }}</th>
+        <td>{{ .Token }}</td>
+    </tr>
+    <tr>
+        <th>{{ t "page.api_keys.table.last_used_at" }}</th>
+        <td>
+            {{ if .LastUsedAt }}
+                <time datetime="{{ isodate .LastUsedAt }}" title="{{ isodate .LastUsedAt }}">{{ elapsed $.user.Timezone .LastUsedAt }}</time>
+            {{ else }}
+                {{ t "page.api_keys.never_used"  }}
+            {{ end }}
+        </td>
+    </tr>
+    <tr>
+        <th>{{ t "page.api_keys.table.created_at" }}</th>
+        <td>
+            <time datetime="{{ isodate .CreatedAt }}" title="{{ isodate .CreatedAt }}">{{ elapsed $.user.Timezone .CreatedAt }}</time>
+        </td>
+    </tr>
+    <tr>
+        <th>{{ t "page.api_keys.table.actions" }}</th>
+        <td>
+            <a href="#"
+                data-confirm="true"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}"
+                data-url="{{ route "removeAPIKey" "keyID" .ID }}">{{ t "action.remove" }}</a>
+        </td>
+    </tr>
+    </table>
+    <br>
+{{ end }}
+{{ end }}
+
+<h3>{{ t "page.integration.miniflux_api" }}</h3>
+<div class="panel">
+    <ul>
+        <li>
+            {{ t "page.integration.miniflux_api_endpoint" }} = <strong>{{ baseURL }}/v1/</strong>
+        </li>
+        <li>
+            {{ t "page.integration.miniflux_api_username" }} = <strong>{{ .user.Username }}</strong>
+        </li>
+        <li>
+            {{ t "page.integration.miniflux_api_password" }} = <strong>{{ t "page.integration.miniflux_api_password_value" }}</strong>
+        </li>
+    </ul>
+</div>
+
+<p>
+    <a href="{{ route "createAPIKey" }}" class="button button-primary">{{ t "menu.create_api_key" }}</a>
+</p>
+
+{{ end }}
+`,
 	"bookmark_entries": `{{ define "title"}}{{ t "page.starred.title" }} ({{ .total }}){{ end }}
 
 {{ define "content"}}
@@ -416,6 +489,30 @@ var templateViewsMap = map[string]string{
 
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.loading" }}">{{ t "action.subscribe" }}</button>
+    </div>
+</form>
+{{ end }}
+`,
+	"create_api_key": `{{ define "title"}}{{ t "page.new_api_key.title" }}{{ end }}
+
+{{ define "content"}}
+<section class="page-header">
+    <h1>{{ t "page.new_api_key.title" }}</h1>
+    {{ template "settings_menu" dict "user" .user }}
+</section>
+
+<form action="{{ route "saveAPIKey" }}" method="post" autocomplete="off">
+    <input type="hidden" name="csrf" value="{{ .csrf }}">
+
+    {{ if .errorMessage }}
+        <div class="alert alert-error">{{ t .errorMessage }}</div>
+    {{ end }}
+
+    <label for="form-description">{{ t "form.api_key.label.description" }}</label>
+    <input type="text" name="description" id="form-description" value="{{ .form.Description }}" required autofocus>
+
+    <div class="buttons">
+        <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.save" }}</button> {{ t "action.or" }} <a href="{{ route "apiKeys" }}">{{ t "action.cancel" }}</a>
     </div>
 </form>
 {{ end }}
@@ -862,6 +959,7 @@ var templateViewsMap = map[string]string{
     <details class="entry-enclosures">
         <summary>{{ t "page.entry.attachments" }} ({{ len .entry.Enclosures }})</summary>
         {{ range .entry.Enclosures }}
+            {{ if ne .URL "" }}
             <div class="entry-enclosure">
                 {{ if hasPrefix .MimeType "audio/" }}
                     <div class="enclosure-audio">
@@ -886,6 +984,7 @@ var templateViewsMap = map[string]string{
                     <small>{{ if gt .Size 0 }} - <strong>{{ formatFileSize .Size }}</strong>{{ end }}</small>
                 </div>
             </div>
+            {{ end }}
         {{ end }}
         </details>
     {{ end }}
@@ -1259,21 +1358,6 @@ var templateViewsMap = map[string]string{
     </div>
 </form>
 
-<h3>{{ t "page.integration.miniflux_api" }}</h3>
-<div class="panel">
-    <ul>
-        <li>
-            {{ t "page.integration.miniflux_api_endpoint" }} = <strong>{{ baseURL }}/v1/</strong>
-        </li>
-        <li>
-            {{ t "page.integration.miniflux_api_username" }} = <strong>{{ .user.Username }}</strong>
-        </li>
-        <li>
-            {{ t "page.integration.miniflux_api_password" }} = <strong>{{ t "page.integration.miniflux_api_password_value" }}</strong>
-        </li>
-    </ul>
-</div>
-
 <h3>{{ t "page.integration.bookmarklet" }}</h3>
 <div class="panel">
     <p>{{ t "page.integration.bookmarklet.help" }}</p>
@@ -1320,8 +1404,15 @@ var templateViewsMap = map[string]string{
     <div class="oauth2">
         <a href="{{ route "oauth2Redirect" "provider" "google" }}">{{ t "page.login.google_signin" }}</a>
     </div>
+    {{ else if hasOAuth2Provider "oidc" }}
+    <div class="oauth2">
+        <a href="{{ route "oauth2Redirect" "provider" "oidc" }}">{{ t "page.login.oidc_signin" }}</a>
+    </div>
     {{ end }}
 </section>
+<footer id="prompt-home-screen">
+    <a href="#" id="btn-add-to-home-screen">★ {{ t "action.home_screen" }}</a>
+</footer>
 {{ end }}
 `,
 	"search_entries": `{{ define "title"}}{{ t "page.search.title" }} ({{ .total }}){{ end }}
@@ -1483,6 +1574,14 @@ var templateViewsMap = map[string]string{
         <a href="{{ route "oauth2Unlink" "provider" "google" }}">{{ t "page.settings.unlink_google_account" }}</a>
     {{ else }}
         <a href="{{ route "oauth2Redirect" "provider" "google" }}">{{ t "page.settings.link_google_account" }}</a>
+    {{ end }}
+</div>
+{{ else if hasOAuth2Provider "oidc" }}
+<div class="panel">
+    {{ if hasKey .user.Extra "oidc_id" }}
+        <a href="{{ route "oauth2Unlink" "provider" "oidc" }}">{{ t "page.settings.unlink_oidc_account" }}</a>
+    {{ else }}
+        <a href="{{ route "oauth2Redirect" "provider" "oidc" }}">{{ t "page.settings.link_oidc_account" }}</a>
     {{ end }}
 </div>
 {{ end }}
@@ -1738,7 +1837,12 @@ var templateViewsMap = map[string]string{
             {{ end }}
         {{ end }}
     </table>
+    <br>
 {{ end }}
+
+<p>
+    <a href="{{ route "createUser" }}" class="button button-primary">{{ t "menu.add_user" }}</a>
+</p>
 
 {{ end }}
 `,
@@ -1748,28 +1852,30 @@ var templateViewsMapChecksums = map[string]string{
 	"about":               "4035658497363d7af7f79be83190404eb21ec633fe8ec636bdfc219d9fc78cfc",
 	"add_entry":           "6a5c1b88ef5090c5bec82924fc2727c3548e3cd31f0c8bf963630420301c696b",
 	"add_subscription":    "0dbea93b6fc07423fa066122ad960c69616b829533371a2dbadec1e22d4f1ae0",
+	"api_keys":            "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
 	"bookmark_entries":    "3b845054c20053908bd6a1ea1c0b1dd472a3b1c6a7732cd0e5b067d58663e846",
 	"categories":          "2c5dd0ed6355bd5acc393bbf6117d20458b5581aab82036008324f6bbbe2af75",
 	"category_entries":    "4d60ef3458b35fb6617f8afd6ca1e0025e78c8f9e457e0d2d92237b271dddc34",
 	"category_feeds":      "527c2ffbc4fcec775071424ba1022ae003525dba53a28cc41f48fb7b30aa984b",
 	"choose_subscription": "84c9730cadd78e6ee5a6b4c499aab33acddb4324ac01924d33387543eec4d702",
+	"create_api_key":      "5f74d4e92a6684927f5305096378c8be278159a5cd88ce652c7be3280a7d1685",
 	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
 	"create_user":         "9b73a55233615e461d1f07d99ad1d4d3b54532588ab960097ba3e090c85aaf3a",
 	"edit_category":       "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
 	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
 	"edit_feed":           "82c8c6bbcc58d7797406bb1131cf83b3b836633e0641e4d3f61600a72f5d00f5",
 	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
-	"entry":               "238b0af8256c7234fe0eddc4c3191d4a148eb8c210f75981fe6c8a0ad111d1b3",
+	"entry":               "5876aa92c037432ed6a296a0f4f8a883d147a7f5f3bc30f06a6a73100c6852df",
 	"feed_entries":        "e6c62ef14304aaf8fc1509b22535cfd46b3f600ffa662682204e9fa60d747935",
 	"feeds":               "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
 	"history_entries":     "f7b272ff7b6f30f7da7548e43a9a79f022281eb55545bf3c31f15d019ca668bc",
 	"import":              "1b59b3bd55c59fcbc6fbb346b414dcdd26d1b4e0c307e437bb58b3f92ef01ad1",
-	"integrations":        "f3302ec7a0bee59eea41b34f520096864b261cc8b5bcde17ee84ec1301a0f241",
-	"login":               "2e72d2d4b9786641b696bedbed5e10b04bdfd68254ddbbdb0a53cca621d200c7",
+	"integrations":        "2503b4f675ca3f90b18e2757c9d2080a7901b7e857d0788a3efde87acd8ddb13",
+	"login":               "79ff2ca488c0a19b37c8fa227a21f73e94472eb357a51a077197c852f7713f11",
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",
 	"sessions":            "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
-	"settings":            "2cec1b41a647c1ba387b226f6cdb2ffc783d1c3cd0f5a37ac30c53ec3d7a8888",
+	"settings":            "a2a8c0d20b1b232e4509803f307ab9dced397a19236345a12d5a90f505de655f",
 	"stat":                "78a6d8989f09ae30811c8ea0d9952d499e8890b8e08c2883642aaec808ed96e8",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
-	"users":               "17d0b7c760557e20f888d83d6a1b0d4506dab071a593cc42080ec0dbf16adf9e",
+	"users":               "d7ff52efc582bbad10504f4a04fa3adcc12d15890e45dff51cac281e0c446e45",
 }

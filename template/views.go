@@ -286,7 +286,7 @@ var templateViewsMap = map[string]string{
                 (<span title="{{ if eq .FeedCount 0 }}{{ t "page.categories.no_feed" }}{{ else }}{{ plural "page.categories.feed_count" .FeedCount .FeedCount }}{{ end }}">{{ .FeedCount }}</span>)
             </div>
             <div class="item-meta">
-                <ul>
+                <ul class="item-meta-info">
                     <li>
                         <a href="{{ route "categoryFeeds" "categoryID" .ID }}">{{ t "page.categories.feeds" }}</a>
                     </li>
@@ -853,18 +853,19 @@ var templateViewsMap = map[string]string{
         <h1>
             <a href="{{ .entry.URL | safeURL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .entry.Title }}</a>
         </h1>
+        {{ if .user }}
         <div class="entry-actions">
             <ul>
                 <li>
                     <a href="#"
                         title="{{ t "entry.status.title" }}"
                         data-toggle-status="true"
-                        data-label-read="✔&#xfe0e;&nbsp;{{ t "entry.status.read" }}"
                         data-label-unread="✘&nbsp;{{ t "entry.status.unread" }}"
-                        data-toast-read="✔︎&nbsp;{{ t "entry.status.toast.read" }}"
+                        data-label-read="✔︎&nbsp;{{ t "entry.status.read" }}"
                         data-toast-unread="✘&nbsp;{{ t "entry.status.toast.unread" }}"
+                        data-toast-read="✔︎&nbsp;{{ t "entry.status.toast.read" }}"
                         data-value="{{ if eq .entry.Status "read" }}read{{ else }}unread{{ end }}"
-                        >{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&#xfe0e;&nbsp;{{ t "entry.status.read" }}{{ end }}</a>
+                        ><span class="icon-label">{{ if eq .entry.Status "unread" }}✔&nbsp;{{ t "entry.status.read" }}{{ else }}✘&nbsp;{{ t "entry.status.unread" }}{{ end }}</span></a>
                 </li>
                 <li>
                     <a href="#"
@@ -876,7 +877,7 @@ var templateViewsMap = map[string]string{
                         data-toast-star="★&nbsp;{{ t "entry.bookmark.toast.on" }}"
                         data-toast-unstar="☆&nbsp;{{ t "entry.bookmark.toast.off" }}"
                         data-value="{{ if .entry.Starred }}star{{ else }}unstar{{ end }}"
-                        >{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</a>
+                        ><span class="icon-label">{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></a>
                 </li>
                 {{ if .hasSaveEntry }}
                     <li>
@@ -887,26 +888,47 @@ var templateViewsMap = map[string]string{
                             data-label-loading="{{ t "entry.state.saving" }}"
                             data-label-done="{{ t "entry.save.completed" }}"
                             data-toast-done="{{ t "entry.save.toast.completed" }}"
-                            >{{ t "entry.save.title" }}</a>
+                            >{{ template "icon_save" }}<span class="icon-label">{{ t "entry.save.label" }}</span></a>
                     </li>
                 {{ end }}
+                <li>
+                    {{ if .entry.ShareCode }}
+                        <a href="{{ route "sharedEntry" "shareCode" .entry.ShareCode }}"
+                            title="{{ t "entry.shared_entry.title" }}"
+                            target="_blank">{{ template "icon_share" }}<span class="icon-label">{{ t "entry.shared_entry.label" }}</span></a>
+                    {{ else }}
+                        <a href="{{ route "shareEntry" "entryID" .entry.ID }}"
+                            title="{{ t "entry.share.title" }}"
+                            target="_blank">{{ template "icon_share" }}<span class="icon-label">{{ t "entry.share.label" }}</span></a>
+                    {{ end }}
+                </li>
                 <li>
                     <a href="#"
                         title="{{ t "entry.scraper.title" }}"
                         data-fetch-content-entry="true"
                         data-fetch-content-url="{{ route "fetchContent" "entryID" .entry.ID }}"
                         data-label-loading="{{ t "entry.state.loading" }}"
-                        data-label-done="{{ t "entry.scraper.completed" }}"
-                        >{{ t "entry.scraper.label" }}</a>
+                        >{{ template "icon_scraper" }}<span class="icon-label">{{ t "entry.scraper.label" }}</span></a>
                 </li>
                 <li>
                     <a href="{{ route "editEntry" "entryID" .entry.ID }}"
                     title="{{ t "entry.edit.title" }}"
-                    >{{ t "entry.edit.label" }}</a>
+                    >
+                        {{ template "icon_edit" }}
+                        <span class="icon-label">
+                            {{ t "entry.edit.label" }}
+                        </span>
+                    </a>
                 </li>
                 {{ if .entry.CommentsURL }}
                     <li>
-                        <a href="{{ .entry.CommentsURL | safeURL }}" title="{{ t "entry.comments.title" }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-comments-link="true">{{ t "entry.comments.label" }}</a>
+                        <a href="{{ .entry.CommentsURL | safeURL }}"
+                           title="{{ t "entry.comments.title" }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           referrerpolicy="no-referrer"
+                           data-comments-link="true"
+                        >{{ template "icon_comment" }}<span class="icon-label">{{ t "entry.comments.label" }}</span></a>
                     </li>
                 {{ end }}
                 {{ if .hasCacheService }}
@@ -918,17 +940,31 @@ var templateViewsMap = map[string]string{
                             data-label-cached="{{ t "entry.cache.toggle.on" }}"
                             data-label-uncached="{{ t "entry.cache.toggle.off" }}"
                             data-value="{{ if .entryCached }}cached{{ else }}uncached{{ end }}"
-                            >{{ if .entryCached }}{{ t "entry.cache.toggle.off" }}{{ else }}{{ t "entry.cache.toggle.on" }}{{ end }}</a>
+                            >
+                                {{ template "icon_cache" }}
+                                <span class="icon-label">
+                                {{ if .entryCached }}
+                                {{ t "entry.cache.toggle.off" }}
+                                {{ else }}
+                                {{ t "entry.cache.toggle.on" }}
+                                {{ end }}
+                                </span>
+                            </a>
                     </li>
                 {{ end }}
             </ul>
         </div>
+        {{ end }}
         <div class="entry-meta">
             <span class="entry-website">
-                {{ if ne .entry.Feed.Icon.IconID 0 }}
+                {{ if and .user (ne .entry.Feed.Icon.IconID 0) }}
                     <img src="{{ route "icon" "iconID" .entry.Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .entry.Feed.Title }}">
                 {{ end }}
-                <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}">{{ .entry.Feed.Title }}</a>
+                {{ if .user }}
+                    <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}">{{ .entry.Feed.Title }}</a>
+                {{ else }}
+                    <a href="{{ .entry.Feed.SiteURL | safeURL }}">{{ .entry.Feed.Title }}</a>
+                {{ end }}
             </span>
             {{ if .entry.Author }}
                 <span class="entry-author">
@@ -939,21 +975,33 @@ var templateViewsMap = map[string]string{
                     {{ end }}
                 </span>
             {{ end }}
-            <span class="category">
-                <a href="{{ route "categoryEntries" "categoryID" .entry.Feed.Category.ID }}">{{ .entry.Feed.Category.Title }}</a>
-            </span>
+            {{ if .user }}
+                <span class="category">
+                    <a href="{{ route "categoryEntries" "categoryID" .entry.Feed.Category.ID }}">{{ .entry.Feed.Category.Title }}</a>
+                </span>
+            {{ end }}
         </div>
         <div class="entry-date">
-            <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed $.user.Timezone .entry.Date }}</time>
+            {{ if .user }}
+                <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed $.user.Timezone .entry.Date }}</time>
+            {{ else }}
+                <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed "UTC" .entry.Date }}</time>
+            {{ end }}
         </div>
     </header>
     {{ if gt (len .entry.Content) 120 }}
+    {{ if .user }}
     <div class="pagination-top">
         {{ template "entry_pagination" . }}
     </div>
     {{ end }}
+    {{ end }}
     <article class="entry-content">
-        {{ noescape (proxyFilter .entry.Content) }}
+        {{ if .user }}
+            {{ noescape (proxyFilter .entry.Content) }}
+        {{ else }}
+            {{ noescape .entry.Content }}
+        {{ end }}
     </article>
     {{ if .entry.Enclosures }}
     <details class="entry-enclosures">
@@ -964,18 +1012,22 @@ var templateViewsMap = map[string]string{
                 {{ if hasPrefix .MimeType "audio/" }}
                     <div class="enclosure-audio">
                         <audio controls preload="metadata">
-                            <source src="{{ .URL }}" type="{{ .MimeType }}">
+                            <source src="{{ .URL | safeURL }}" type="{{ .MimeType }}">
                         </audio>
                     </div>
                 {{ else if hasPrefix .MimeType "video/" }}
                     <div class="enclosure-video">
                         <video controls preload="metadata">
-                            <source src="{{ .URL }}" type="{{ .MimeType }}">
+                            <source src="{{ .URL | safeURL }}" type="{{ .MimeType }}">
                         </video>
                     </div>
                 {{ else if hasPrefix .MimeType "image/" }}
                     <div class="enclosure-image">
-                        <img src="{{ proxyURL .URL }}" title="{{ .URL }} ({{ .MimeType }})" loading="lazy" alt="{{ .URL }} ({{ .MimeType }})">
+                        {{ if $.user }}
+                            <img src="{{ proxyURL .URL }}" title="{{ .URL }} ({{ .MimeType }})" loading="lazy" alt="{{ .URL }} ({{ .MimeType }})">
+                        {{ else }}
+                            <img src="{{ .URL | safeURL }}" title="{{ .URL }} ({{ .MimeType }})" loading="lazy" alt="{{ .URL }} ({{ .MimeType }})">
+                        {{ end }}
                     </div>
                 {{ end }}
 
@@ -990,9 +1042,11 @@ var templateViewsMap = map[string]string{
     {{ end }}
 </section>
 
+{{ if .user }}
 <div class="pagination-bottom">
     {{ template "entry_pagination" . }}
 </div>
+{{ end }}
 {{ end }}
 `,
 	"feed_entries": `{{ define "title"}}{{ .feed.Title }} ({{ .total }}){{ end }}
@@ -1156,6 +1210,15 @@ var templateViewsMap = map[string]string{
                 data-label-yes="{{ t "confirm.yes" }}"
                 data-label-no="{{ t "confirm.no" }}"
                 data-label-loading="{{ t "confirm.loading" }}">{{ t "menu.flush_history" }}</a>
+        </li>
+        <li>
+            <a href="{{ route "sharedEntries" }}">{{ t "menu.shared_entries" }}</a>
+        </li>
+    </ul>
+    {{ else }}
+    <ul>
+        <li>
+            <a href="{{ route "sharedEntries" }}">{{ t "menu.shared_entries" }}</a>
         </li>
     </ul>
     {{ end }}
@@ -1588,6 +1651,78 @@ var templateViewsMap = map[string]string{
 
 {{ end }}
 `,
+	"shared_entries": `{{ define "title"}}{{ t "page.shared_entries.title" }} ({{ .total }}){{ end }}
+
+{{ define "content"}}
+<section class="page-header">
+    <h1>{{ t "page.shared_entries.title" }} ({{ .total }})</h1>
+    {{ if .entries }}
+    <ul>
+        <li>
+            <a href="#"
+                data-confirm="true"
+                data-url="{{ route "flushHistory" }}"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}">{{ t "menu.flush_history" }}</a>
+        </li>
+        <li>
+            <a href="{{ route "sharedEntries" }}">{{ t "menu.shared_entries" }}</a>
+        </li>
+    </ul>
+    {{ end }}
+</section>
+
+{{ if not .entries }}
+    <p class="alert alert-info">{{ t "alert.no_shared_entry" }}</p>
+{{ else }}
+    <div class="items">
+        {{ range .entries }}
+        <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
+            <div class="item-header">
+                <span class="item-title">
+                    {{ if ne .Feed.Icon.IconID 0 }}
+                        <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .Feed.Title }}">
+                    {{ end }}
+                    <a href="{{ route "readEntry" "entryID" .ID }}">{{ .Title }}</a>
+                    {{ if .ShareCode }}
+                        <a href="{{ route "sharedEntry" "shareCode" .ShareCode }}"
+                            title="{{ t "entry.shared_entry.title" }}"
+                            target="_blank">{{ template "icon_share" }}</a>
+                    {{ end }}
+                </span>
+                <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>
+            </div>
+            <div class="item-meta">
+                <ul class="item-meta-info">
+                    <li>
+                        <a href="{{ route "feedEntries" "feedID" .Feed.ID }}" title="{{ .Feed.SiteURL }}">{{ truncate .Feed.Title 35 }}</a>
+                    </li>
+                    <li>
+                        <time datetime="{{ isodate .Date }}" title="{{ isodate .Date }}">{{ elapsed $.user.Timezone .Date }}</time>
+                    </li>
+                </ul>
+                <ul class="item-meta-icons">
+                    <li>
+                        {{ template "icon_delete" }}
+                        <a href="#"
+                            data-confirm="true"
+                            data-url="{{ route "unshareEntry" "entryID" .ID }}"
+                            data-label-question="{{ t "confirm.question" }}"
+                            data-label-yes="{{ t "confirm.yes" }}"
+                            data-label-no="{{ t "confirm.no" }}"
+                            data-label-loading="{{ t "confirm.loading" }}">{{ t "entry.unshare.label" }}</a>
+                    </li>
+                </ul>
+            </div>
+        </article>
+        {{ end }}
+    </div>
+{{ end }}
+
+{{ end }}
+`,
 	"stat": `{{ define "title"}}{{ t "page.stat.title" }}{{ end }}
 
 {{ define "content"}}
@@ -1854,7 +1989,7 @@ var templateViewsMapChecksums = map[string]string{
 	"add_subscription":    "0dbea93b6fc07423fa066122ad960c69616b829533371a2dbadec1e22d4f1ae0",
 	"api_keys":            "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
 	"bookmark_entries":    "3b845054c20053908bd6a1ea1c0b1dd472a3b1c6a7732cd0e5b067d58663e846",
-	"categories":          "2c5dd0ed6355bd5acc393bbf6117d20458b5581aab82036008324f6bbbe2af75",
+	"categories":          "7a927a2c28ae60c995df9d94220153418d3bd31bf35e0800980a215b1a6a80c7",
 	"category_entries":    "4d60ef3458b35fb6617f8afd6ca1e0025e78c8f9e457e0d2d92237b271dddc34",
 	"category_feeds":      "527c2ffbc4fcec775071424ba1022ae003525dba53a28cc41f48fb7b30aa984b",
 	"choose_subscription": "84c9730cadd78e6ee5a6b4c499aab33acddb4324ac01924d33387543eec4d702",
@@ -1865,16 +2000,17 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
 	"edit_feed":           "82c8c6bbcc58d7797406bb1131cf83b3b836633e0641e4d3f61600a72f5d00f5",
 	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
-	"entry":               "5876aa92c037432ed6a296a0f4f8a883d147a7f5f3bc30f06a6a73100c6852df",
+	"entry":               "a33a9472b445feae32ea3a9169fd4201ee3c42b25e26917aab68a5058b21cf7d",
 	"feed_entries":        "e6c62ef14304aaf8fc1509b22535cfd46b3f600ffa662682204e9fa60d747935",
 	"feeds":               "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
-	"history_entries":     "f7b272ff7b6f30f7da7548e43a9a79f022281eb55545bf3c31f15d019ca668bc",
+	"history_entries":     "561b65aae302d35bb531465f144c84958bdd41ec6ead58c542332949f552ec01",
 	"import":              "1b59b3bd55c59fcbc6fbb346b414dcdd26d1b4e0c307e437bb58b3f92ef01ad1",
 	"integrations":        "2503b4f675ca3f90b18e2757c9d2080a7901b7e857d0788a3efde87acd8ddb13",
 	"login":               "79ff2ca488c0a19b37c8fa227a21f73e94472eb357a51a077197c852f7713f11",
 	"search_entries":      "3dffd464d3dcb1cb66d243b3ffe73e152f8c2ce8cc4ff5002f27a82c6aafafa3",
 	"sessions":            "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
 	"settings":            "a2a8c0d20b1b232e4509803f307ab9dced397a19236345a12d5a90f505de655f",
+	"shared_entries":      "19caea053664220bb9519df295eb2a17cf5836eaa9104b7ee24c60b88bb524e9",
 	"stat":                "78a6d8989f09ae30811c8ea0d9952d499e8890b8e08c2883642aaec808ed96e8",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
 	"users":               "d7ff52efc582bbad10504f4a04fa3adcc12d15890e45dff51cac281e0c446e45",

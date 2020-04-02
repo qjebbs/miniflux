@@ -1,6 +1,6 @@
 {{ define "item_meta" }}
 <div class="item-meta">
-    <ul>
+    <ul class="item-meta-info">
         <li>
             {{ if .pageEntriesType}}
                 {{ if eq .pageEntriesType "all" }}
@@ -17,6 +17,13 @@
         <li>
             <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed .user.Timezone .entry.Date }}</time>
         </li>
+        {{ if .entry.ShareCode }}
+            <li>
+                <a href="{{ route "sharedEntry" "shareCode" .entry.ShareCode }}"
+                    title="{{ t "entry.shared_entry.title" }}"
+                    target="_blank">{{ template "icon_share" }}<span class="icon-label">{{ t "entry.shared_entry.label" }}</span></a>
+            </li>
+        {{ end }}
         {{ if .hasSaveEntry }}
             <li>
                 <a href="#"
@@ -25,15 +32,24 @@
                     data-save-url="{{ route "saveEntry" "entryID" .entry.ID }}"
                     data-label-loading="{{ t "entry.state.saving" }}"
                     data-label-done="{{ t "entry.save.completed" }}"
-                    >{{ t "entry.save.label" }}</a>
+                    >{{ template "icon_save" }}<span class="icon-label">{{ t "entry.save.label" }}</span></a>
             </li>
         {{ end }}
         <li>
-            <a href="{{ .entry.URL | safeURL  }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-original-link="true">{{ t "entry.original.label" }}</a>
+            <a href="{{ .entry.URL | safeURL  }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                referrerpolicy="no-referrer"
+                data-original-link="true">{{ template "icon_original" }}<span class="icon-label">{{ t "entry.original.label" }}</span></a>
         </li>
         {{ if .entry.CommentsURL }}
             <li>
-                <a href="{{ .entry.CommentsURL | safeURL  }}" title="{{ t "entry.comments.title" }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-comments-link="true">{{ t "entry.comments.label" }}</a>
+                <a href="{{ .entry.CommentsURL | safeURL  }}"
+                    title="{{ t "entry.comments.title" }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    referrerpolicy="no-referrer"
+                    data-comments-link="true">{{ template "icon_comment" }}<span class="icon-label">{{ t "entry.comments.label" }}</span></a>
             </li>
         {{ end }}
         <li>
@@ -44,19 +60,23 @@
                 data-label-star="☆&nbsp;{{ t "entry.bookmark.toggle.on" }}"
                 data-label-unstar="★&nbsp;{{ t "entry.bookmark.toggle.off" }}"
                 data-value="{{ if .entry.Starred }}star{{ else }}unstar{{ end }}"
-                >{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</a>
+                ><span class="icon-label">{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></a>
         </li>
         <li>
             <a href="#"
                 title="{{ t "entry.status.title" }}"
                 data-toggle-status="true"
-                data-label-read="✔&#xfe0e;&nbsp;{{ t "entry.status.read" }}"
+                data-label-read="✔&nbsp;{{ t "entry.status.read" }}"
                 data-label-unread="✘&nbsp;{{ t "entry.status.unread" }}"
                 data-value="{{ if eq .entry.Status "read" }}read{{ else }}unread{{ end }}"
-                >{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&#xfe0e;&nbsp;{{ t "entry.status.read" }}{{ end }}</a>
+                ><span class="icon-label">{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&nbsp;{{ t "entry.status.read" }}{{ end }}</span></a>
         </li>
         <li>
-            <a href="#" data-action="showActionMenu" data-action-menu-excluded title="{{ t "entry.actions.title" }}">{{ t "entry.actions.label" }}</a>
+            <a href="#" 
+                data-action="showActionMenu" 
+                data-action-menu-excluded 
+                title="{{ t "entry.actions.title" }}"
+            >{{ template "icon_menu" }}<span class="icon-label">{{ t "entry.actions.label" }}</span></a>
         </li>
     </ul>
 </div>

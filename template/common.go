@@ -43,7 +43,7 @@ var templateCommonMap = map[string]string{
                 </span>
             </div>
             <div class="item-meta">
-                <ul>
+                <ul class="item-meta-info">
                     <li>
                         <a href="{{ .SiteURL | safeURL  }}" title="{{ .SiteURL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-original-link="true">{{ domain .SiteURL }}</a>
                     </li>
@@ -51,7 +51,7 @@ var templateCommonMap = map[string]string{
                         {{ t "page.feeds.last_check" }} <time datetime="{{ isodate .CheckedAt }}" title="{{ isodate .CheckedAt }}">{{ elapsed $.user.Timezone .CheckedAt }}</time>
                     </li>
                 </ul>
-                <ul>
+                <ul class="item-meta-info">
                     <li>
                         <a href="{{ route "refreshFeed" "feedID" .ID }}">{{ t "menu.refresh_feed" }}</a>
                     </li>
@@ -98,9 +98,129 @@ var templateCommonMap = map[string]string{
     </li>
 </ul>
 {{ end }}`,
+	"icons": `<!--
+
+MIT License
+
+Copyright (c) 2020 Paweł Kuna
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-->
+{{ define "icon_read" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-circle-check" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9 12l2 2l4 -4" />
+</svg>
+{{ end }}
+{{ define "icon_unread" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-circle-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M10 10l4 4m0 -4l-4 4" />
+</svg>
+{{ end }}
+{{ define "icon_star" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-star" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <path d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z" />
+</svg>
+{{ end }}
+{{ define "icon_save" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+    <polyline points="7 11 12 16 17 11" />
+    <line x1="12" y1="4" x2="12" y2="16" />
+</svg>
+{{ end }}
+{{ define "icon_scraper" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cloud-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <path d="M19 18a3.5 3.5 0 0 0 0 -7h-1a5 4.5 0 0 0 -11 -2a4.6 4.4 0 0 0 -2.1 8.4" />
+    <line x1="12" y1="13" x2="12" y2="22" />
+    <polyline points="9 19 12 22 15 19" />
+</svg>
+{{ end }}
+{{ define "icon_edit" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cloud-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <polygon transform="translate(14.697024, 9.802976) rotate(-315.000000) translate(-14.697024, -9.802976) " points="11.2257723 2.86047325 18.1682753 2.86047325 18.1682753 16.7454791 11.2257723 16.7454791"></polygon>
+    <polygon transform="translate(5.697024, 18.802976) scale(1, -1) rotate(315.000000) translate(-5.697024, -18.802976) " points="5.69702381 16.4888085 9.16827528 21.1171438 2.22577234 21.1171438"></polygon>
+</svg>
+{{ end }}
+{{ define "icon_cache" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cloud-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10,5.39760178 L20,5.39760178 L20,18.2729396 C18.374072,19.0227144 16.7210439,19.3976018 15.0409157,19.3976018 C13.3607875,19.3976018 11.6804823,19.0227144 10,18.2729396 L10,5.39760178 Z"></path>
+    <path d="M4,10.3976018 L10,10.3976018 L10,18.6746047 C9.02444321,19.1566027 8.03262636,19.3976018 7.02454943,19.3976018 C6.01647251,19.3976018 5.00828937,19.1566027 4,18.6746047 L4,10.3976018 Z"></path>
+    <ellipse cx="15" cy="5.5" rx="5" ry="1.5"></ellipse>
+    <ellipse cx="7" cy="10.3976018" rx="3" ry="1"></ellipse>
+</svg>
+{{ end }}
+{{ define "icon_menu" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cloud-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="4" width="6" height="6"></rect>
+    <rect x="4" y="13" width="6" height="6"></rect>
+    <rect x="14" y="4" width="6" height="6"></rect>
+    <rect x="14" y="13" width="6" height="6"></rect>
+</svg>
+{{ end }}
+{{ define "icon_share" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-share" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="6" r="3" />
+    <circle cx="18" cy="18" r="3" />
+    <line x1="8.7" y1="10.7" x2="15.3" y2="7.3" />
+    <line x1="8.7" y1="13.3" x2="15.3" y2="16.7" />
+</svg>
+{{ end }}
+{{ define "icon_comment" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-circle" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <path d="M3 20l1.3 -3.9a9 8 0 1 1 3.4 2.9l-4.7 1" />
+    <line x1="12" y1="12" x2="12" y2="12.01" />
+    <line x1="8" y1="12" x2="8" y2="12.01" />
+    <line x1="16" y1="12" x2="16" y2="12.01" />
+</svg>
+{{ end }}
+{{ define "icon_original" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-external-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <path d="M11 7h-5a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-5" />
+    <line x1="10" y1="14" x2="20" y2="4" />
+    <polyline points="15 4 20 4 20 9" />
+</svg>
+{{ end }}
+{{ define "icon_delete" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <line x1="4" y1="7" x2="20" y2="7" />
+    <line x1="10" y1="11" x2="10" y2="17" />
+    <line x1="14" y1="11" x2="14" y2="17" />
+    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+</svg>
+{{ end }}`,
 	"item_meta": `{{ define "item_meta" }}
 <div class="item-meta">
-    <ul>
+    <ul class="item-meta-info">
         <li>
             {{ if .pageEntriesType}}
                 {{ if eq .pageEntriesType "all" }}
@@ -117,6 +237,13 @@ var templateCommonMap = map[string]string{
         <li>
             <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed .user.Timezone .entry.Date }}</time>
         </li>
+        {{ if .entry.ShareCode }}
+            <li>
+                <a href="{{ route "sharedEntry" "shareCode" .entry.ShareCode }}"
+                    title="{{ t "entry.shared_entry.title" }}"
+                    target="_blank">{{ template "icon_share" }}<span class="icon-label">{{ t "entry.shared_entry.label" }}</span></a>
+            </li>
+        {{ end }}
         {{ if .hasSaveEntry }}
             <li>
                 <a href="#"
@@ -125,15 +252,24 @@ var templateCommonMap = map[string]string{
                     data-save-url="{{ route "saveEntry" "entryID" .entry.ID }}"
                     data-label-loading="{{ t "entry.state.saving" }}"
                     data-label-done="{{ t "entry.save.completed" }}"
-                    >{{ t "entry.save.label" }}</a>
+                    >{{ template "icon_save" }}<span class="icon-label">{{ t "entry.save.label" }}</span></a>
             </li>
         {{ end }}
         <li>
-            <a href="{{ .entry.URL | safeURL  }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-original-link="true">{{ t "entry.original.label" }}</a>
+            <a href="{{ .entry.URL | safeURL  }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                referrerpolicy="no-referrer"
+                data-original-link="true">{{ template "icon_original" }}<span class="icon-label">{{ t "entry.original.label" }}</span></a>
         </li>
         {{ if .entry.CommentsURL }}
             <li>
-                <a href="{{ .entry.CommentsURL | safeURL  }}" title="{{ t "entry.comments.title" }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-comments-link="true">{{ t "entry.comments.label" }}</a>
+                <a href="{{ .entry.CommentsURL | safeURL  }}"
+                    title="{{ t "entry.comments.title" }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    referrerpolicy="no-referrer"
+                    data-comments-link="true">{{ template "icon_comment" }}<span class="icon-label">{{ t "entry.comments.label" }}</span></a>
             </li>
         {{ end }}
         <li>
@@ -144,19 +280,23 @@ var templateCommonMap = map[string]string{
                 data-label-star="☆&nbsp;{{ t "entry.bookmark.toggle.on" }}"
                 data-label-unstar="★&nbsp;{{ t "entry.bookmark.toggle.off" }}"
                 data-value="{{ if .entry.Starred }}star{{ else }}unstar{{ end }}"
-                >{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</a>
+                ><span class="icon-label">{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></a>
         </li>
         <li>
             <a href="#"
                 title="{{ t "entry.status.title" }}"
                 data-toggle-status="true"
-                data-label-read="✔&#xfe0e;&nbsp;{{ t "entry.status.read" }}"
+                data-label-read="✔&nbsp;{{ t "entry.status.read" }}"
                 data-label-unread="✘&nbsp;{{ t "entry.status.unread" }}"
                 data-value="{{ if eq .entry.Status "read" }}read{{ else }}unread{{ end }}"
-                >{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&#xfe0e;&nbsp;{{ t "entry.status.read" }}{{ end }}</a>
+                ><span class="icon-label">{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&nbsp;{{ t "entry.status.read" }}{{ end }}</span></a>
         </li>
         <li>
-            <a href="#" data-action="showActionMenu" data-action-menu-excluded title="{{ t "entry.actions.title" }}">{{ t "entry.actions.label" }}</a>
+            <a href="#" 
+                data-action="showActionMenu" 
+                data-action-menu-excluded 
+                title="{{ t "entry.actions.title" }}"
+            >{{ template "icon_menu" }}<span class="icon-label">{{ t "entry.actions.label" }}</span></a>
         </li>
     </ul>
 </div>
@@ -389,9 +529,10 @@ var templateCommonMap = map[string]string{
 
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "cdca9cf12586e41e5355190b06d9168f57f77b85924d1e63b13524bc15abcbf6",
-	"feed_list":        "db406e7cb81292ce1d974d63f63270384a286848b2e74fe36bf711b4eb5717dd",
+	"feed_list":        "46cbfc441404dc55c56a9fd7ddc43d98216762f2562f2a17e35eb508dc84246f",
 	"feed_menu":        "318d8662dda5ca9dfc75b909c8461e79c86fb5082df1428f67aaf856f19f4b50",
-	"item_meta":        "ff78c27f11c887d510bde8cfdae2886b84518ef1f354e8b0f6b3d55251c8e470",
+	"icons":            "ecc3a224e1471ac6920e7720dbf5f3c64aa16ae3ffccc510b8b7013d39fb280f",
+	"item_meta":        "01acf26fced608bc780dee29dde95be130a9fbf6679183f3541671a8dcb4123c",
 	"layout":           "a0506fe57debd46bb612c21001cfbf66dd0aa57127bef47330c9f2d3129b5fa1",
 	"pagination":       "7b61288e86283c4cf0dc83bcbf8bf1c00c7cb29e60201c8c0b633b2450d2911f",
 	"settings_menu":    "e2b777630c0efdbc529800303c01d6744ed3af80ec505ac5a5b3f99c9b989156",

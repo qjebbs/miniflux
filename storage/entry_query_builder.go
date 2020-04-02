@@ -143,6 +143,19 @@ func (e *EntryQueryBuilder) WithoutNSFW() *EntryQueryBuilder {
 	return e
 }
 
+// WithShareCode set the entry share code.
+func (e *EntryQueryBuilder) WithShareCode(shareCode string) *EntryQueryBuilder {
+	e.conditions = append(e.conditions, fmt.Sprintf("e.share_code = $%d", len(e.args)+1))
+	e.args = append(e.args, shareCode)
+	return e
+}
+
+// WithShareCodeNotEmpty adds a filter for non-empty share code.
+func (e *EntryQueryBuilder) WithShareCodeNotEmpty() *EntryQueryBuilder {
+	e.conditions = append(e.conditions, "e.share_code <> ''")
+	return e
+}
+
 // WithOrder set the sorting order.
 func (e *EntryQueryBuilder) WithOrder(order string) *EntryQueryBuilder {
 	e.order = order
@@ -213,6 +226,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			e.url,
 			e.comments_url,
 			e.author,
+			e.share_code,
 			e.content,
 			e.status,
 			e.starred,
@@ -279,6 +293,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.URL,
 			&entry.CommentsURL,
 			&entry.Author,
+			&entry.ShareCode,
 			&entry.Content,
 			&entry.Status,
 			&entry.Starred,
@@ -381,5 +396,12 @@ func NewEntryQueryBuilder(store *Storage, userID int64) *EntryQueryBuilder {
 		store:      store,
 		args:       []interface{}{userID},
 		conditions: []string{"e.user_id = $1"},
+	}
+}
+
+// NewAnonymousQueryBuilder returns a new EntryQueryBuilder suitable for anonymous users.
+func NewAnonymousQueryBuilder(store *Storage) *EntryQueryBuilder {
+	return &EntryQueryBuilder{
+		store: store,
 	}
 }

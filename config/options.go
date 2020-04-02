@@ -40,8 +40,8 @@ const (
 	defaultOAuth2ClientID              = ""
 	defaultOAuth2ClientSecret          = ""
 	defaultOAuth2RedirectURL           = ""
-	defaultOAuth2Provider              = ""
 	defaultOAuth2OidcDiscoveryEndpoint = ""
+	defaultOAuth2Provider              = ""
 	defaultPocketConsumerKey           = ""
 	defaultHTTPClientTimeout           = 20
 	defaultHTTPClientMaxBodySize       = 15

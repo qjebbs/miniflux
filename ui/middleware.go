@@ -137,6 +137,7 @@ func (m *middleware) isPublicRoute(r *http.Request) bool {
 		"favicon",
 		"webManifest",
 		"robots",
+		"sharedEntry",
 		"healthcheck":
 		return true
 	default:

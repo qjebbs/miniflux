@@ -1726,7 +1726,7 @@ var templateViewsMap = map[string]string{
 	"stat": `{{ define "title"}}{{ t "page.stat.title" }}{{ end }}
 
 {{ define "content"}}
-<section class="page-header">
+<section class="page-header no-back-forward-cache">
     <h1>{{ t "page.stat.title" }}</h1>
 </section>
 {{ if and (eq .countUnread 0) (eq .countStarred 0) }}
@@ -2011,7 +2011,7 @@ var templateViewsMapChecksums = map[string]string{
 	"sessions":            "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
 	"settings":            "a2a8c0d20b1b232e4509803f307ab9dced397a19236345a12d5a90f505de655f",
 	"shared_entries":      "19caea053664220bb9519df295eb2a17cf5836eaa9104b7ee24c60b88bb524e9",
-	"stat":                "78a6d8989f09ae30811c8ea0d9952d499e8890b8e08c2883642aaec808ed96e8",
+	"stat":                "b119ac8d0819def88362c1657cfd768f7e6419f2cdd763444f03d9a0c9c67291",
 	"unread_entries":      "13f9796f2a22e34297f0b13dc8352c5c34736c375749749a0a25662e58947702",
 	"users":               "d7ff52efc582bbad10504f4a04fa3adcc12d15890e45dff51cac281e0c446e45",
 }

@@ -1,7 +1,7 @@
 {{ define "title"}}{{ t "page.stat.title" }}{{ end }}
 
 {{ define "content"}}
-<section class="page-header">
+<section class="page-header no-back-forward-cache">
     <h1>{{ t "page.stat.title" }}</h1>
 </section>
 {{ if and (eq .countUnread 0) (eq .countStarred 0) }}

@@ -74,6 +74,14 @@ document.addEventListener("DOMContentLoaded", function () {
         onClick(".header nav li", (event) => onClickMainMenuListItem(event));
     }
 
+    if (document.querySelector('.no-back-forward-cache')) {
+        window.onpageshow = function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
+    }
+
     if ("serviceWorker" in navigator) {
         let scriptElement = document.getElementById("service-worker-script");
         if (scriptElement) {
@@ -102,5 +110,5 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
         }
-    });    
+    });
 });

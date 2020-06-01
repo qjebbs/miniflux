@@ -25,7 +25,7 @@ func (h *handler) bookmarkletEntry(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
-	feeds, err := h.store.Feeds(user.ID)
+	feeds, err := h.store.Feeds(user.ID, false)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return

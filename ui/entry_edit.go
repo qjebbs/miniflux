@@ -41,11 +41,7 @@ func (h *handler) showEditEntryPage(w http.ResponseWriter, r *http.Request) {
 
 	var feeds model.Feeds
 	nsfw := request.IsNSFWEnabled(r)
-	if nsfw {
-		feeds, err = h.store.FeedsExcludeNSFW(user.ID)
-	} else {
-		feeds, err = h.store.Feeds(user.ID)
-	}
+	feeds, err = h.store.Feeds(user.ID, nsfw)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return

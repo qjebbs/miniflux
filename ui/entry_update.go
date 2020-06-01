@@ -35,7 +35,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 
 	entryForm := form.NewEntryForm(r)
 
-	feeds, err := h.store.Feeds(user.ID)
+	feeds, err := h.store.Feeds(user.ID, false)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return

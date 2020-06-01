@@ -32,7 +32,7 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	feeds, err := h.store.Feeds(user.ID)
+	feeds, err := h.store.Feeds(user.ID, false)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return

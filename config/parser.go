@@ -142,6 +142,12 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.pollingFrequency = parseInt(value, defaultPollingFrequency)
 		case "BATCH_SIZE":
 			p.opts.batchSize = parseInt(value, defaultBatchSize)
+		case "POLLING_SCHEDULER":
+			p.opts.pollingScheduler = strings.ToLower(parseString(value, defaultPollingScheduler))
+		case "SCHEDULER_ENTRY_FREQUENCY_MAX_INTERVAL":
+			p.opts.schedulerEntryFrequencyMaxInterval = parseInt(value, defaultSchedulerEntryFrequencyMaxInterval)
+		case "SCHEDULER_ENTRY_FREQUENCY_MIN_INTERVAL":
+			p.opts.schedulerEntryFrequencyMinInterval = parseInt(value, defaultSchedulerEntryFrequencyMinInterval)
 		case "PROXY_IMAGES":
 			p.opts.proxyImages = parseString(value, defaultProxyImages)
 		case "CREATE_ADMIN":

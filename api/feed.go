@@ -140,7 +140,7 @@ func (h *handler) updateFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) getFeeds(w http.ResponseWriter, r *http.Request) {
-	feeds, err := h.store.Feeds(request.UserID(r))
+	feeds, err := h.store.Feeds(request.UserID(r), false)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return

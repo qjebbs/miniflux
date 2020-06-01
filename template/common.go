@@ -348,6 +348,7 @@ SOFTWARE.
 </head>
 <body
     data-entries-status-url="{{ route "updateEntriesStatus" }}"
+    data-refresh-all-feeds-url="{{ route "refreshAllFeeds" }}"
     {{ if .user }}{{ if not .user.KeyboardShortcuts }}data-disable-keyboard-shortcuts="true"{{ end }}{{ end }}>
     <div class="toast-wrap">
         <span class="toast-msg"></span>
@@ -458,6 +459,7 @@ SOFTWARE.
                     <li>{{ t "page.keyboard_shortcuts.toggle_bookmark_status" }} = <strong>f</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.save_article" }} = <strong>s</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.proxy_images" }} = <strong>P</strong></li>
+                    <li>{{ t "page.keyboard_shortcuts.refresh_all_feeds" }} = <strong>R</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.remove_feed" }} = <strong>#</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.go_to_search" }} = <strong>/</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.toggle_nsfw" }} = <strong>N</strong></li>
@@ -536,7 +538,7 @@ var templateCommonMapChecksums = map[string]string{
 	"feed_menu":        "318d8662dda5ca9dfc75b909c8461e79c86fb5082df1428f67aaf856f19f4b50",
 	"icons":            "ecc3a224e1471ac6920e7720dbf5f3c64aa16ae3ffccc510b8b7013d39fb280f",
 	"item_meta":        "01acf26fced608bc780dee29dde95be130a9fbf6679183f3541671a8dcb4123c",
-	"layout":           "82284b9a40a9dcba18a8bc4dd8d710795ffacdc76c05629313251036c1ced3cb",
+	"layout":           "ab4ce40729937a9d6ca6aa62f313a47ed0d31116778a4f3acf771b0f995702f1",
 	"pagination":       "7b61288e86283c4cf0dc83bcbf8bf1c00c7cb29e60201c8c0b633b2450d2911f",
 	"settings_menu":    "e2b777630c0efdbc529800303c01d6744ed3af80ec505ac5a5b3f99c9b989156",
 }

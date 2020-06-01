@@ -533,7 +533,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			view=$17,
 			disabled=$18,
 			nsfw=$19,
-			next_check_at=$120
+			next_check_at=$20
 		WHERE
 			id=$21 AND user_id=$22
 	`

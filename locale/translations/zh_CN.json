@@ -102,6 +102,7 @@
     "page.starred.title": "星标",
     "page.categories.title": "分类",
     "page.categories.no_feed": "没有源",
+    "page.categories.entries": "文章",
     "page.categories.feeds": "查看订阅",
     "page.categories.feed_count": [
         "有 %d 个源"
@@ -295,6 +296,7 @@
     "form.entry.label.readability": "使用 Readability 解析",
     "form.entry.label.cookies": "Cookies",
     "form.entry.label.cookies_placeholder":"以制表符分隔的“名称-值”表格，如：“name\tvalue”",
+    "form.feed.label.ignore_http_cache": "忽略HTTP缓存",
     "form.feed.label.disabled": "请勿刷新此Feed",
     "form.category.label.title": "标题",
     "form.user.label.username": "用户名",

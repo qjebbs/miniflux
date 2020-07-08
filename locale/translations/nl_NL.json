@@ -102,7 +102,8 @@
     "page.starred.title": "Favorieten",
     "page.categories.title": "Categorieën",
     "page.categories.no_feed": "Geen feeds.",
-    "page.categories.feeds": "Zie abonnementen",
+    "page.categories.entries": "Lidwoord",
+    "page.categories.feeds": "Abonnementen",
     "page.categories.feed_count": [
         "Er is %d feed.",
         "Er zijn %d feeds."
@@ -299,6 +300,7 @@
     "form.entry.label.readability": "Parse with Readability",
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
+    "form.feed.label.ignore_http_cache": "Negeer HTTP-cache",
     "form.feed.label.disabled": "Vernieuw deze feed niet",
     "form.category.label.title": "Naam",
     "form.user.label.username": "Gebruikersnaam",

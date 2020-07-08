@@ -102,7 +102,8 @@
     "page.starred.title": "Marcadores",
     "page.categories.title": "Categorias",
     "page.categories.no_feed": "No fuente.",
-    "page.categories.feeds": "Ver suscripciones",
+    "page.categories.entries": "Artículos",
+    "page.categories.feeds": "Suscripciones",
     "page.categories.feed_count": [
         "Hay %d fuente.",
         "Hay %d fuentes."
@@ -299,6 +300,7 @@
     "form.entry.label.readability": "Parse with Readability",
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
+    "form.feed.label.ignore_http_cache": "Ignorar caché HTTP",
     "form.feed.label.disabled": "No actualice este feed",
     "form.category.label.title": "Título",
     "form.user.label.username": "Nombre de usuario",

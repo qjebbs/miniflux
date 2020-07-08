@@ -102,6 +102,7 @@
     "page.starred.title": "星付き",
     "page.categories.title": "カテゴリ",
     "page.categories.no_feed": "フィード無し",
+    "page.categories.entries": "記事",
     "page.categories.feeds": "フィード購読を見る",
     "page.categories.feed_count": [
         "%d 個の記事があります。",
@@ -299,6 +300,7 @@
     "form.entry.label.readability": "Parse with Readability",
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder": "Tab seprated name-value table, e.g.：'name\tvalue'",
+    "form.feed.label.ignore_http_cache": "HTTPキャッシュを無視",
     "form.feed.label.disabled": "このフィードを更新しない",
     "form.category.label.title": "タイトル",
     "form.user.label.username": "ユーザー名",

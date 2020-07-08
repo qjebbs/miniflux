@@ -43,20 +43,21 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feedForm := form.FeedForm{
-		SiteURL:      feed.SiteURL,
-		FeedURL:      feed.FeedURL,
-		Title:        feed.Title,
-		ScraperRules: feed.ScraperRules,
-		RewriteRules: feed.RewriteRules,
-		Crawler:      feed.Crawler,
-		CacheMedia:   feed.CacheMedia,
-		UserAgent:    feed.UserAgent,
-		CategoryID:   feed.Category.ID,
-		Username:     feed.Username,
-		Password:     feed.Password,
-		View:         feed.View,
-		Disabled:     feed.Disabled,
-		NSFW:         feed.NSFW,
+		SiteURL:         feed.SiteURL,
+		FeedURL:         feed.FeedURL,
+		Title:           feed.Title,
+		ScraperRules:    feed.ScraperRules,
+		RewriteRules:    feed.RewriteRules,
+		Crawler:         feed.Crawler,
+		CacheMedia:      feed.CacheMedia,
+		UserAgent:       feed.UserAgent,
+		CategoryID:      feed.Category.ID,
+		Username:        feed.Username,
+		Password:        feed.Password,
+		View:            feed.View,
+		IgnoreHTTPCache: feed.IgnoreHTTPCache,
+		Disabled:        feed.Disabled,
+		NSFW:            feed.NSFW,
 	}
 
 	all, count, size, err := h.store.MediaStatisticsByFeed(feedID)

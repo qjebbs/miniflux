@@ -2,7 +2,7 @@
 
 {{ define "content"}}
 <section class="page-header clearfix">
-    <h1>{{ .category.Title }} ({{ .total }})</h1>
+    <h1 dir="auto">{{ .category.Title }} ({{ .total }})</h1>
     <ul class="left">
         <li>
             <a href="{{ route "categoryEntries" "categoryID" .category.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ t "menu.show_only_unread_entries" }}</a>
@@ -60,7 +60,7 @@
         <div class="item-sizer"></div>
         {{ range .entries }}
         <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
-            <div class="item-header">
+            <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
                         <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .Feed.Title }}">

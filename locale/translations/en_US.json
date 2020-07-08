@@ -102,7 +102,8 @@
     "page.starred.title": "Starred",
     "page.categories.title": "Categories",
     "page.categories.no_feed": "No feed.",
-    "page.categories.feeds": "See subscriptions",
+    "page.categories.entries": "Articles",
+    "page.categories.feeds": "Subscriptions",
     "page.categories.feed_count": [
         "There is %d feed.",
         "There are %d feeds."
@@ -299,6 +300,7 @@
     "form.entry.label.readability": "Parse with Readability",
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
+    "form.feed.label.ignore_http_cache": "Ignore HTTP cache",
     "form.feed.label.disabled": "Do not refresh this feed",
     "form.category.label.title": "Title",
     "form.user.label.username": "Username",

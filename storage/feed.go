@@ -33,6 +33,7 @@ var feedListQuery = `
 		f.password,
 		f.cache_media,
 		f.view,
+		f.ignore_http_cache,
 		f.disabled,
 		f.nsfw,
 		f.category_id,
@@ -188,6 +189,7 @@ func (s *Storage) FeedsByCategoryWithCounters(userID, categoryID int64, nsfw boo
 			f.password,
 			f.cache_media,
 			f.view,
+			f.ignore_http_cache,
 			f.disabled,
 			f.nsfw,
 			f.category_id,
@@ -303,6 +305,7 @@ func (s *Storage) fetchFeeds(feedQuery, counterQuery string, args ...interface{}
 			&feed.Password,
 			&feed.CacheMedia,
 			&feed.View,
+			&feed.IgnoreHTTPCache,
 			&feed.Disabled,
 			&feed.NSFW,
 			&feed.Category.ID,
@@ -390,6 +393,7 @@ func (s *Storage) FeedByID(userID, feedID int64) (*model.Feed, error) {
 			f.username,
 			f.password,
 			f.view,
+			f.ignore_http_cache,
 			f.disabled,
 			f.nsfw,
 			f.category_id,
@@ -424,6 +428,7 @@ func (s *Storage) FeedByID(userID, feedID int64) (*model.Feed, error) {
 		&feed.Username,
 		&feed.Password,
 		&feed.View,
+		&feed.IgnoreHTTPCache,
 		&feed.Disabled,
 		&feed.NSFW,
 		&feed.Category.ID,
@@ -533,9 +538,10 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			view=$17,
 			disabled=$18,
 			nsfw=$19,
-			next_check_at=$20
+			next_check_at=$20,
+			ignore_http_cache=$21
 		WHERE
-			id=$21 AND user_id=$22
+			id=$22 AND user_id=$23
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -558,6 +564,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.Disabled,
 		feed.NSFW,
 		feed.NextCheckAt,
+		feed.IgnoreHTTPCache,
 		feed.ID,
 		feed.UserID,
 	)

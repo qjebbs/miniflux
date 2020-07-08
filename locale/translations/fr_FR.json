@@ -102,7 +102,8 @@
     "page.starred.title": "Favoris",
     "page.categories.title": "Catégories",
     "page.categories.no_feed": "Aucun abonnement.",
-    "page.categories.feeds": "Voir les abonnements",
+    "page.categories.entries": "Articles",
+    "page.categories.feeds": "Abonnements",
     "page.categories.feed_count": [
         "Il y a %d abonnement.",
         "Il y a %d abonnements."
@@ -299,6 +300,7 @@
     "form.entry.label.readability": "Parse with Readability",
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
+    "form.feed.label.ignore_http_cache": "Ignore cache HTTP",
     "form.feed.label.disabled": "Ne pas actualiser ce flux",
     "form.category.label.title": "Titre",
     "form.user.label.username": "Nom d'utilisateur",

@@ -102,7 +102,8 @@
     "page.starred.title": "Preferiti",
     "page.categories.title": "Categorie",
     "page.categories.no_feed": "Nessun feed.",
-    "page.categories.feeds": "Vedi abbonamenti",
+    "page.categories.entries": "Articoli",
+    "page.categories.feeds": "Abbonamenti",
     "page.categories.feed_count": [
         "C'è %d feed.",
         "Ci sono %d feed."
@@ -299,6 +300,7 @@
     "form.entry.label.readability": "Parse with Readability",
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
+    "form.feed.label.ignore_http_cache": "Ignora cache HTTP",
     "form.feed.label.disabled": "Non aggiornare questo feed",
     "form.category.label.title": "Titolo",
     "form.user.label.username": "Nome utente",
@@ -319,8 +321,8 @@
     "form.prefs.select.view_list": "List View",
     "form.prefs.select.view_masonry": "Masonry View",
     "form.prefs.label.entry_sorting": "Ordinamento articoli",
-    "form.prefs.select.older_first": "Prima i più recenti",
-    "form.prefs.select.recent_first": "Prima i più vecchi",
+    "form.prefs.select.older_first": "Prima i più vecchi",
+    "form.prefs.select.recent_first": "Prima i più recenti",
     "form.prefs.label.keyboard_shortcuts": "Abilita le scorciatoie da tastiera",
     "form.prefs.label.custom_css": "CSS personalizzati",
     "form.import.label.file": "File OPML",

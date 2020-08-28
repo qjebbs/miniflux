@@ -754,6 +754,26 @@ function toast(msg) {
     }, 100);
 }
 
+function category_feeds_cascader() {
+    let cata = document.querySelector('#form-category') // as HTMLSelectElement;
+    let feed = document.querySelector('#form-feed') // as HTMLSelectElement;
+    if (!cata || !feed) return;
+    let span = document.createElement('span');
+    feed.appendChild(span)
+    cata.addEventListener("change", e => {
+        // hide all options
+        while (feed.options.length) {
+            span.appendChild(feed.options[0])
+        }
+        for (let option of feed.querySelectorAll("span>option")) {
+            if (!cata.value || cata.value == option.dataset.category) {
+                feed.appendChild(option)
+            }
+        }
+        return true;
+    })
+}
+
 function throttle(fn, delay, atleast) {
     var timeout = null,
         startTime = new Date();

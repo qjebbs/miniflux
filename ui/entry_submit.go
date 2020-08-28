@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strings"
 
+	"miniflux.app/model"
 	"miniflux.app/reader/scraper"
 
 	"miniflux.app/http/client"
@@ -37,11 +38,20 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
+	categories := make(model.Categories, 0)
+	encountered := make(map[int64]struct{})
+	for _, feed := range feeds {
+		if _, ok := encountered[feed.Category.ID]; !ok {
+			categories = append(categories, feed.Category)
+			encountered[feed.Category.ID] = struct{}{}
+		}
+	}
 
 	entryForm := form.NewEntryForm(r)
 
 	v.Set("form", entryForm)
 	v.Set("feeds", feeds)
+	v.Set("categories", categories)
 	v.Set("user", user)
 	v.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	v.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))

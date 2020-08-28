@@ -30,9 +30,15 @@
         <input type="url" name="comments_url" id="form-comments-url" placeholder="https://domain.tld/" value="{{ .form.CommentsURL }}">
         
         <label for="form-feed">{{ t "form.entry.label.feed" }}</label>
+        <select id="form-category" name="category_id">
+            <option value="" selected="selected">{{ t "form.entry.label.all_feeds" }}</option>
+        {{ range .categories }}
+            <option value="{{ .ID }}">{{ .Title }}</option>
+        {{ end }}
+        </select>
         <select id="form-feed" name="feed_id">
         {{ range .feeds }}
-            <option value="{{ .ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
+            <option value="{{ .ID }}" data-category="{{ .Category.ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
         {{ end }}
         </select>
 

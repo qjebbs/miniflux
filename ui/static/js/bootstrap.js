@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     handleSubmitButtons();
     initMasonryLayout();
     initTouchHandlers();
+    category_feeds_cascader();
 
     if (!document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {
         let keyboardHandler = new KeyboardHandler();
@@ -47,6 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
     onClick("a[data-action=markPageAsRead]", () => handleConfirmationMessage(event.target, () => markPageAsRead()));
     onClick("a[data-toggle-status]", (event) => handleEntryStatus(event.target));
     onClick("a[data-action=nsfw]", () => handleNSFW());
+    onClick("a[data-action=historyGoBack]", () => history.back());
 
     let tabHandler = new TabHandler();
     tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);

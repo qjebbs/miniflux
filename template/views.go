@@ -50,10 +50,16 @@ var templateViewsMap = map[string]string{
         <input type="url" name="url" id="form-url" placeholder="https://domain.tld/" value="{{ .form.URL }}" required autofocus>
 
         <label for="form-feed">{{ t "form.entry.label.feed" }}</label>
+        <select id="form-category" name="category_id">
+            <option value="" selected="selected">{{ t "form.entry.label.all_feeds" }}</option>
+        {{ range .categories }}
+            <option value="{{ .ID }}">{{ .Title }}</option>
+        {{ end }}
+        </select>
         <select id="form-feed" name="feed_id">
-            {{ range .feeds }}
-                <option value="{{ .ID }}" {{ if eq $.form.FeedID .ID }}selected="selected"{{ end }}>{{ .Title }}</option>
-            {{ end }}
+        {{ range .feeds }}
+            <option value="{{ .ID }}" data-category="{{ .Category.ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
+        {{ end }}
         </select>
 
         <details>
@@ -665,9 +671,15 @@ var templateViewsMap = map[string]string{
         <input type="url" name="comments_url" id="form-comments-url" placeholder="https://domain.tld/" value="{{ .form.CommentsURL }}">
         
         <label for="form-feed">{{ t "form.entry.label.feed" }}</label>
+        <select id="form-category" name="category_id">
+            <option value="" selected="selected">{{ t "form.entry.label.all_feeds" }}</option>
+        {{ range .categories }}
+            <option value="{{ .ID }}">{{ .Title }}</option>
+        {{ end }}
+        </select>
         <select id="form-feed" name="feed_id">
         {{ range .feeds }}
-            <option value="{{ .ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
+            <option value="{{ .ID }}" data-category="{{ .Category.ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
         {{ end }}
         </select>
 
@@ -2003,7 +2015,7 @@ var templateViewsMap = map[string]string{
 
 var templateViewsMapChecksums = map[string]string{
 	"about":               "4035658497363d7af7f79be83190404eb21ec633fe8ec636bdfc219d9fc78cfc",
-	"add_entry":           "6a5c1b88ef5090c5bec82924fc2727c3548e3cd31f0c8bf963630420301c696b",
+	"add_entry":           "5f94aa53c079c9551bf006533b56b134cc901c7ab8caec63e826f2d6807dff98",
 	"add_subscription":    "0dbea93b6fc07423fa066122ad960c69616b829533371a2dbadec1e22d4f1ae0",
 	"api_keys":            "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
 	"bookmark_entries":    "63a73f766808ef97a13e50fc27aa9e9203eb51b199c051a92c14620b27264b15",
@@ -2015,7 +2027,7 @@ var templateViewsMapChecksums = map[string]string{
 	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
 	"create_user":         "9b73a55233615e461d1f07d99ad1d4d3b54532588ab960097ba3e090c85aaf3a",
 	"edit_category":       "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
-	"edit_entry":          "ee5811bb9e5c9f5e659e55c7a181dcab14a4a514da36835c00b883529839ebff",
+	"edit_entry":          "dbc662629184d13a710e721559065d4cae84f9adc37b4dd083d592d7730a2a29",
 	"edit_feed":           "a9dabf1b47c627305888f632f94a2f172438a56f9932514b96b89df18d84da29",
 	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
 	"entry":               "2f07107b226a97a48811700a08af938259048d8c9376e7a411bea930c6fad357",

@@ -295,6 +295,7 @@
     "form.entry.label.url": "文章网址",
     "form.entry.label.comments_url": "评论网址",
     "form.entry.label.feed": "源",
+    "form.entry.label.all_feeds": "全部",
     "form.entry.label.content": "内容",
     "form.entry.label.code": "代码",
     "form.entry.label.preview": "预览",

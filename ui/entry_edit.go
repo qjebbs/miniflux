@@ -41,10 +41,18 @@ func (h *handler) showEditEntryPage(w http.ResponseWriter, r *http.Request) {
 
 	var feeds model.Feeds
 	nsfw := request.IsNSFWEnabled(r)
-	feeds, err = h.store.Feeds(user.ID, nsfw)
+	feeds, err = h.store.Feeds(user.ID, false)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
+	}
+	categories := make(model.Categories, 0)
+	encountered := make(map[int64]struct{})
+	for _, feed := range feeds {
+		if _, ok := encountered[feed.Category.ID]; !ok {
+			categories = append(categories, feed.Category)
+			encountered[feed.Category.ID] = struct{}{}
+		}
 	}
 
 	entryForm := form.EntryForm{
@@ -59,6 +67,7 @@ func (h *handler) showEditEntryPage(w http.ResponseWriter, r *http.Request) {
 
 	view.Set("form", entryForm)
 	view.Set("feeds", feeds)
+	view.Set("categories", categories)
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))

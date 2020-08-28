@@ -67,6 +67,11 @@ var templateCommonMap = map[string]string{
                             data-label-loading="{{ t "confirm.loading" }}"
                             data-url="{{ route "removeFeed" "feedID" .ID }}">{{ template "icon_delete" }}<span class="icon-label">{{ t "action.remove" }}</span></a>
                     </li>
+                    {{ if .UnreadCount }}
+                      <li>
+                        <a href="{{ route "markFeedAsRead" "feedID" .ID }}">{{ template "icon_read" }}<span class="icon-label">{{ t "menu.mark_all_as_read" }}</span></a>
+                      </li>
+                    {{ end }}
                 </ul>
             </div>
             {{ if ne .ParsingErrorCount 0 }}
@@ -158,12 +163,6 @@ SOFTWARE.
     <path d="M19 18a3.5 3.5 0 0 0 0 -7h-1a5 4.5 0 0 0 -11 -2a4.6 4.4 0 0 0 -2.1 8.4" />
     <line x1="12" y1="13" x2="12" y2="22" />
     <polyline points="9 19 12 22 15 19" />
-</svg>
-{{ end }}
-{{ define "icon_edit2" }}
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cloud-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <polygon transform="translate(14.697024, 9.802976) rotate(-315.000000) translate(-14.697024, -9.802976) " points="11.2257723 2.86047325 18.1682753 2.86047325 18.1682753 16.7454791 11.2257723 16.7454791"></polygon>
-    <polygon transform="translate(5.697024, 18.802976) scale(1, -1) rotate(315.000000) translate(-5.697024, -18.802976) " points="5.69702381 16.4888085 9.16827528 21.1171438 2.22577234 21.1171438"></polygon>
 </svg>
 {{ end }}
 {{ define "icon_cache" }}
@@ -269,6 +268,34 @@ SOFTWARE.
         <li>
             <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed .user.Timezone .entry.Date }}</time>
         </li>
+        {{ if .user.ShowReadingTime }}
+        <li>
+            <span>
+            {{ plural "entry.estimated_reading_time" (timeToRead .entry.Content) (timeToRead .entry.Content) }}
+            </span>
+        </li>
+        {{ end }}
+    </ul>
+    <ul class="item-meta-icons">
+        <li>
+            <a href="#"
+                title="{{ t "entry.status.title" }}"
+                data-toggle-status="true"
+                data-label-read="✔&nbsp;{{ t "entry.status.read" }}"
+                data-label-unread="✘&nbsp;{{ t "entry.status.unread" }}"
+                data-value="{{ if eq .entry.Status "read" }}read{{ else }}unread{{ end }}"
+                ><span class="icon-label">{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&nbsp;{{ t "entry.status.read" }}{{ end }}</span></a>
+        </li>
+        <li>
+            <a href="#"
+                data-toggle-bookmark="true"
+                data-bookmark-url="{{ route "toggleBookmark" "entryID" .entry.ID }}"
+                data-label-loading="{{ t "entry.state.saving" }}"
+                data-label-star="☆&nbsp;{{ t "entry.bookmark.toggle.on" }}"
+                data-label-unstar="★&nbsp;{{ t "entry.bookmark.toggle.off" }}"
+                data-value="{{ if .entry.Starred }}star{{ else }}unstar{{ end }}"
+                ><span class="icon-label">{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></a>
+        </li>
         {{ if .entry.ShareCode }}
             <li>
                 <a href="{{ route "sharedEntry" "shareCode" .entry.ShareCode }}"
@@ -304,25 +331,6 @@ SOFTWARE.
                     data-comments-link="true">{{ template "icon_comment" }}<span class="icon-label">{{ t "entry.comments.label" }}</span></a>
             </li>
         {{ end }}
-        <li>
-            <a href="#"
-                data-toggle-bookmark="true"
-                data-bookmark-url="{{ route "toggleBookmark" "entryID" .entry.ID }}"
-                data-label-loading="{{ t "entry.state.saving" }}"
-                data-label-star="☆&nbsp;{{ t "entry.bookmark.toggle.on" }}"
-                data-label-unstar="★&nbsp;{{ t "entry.bookmark.toggle.off" }}"
-                data-value="{{ if .entry.Starred }}star{{ else }}unstar{{ end }}"
-                ><span class="icon-label">{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></a>
-        </li>
-        <li>
-            <a href="#"
-                title="{{ t "entry.status.title" }}"
-                data-toggle-status="true"
-                data-label-read="✔&nbsp;{{ t "entry.status.read" }}"
-                data-label-unread="✘&nbsp;{{ t "entry.status.unread" }}"
-                data-value="{{ if eq .entry.Status "read" }}read{{ else }}unread{{ end }}"
-                ><span class="icon-label">{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&nbsp;{{ t "entry.status.read" }}{{ end }}</span></a>
-        </li>
         <li>
             <a href="#" 
                 data-action="showActionMenu" 
@@ -566,10 +574,10 @@ SOFTWARE.
 
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "cdca9cf12586e41e5355190b06d9168f57f77b85924d1e63b13524bc15abcbf6",
-	"feed_list":        "30acc9ecc413811e73a1dad120b5d44e29564de3ba794fb07ee886b30addfb19",
+	"feed_list":        "931e43d328a116318c510de5658c688cd940b934c86b6ec82a472e1f81e020ae",
 	"feed_menu":        "318d8662dda5ca9dfc75b909c8461e79c86fb5082df1428f67aaf856f19f4b50",
-	"icons":            "02ce2c5fc0eb316ab5002f78504199986bad1017896699d97809d384ae0dd71c",
-	"item_meta":        "01acf26fced608bc780dee29dde95be130a9fbf6679183f3541671a8dcb4123c",
+	"icons":            "adc8bf6157f4c648a4a9d5ccefeff390635b38ad0f5b07ae8e91632266774d26",
+	"item_meta":        "6891aecfef60a511f2ae14b7eb2ad0f895860dce23cd2643968d4dcdf7516eda",
 	"layout":           "ab4ce40729937a9d6ca6aa62f313a47ed0d31116778a4f3acf771b0f995702f1",
 	"pagination":       "7b61288e86283c4cf0dc83bcbf8bf1c00c7cb29e60201c8c0b633b2450d2911f",
 	"settings_menu":    "e2b777630c0efdbc529800303c01d6744ed3af80ec505ac5a5b3f99c9b989156",

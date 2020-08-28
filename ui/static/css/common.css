@@ -442,7 +442,7 @@ input[type="search"],
 input[type="url"],
 input[type="password"],
 input[type="text"],
-textarea {
+textarea, input[type="number"] {
     color: var(--input-color);
     background: var(--input-background);
     border: var(--input-border);
@@ -459,7 +459,7 @@ input[type="search"]:focus,
 input[type="url"]:focus,
 input[type="password"]:focus,
 input[type="text"]:focus,
-textarea:focus {
+textarea:focus, input[type="number"]:focus {
     color: var(--input-focus-color);
     border-color: var(--input-focus-border-color);
     outline: 0;
@@ -474,6 +474,10 @@ textarea {
 textarea.small {
     min-width: 100%;
     min-height: 100px;
+}
+
+#form-entries-per-page {
+    max-width: 80px;
 }
 
 input[type="checkbox"] {
@@ -858,9 +862,6 @@ a.button {
 }
 
 .item-meta {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
     color: var(--item-meta-focus-color);
     font-size: 0.8em;
 }
@@ -880,7 +881,11 @@ a.button {
 }
 
 .item-meta li {
-    display: inline;
+    display: inline-block;
+}
+
+.item-meta-info {
+    font-size: 0.85em;
 }
 
 .item-meta-info li:after {
@@ -893,7 +898,8 @@ a.button {
 }
 
 .item-meta-icons li {
-    margin-right: 5px;
+    margin-right: 8px;
+    margin-top: 4px;
 }
 
 .item-meta-icons li:last-child {
@@ -1010,6 +1016,7 @@ article.feed-parsing-error {
 .entry-actions li {
     display: inline-block;
     margin-right: 15px;
+    line-height: 1.7em;
 }
 
 .entry-meta {

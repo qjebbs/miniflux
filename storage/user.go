@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"miniflux.app/logger"
 	"miniflux.app/model"
 
 	"github.com/lib/pq/hstore"
@@ -63,7 +64,9 @@ func (s *Storage) CreateUser(user *model.User) (err error) {
 			(username, password, is_admin, extra)
 		VALUES
 			(LOWER($1), $2, $3, $4)
-		RETURNING id, username, is_admin, language, theme, view, timezone, entry_direction, keyboard_shortcuts`
+		RETURNING
+			id, username, is_admin, language, theme, view, timezone, entry_direction, entries_per_page, keyboard_shortcuts, show_reading_time
+	`
 
 	err = s.db.QueryRow(query, user.Username, password, user.IsAdmin, extra).Scan(
 		&user.ID,
@@ -74,7 +77,9 @@ func (s *Storage) CreateUser(user *model.User) (err error) {
 		&user.View,
 		&user.Timezone,
 		&user.EntryDirection,
+		&user.EntriesPerPage,
 		&user.KeyboardShortcuts,
+		&user.ShowReadingTime,
 	)
 	if err != nil {
 		return fmt.Errorf(`store: unable to create user: %v`, err)
@@ -113,17 +118,22 @@ func (s *Storage) UpdateUser(user *model.User) error {
 			return err
 		}
 
-		query := `UPDATE users SET
-			username=LOWER($1),
-			password=$2,
-			is_admin=$3,
-			theme=$4,
-			view=$5,
-			language=$6,
-			timezone=$7,
-			entry_direction=$8,
-			keyboard_shortcuts=$9
-			WHERE id=$10`
+		query := `
+			UPDATE users SET
+				username=LOWER($1),
+				password=$2,
+				is_admin=$3,
+				theme=$4,
+				view=$5,
+				language=$6,
+				timezone=$7,
+				entry_direction=$8,
+				entries_per_page=$9,
+				keyboard_shortcuts=$10,
+				show_reading_time=$11
+			WHERE
+				id=$12
+		`
 
 		_, err = s.db.Exec(
 			query,
@@ -135,23 +145,30 @@ func (s *Storage) UpdateUser(user *model.User) error {
 			user.Language,
 			user.Timezone,
 			user.EntryDirection,
+			user.EntriesPerPage,
 			user.KeyboardShortcuts,
+			user.ShowReadingTime,
 			user.ID,
 		)
 		if err != nil {
 			return fmt.Errorf(`store: unable to update user: %v`, err)
 		}
 	} else {
-		query := `UPDATE users SET
-			username=LOWER($1),
-			is_admin=$2,
-			theme=$3,
-			view=$4,
-			language=$5,
-			timezone=$6,
-			entry_direction=$7,
-			keyboard_shortcuts=$8
-			WHERE id=$9`
+		query := `
+			UPDATE users SET
+				username=LOWER($1),
+				is_admin=$2,
+				theme=$3,
+				view=$4,
+				language=$5,
+				timezone=$6,
+				entry_direction=$7,
+				entries_per_page=$8,
+				keyboard_shortcuts=$9,
+				show_reading_time=$10
+			WHERE
+				id=$11
+		`
 
 		_, err := s.db.Exec(
 			query,
@@ -162,7 +179,9 @@ func (s *Storage) UpdateUser(user *model.User) error {
 			user.Language,
 			user.Timezone,
 			user.EntryDirection,
+			user.EntriesPerPage,
 			user.KeyboardShortcuts,
+			user.ShowReadingTime,
 			user.ID,
 		)
 
@@ -200,7 +219,9 @@ func (s *Storage) UserByID(userID int64) (*model.User, error) {
 			language,
 			timezone,
 			entry_direction,
+			entries_per_page,
 			keyboard_shortcuts,
+			show_reading_time,
 			last_login_at,
 			extra
 		FROM
@@ -223,7 +244,9 @@ func (s *Storage) UserByUsername(username string) (*model.User, error) {
 			language,
 			timezone,
 			entry_direction,
+			entries_per_page,
 			keyboard_shortcuts,
+			show_reading_time,
 			last_login_at,
 			extra
 		FROM
@@ -246,7 +269,9 @@ func (s *Storage) UserByExtraField(field, value string) (*model.User, error) {
 			language,
 			timezone,
 			entry_direction,
+			entries_per_page,
 			keyboard_shortcuts,
+			show_reading_time,
 			last_login_at,
 			extra
 		FROM
@@ -268,7 +293,9 @@ func (s *Storage) UserByAPIKey(token string) (*model.User, error) {
 			u.language,
 			u.timezone,
 			u.entry_direction,
+			u.entries_per_page,
 			u.keyboard_shortcuts,
+			u.show_reading_time,
 			u.last_login_at,
 			u.extra
 		FROM
@@ -294,7 +321,9 @@ func (s *Storage) fetchUser(query string, args ...interface{}) (*model.User, err
 		&user.Language,
 		&user.Timezone,
 		&user.EntryDirection,
+		&user.EntriesPerPage,
 		&user.KeyboardShortcuts,
+		&user.ShowReadingTime,
 		&user.LastLoginAt,
 		&extra,
 	)
@@ -338,6 +367,15 @@ func (s *Storage) RemoveUser(userID int64) error {
 	return nil
 }
 
+// RemoveUserAsync deletes user data without locking the database.
+func (s *Storage) RemoveUserAsync(userID int64) {
+	go func() {
+		deleteUserFeeds(s.db, userID)
+		s.db.Exec(`DELETE FROM users WHERE id=$1`, userID)
+		s.db.Exec(`DELETE FROM integrations WHERE user_id=$1`, userID)
+	}()
+}
+
 // Users returns all users.
 func (s *Storage) Users() (model.Users, error) {
 	query := `
@@ -350,7 +388,9 @@ func (s *Storage) Users() (model.Users, error) {
 			language,
 			timezone,
 			entry_direction,
+			entries_per_page,
 			keyboard_shortcuts,
+			show_reading_time,
 			last_login_at,
 			extra
 		FROM
@@ -376,7 +416,9 @@ func (s *Storage) Users() (model.Users, error) {
 			&user.Language,
 			&user.Timezone,
 			&user.EntryDirection,
+			&user.EntriesPerPage,
 			&user.KeyboardShortcuts,
+			&user.ShowReadingTime,
 			&user.LastLoginAt,
 			&extra,
 		)
@@ -437,4 +479,82 @@ func (s *Storage) HasPassword(userID int64) (bool, error) {
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
+}
+
+func deleteUserFeeds(db *sql.DB, userID int64) {
+	query := `SELECT id FROM feeds WHERE user_id=$1`
+	rows, err := db.Query(query, userID)
+	if err != nil {
+		logger.Error(`store: unable to get user feeds: %v`, err)
+		return
+	}
+	defer rows.Close()
+
+	var feedIDs []int64
+	for rows.Next() {
+		var feedID int64
+		rows.Scan(&feedID)
+		feedIDs = append(feedIDs, feedID)
+	}
+
+	worker := func(jobs <-chan int64, results chan<- bool) {
+		for feedID := range jobs {
+			deleteUserEntries(db, userID, feedID)
+			db.Exec(`DELETE FROM feeds WHERE id=$1`, feedID)
+			results <- true
+		}
+	}
+
+	const numWorkers = 3
+	numJobs := len(feedIDs)
+	jobs := make(chan int64, numJobs)
+	results := make(chan bool, numJobs)
+
+	for w := 0; w < numWorkers; w++ {
+		go worker(jobs, results)
+	}
+
+	for j := 0; j < numJobs; j++ {
+		jobs <- feedIDs[j]
+	}
+	close(jobs)
+
+	for a := 1; a <= numJobs; a++ {
+		<-results
+	}
+}
+
+func deleteUserEntries(db *sql.DB, userID int64, feedID int64) {
+	query := `SELECT id FROM entries WHERE user_id=$1 AND feed_id=$2`
+	rows, err := db.Query(query, userID, feedID)
+	if err != nil {
+		logger.Error(`store: unable to get user feed entries: %v`, err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var entryID int64
+		rows.Scan(&entryID)
+		deleteUserEnclosures(db, userID, entryID)
+		db.Exec(`DELETE FROM entries WHERE id=$1`, entryID)
+	}
+}
+
+func deleteUserEnclosures(db *sql.DB, userID int64, entryID int64) {
+	query := `SELECT id FROM enclosures WHERE user_id=$1 AND entry_id=$2`
+	rows, err := db.Query(query, userID, entryID)
+	if err != nil {
+		logger.Error(`store: unable to get user entry enclosures: %v`, err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var enclosureID int64
+		rows.Scan(&enclosureID)
+		go func() {
+			db.Exec(`DELETE FROM enclosures WHERE id=$1`, enclosureID)
+		}()
+	}
 }

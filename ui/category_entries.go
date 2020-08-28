@@ -43,7 +43,7 @@ func (h *handler) showCategoryEntriesPage(w http.ResponseWriter, r *http.Request
 	builder.WithDirection(user.EntryDirection)
 	builder.WithStatus(model.EntryStatusUnread)
 	builder.WithOffset(offset)
-	builder.WithLimit(nbItemsPerPage)
+	builder.WithLimit(user.EntriesPerPage)
 	if nsfw {
 		builder.WithoutNSFW()
 	}
@@ -65,7 +65,7 @@ func (h *handler) showCategoryEntriesPage(w http.ResponseWriter, r *http.Request
 	view.Set("category", category)
 	view.Set("total", count)
 	view.Set("entries", entries)
-	view.Set("pagination", getPagination(route.Path(h.router, "categoryEntries", "categoryID", category.ID), count, offset))
+	view.Set("pagination", getPagination(route.Path(h.router, "categoryEntries", "categoryID", category.ID), count, offset, user.EntriesPerPage))
 	view.Set("menu", "categories")
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))

@@ -34,6 +34,7 @@ var feedListQuery = `
 		f.cache_media,
 		f.view,
 		f.ignore_http_cache,
+		f.fetch_via_proxy,
 		f.disabled,
 		f.nsfw,
 		f.category_id,
@@ -190,6 +191,7 @@ func (s *Storage) FeedsByCategoryWithCounters(userID, categoryID int64, nsfw boo
 			f.cache_media,
 			f.view,
 			f.ignore_http_cache,
+			f.fetch_via_proxy,
 			f.disabled,
 			f.nsfw,
 			f.category_id,
@@ -306,6 +308,7 @@ func (s *Storage) fetchFeeds(feedQuery, counterQuery string, args ...interface{}
 			&feed.CacheMedia,
 			&feed.View,
 			&feed.IgnoreHTTPCache,
+			&feed.FetchViaProxy,
 			&feed.Disabled,
 			&feed.NSFW,
 			&feed.Category.ID,
@@ -394,6 +397,7 @@ func (s *Storage) FeedByID(userID, feedID int64) (*model.Feed, error) {
 			f.password,
 			f.view,
 			f.ignore_http_cache,
+			f.fetch_via_proxy,
 			f.disabled,
 			f.nsfw,
 			f.category_id,
@@ -429,6 +433,7 @@ func (s *Storage) FeedByID(userID, feedID int64) (*model.Feed, error) {
 		&feed.Password,
 		&feed.View,
 		&feed.IgnoreHTTPCache,
+		&feed.FetchViaProxy,
 		&feed.Disabled,
 		&feed.NSFW,
 		&feed.Category.ID,
@@ -470,10 +475,11 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			password,
 			disabled,
 			scraper_rules,
-			rewrite_rules
+			rewrite_rules,
+			fetch_via_proxy
 		)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 		RETURNING
 			id
 	`
@@ -493,6 +499,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.Disabled,
 		feed.ScraperRules,
 		feed.RewriteRules,
+		feed.FetchViaProxy,
 	).Scan(&feed.ID)
 	if err != nil {
 		return fmt.Errorf(`store: unable to create feed %q: %v`, feed.FeedURL, err)
@@ -539,9 +546,10 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			disabled=$18,
 			nsfw=$19,
 			next_check_at=$20,
-			ignore_http_cache=$21
+			ignore_http_cache=$21,
+			fetch_via_proxy=$22
 		WHERE
-			id=$22 AND user_id=$23
+			id=$23 AND user_id=$24
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -565,6 +573,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.NSFW,
 		feed.NextCheckAt,
 		feed.IgnoreHTTPCache,
+		feed.FetchViaProxy,
 		feed.ID,
 		feed.UserID,
 	)

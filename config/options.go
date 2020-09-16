@@ -36,6 +36,7 @@ const (
 	defaultCertCache                          = "/tmp/cert_cache"
 	defaultCleanupFrequencyHours              = 24
 	defaultCleanupArchiveReadDays             = 60
+	defaultCleanupArchiveUnreadDays           = 180
 	defaultCleanupRemoveSessionsDays          = 30
 	defaultProxyImages                        = "http-only"
 	defaultCreateAdmin                        = false
@@ -50,12 +51,15 @@ const (
 	defaultPocketConsumerKey                  = ""
 	defaultHTTPClientTimeout                  = 20
 	defaultHTTPClientMaxBodySize              = 15
+	defaultHTTPClientProxy                    = ""
 	defaultAuthProxyHeader                    = ""
 	defaultAuthProxyUserCreation              = false
 	defaultCacheService                       = true
 	defaultCacheLocation                      = "disk"
 	defaultCacheFrequency                     = 24
 	defaultDiskStorageRoot                    = "./"
+	defaultMaintenanceMode                    = false
+	defaultMaintenanceMessage                 = "Miniflux is currently under maintenance"
 )
 
 // Options contains configuration options.
@@ -80,6 +84,7 @@ type Options struct {
 	certKeyFile                        string
 	cleanupFrequencyHours              int
 	cleanupArchiveReadDays             int
+	cleanupArchiveUnreadDays           int
 	cleanupRemoveSessionsDays          int
 	pollingFrequency                   int
 	batchSize                          int
@@ -100,12 +105,15 @@ type Options struct {
 	pocketConsumerKey                  string
 	httpClientTimeout                  int
 	httpClientMaxBodySize              int64
+	httpClientProxy                    string
 	authProxyHeader                    string
 	authProxyUserCreation              bool
 	cacheService                       bool
 	cacheLocation                      string
 	diskStorageRoot                    string
 	cacheFrequency                     int
+	maintenanceMode                    bool
+	maintenanceMessage                 string
 }
 
 // NewOptions returns Options with default values.
@@ -131,6 +139,7 @@ func NewOptions() *Options {
 		certKeyFile:                        defaultKeyFile,
 		cleanupFrequencyHours:              defaultCleanupFrequencyHours,
 		cleanupArchiveReadDays:             defaultCleanupArchiveReadDays,
+		cleanupArchiveUnreadDays:           defaultCleanupArchiveUnreadDays,
 		cleanupRemoveSessionsDays:          defaultCleanupRemoveSessionsDays,
 		pollingFrequency:                   defaultPollingFrequency,
 		batchSize:                          defaultBatchSize,
@@ -149,18 +158,31 @@ func NewOptions() *Options {
 		pocketConsumerKey:                  defaultPocketConsumerKey,
 		httpClientTimeout:                  defaultHTTPClientTimeout,
 		httpClientMaxBodySize:              defaultHTTPClientMaxBodySize * 1024 * 1024,
+		httpClientProxy:                    defaultHTTPClientProxy,
 		authProxyHeader:                    defaultAuthProxyHeader,
 		authProxyUserCreation:              defaultAuthProxyUserCreation,
 		cacheService:                       defaultCacheService,
 		cacheLocation:                      defaultCacheLocation,
 		diskStorageRoot:                    defaultDiskStorageRoot,
 		cacheFrequency:                     defaultCacheFrequency,
+		maintenanceMode:                    defaultMaintenanceMode,
+		maintenanceMessage:                 defaultMaintenanceMessage,
 	}
 }
 
 // LogDateTime returns true if the date/time should be displayed in log messages.
 func (o *Options) LogDateTime() bool {
 	return o.logDateTime
+}
+
+// HasMaintenanceMode returns true if maintenance mode is enabled.
+func (o *Options) HasMaintenanceMode() bool {
+	return o.maintenanceMode
+}
+
+// MaintenanceMessage returns maintenance message.
+func (o *Options) MaintenanceMessage() string {
+	return o.maintenanceMessage
 }
 
 // HasDebugMode returns true if debug mode is enabled.
@@ -241,6 +263,11 @@ func (o *Options) CleanupFrequencyHours() int {
 // CleanupArchiveReadDays returns the number of days after which marking read items as removed.
 func (o *Options) CleanupArchiveReadDays() int {
 	return o.cleanupArchiveReadDays
+}
+
+// CleanupArchiveUnreadDays returns the number of days after which marking unread items as removed.
+func (o *Options) CleanupArchiveUnreadDays() int {
+	return o.cleanupArchiveUnreadDays
 }
 
 // CleanupRemoveSessionsDays returns the number of days after which to remove sessions.
@@ -381,6 +408,16 @@ func (o *Options) HTTPClientMaxBodySize() int64 {
 	return o.httpClientMaxBodySize
 }
 
+// HTTPClientProxy returns the proxy URL for HTTP client.
+func (o *Options) HTTPClientProxy() string {
+	return o.httpClientProxy
+}
+
+// HasHTTPClientProxyConfigured returns true if the HTTP proxy is configured.
+func (o *Options) HasHTTPClientProxyConfigured() bool {
+	return o.httpClientProxy != ""
+}
+
 // AuthProxyHeader returns an HTTP header name that contains username for
 // authentication using auth proxy.
 func (o *Options) AuthProxyHeader() string {
@@ -419,6 +456,7 @@ func (o *Options) String() string {
 	builder.WriteString(fmt.Sprintf("CERT_CACHE: %v\n", o.certCache))
 	builder.WriteString(fmt.Sprintf("CLEANUP_FREQUENCY_HOURS: %v\n", o.cleanupFrequencyHours))
 	builder.WriteString(fmt.Sprintf("CLEANUP_ARCHIVE_READ_DAYS: %v\n", o.cleanupArchiveReadDays))
+	builder.WriteString(fmt.Sprintf("CLEANUP_ARCHIVE_UNREAD_DAYS: %v\n", o.cleanupArchiveUnreadDays))
 	builder.WriteString(fmt.Sprintf("CLEANUP_REMOVE_SESSIONS_DAYS: %v\n", o.cleanupRemoveSessionsDays))
 	builder.WriteString(fmt.Sprintf("WORKER_POOL_SIZE: %v\n", o.workerPoolSize))
 	builder.WriteString(fmt.Sprintf("POLLING_FREQUENCY: %v\n", o.pollingFrequency))
@@ -439,7 +477,10 @@ func (o *Options) String() string {
 	builder.WriteString(fmt.Sprintf("OAUTH2_PROVIDER: %v\n", o.oauth2Provider))
 	builder.WriteString(fmt.Sprintf("HTTP_CLIENT_TIMEOUT: %v\n", o.httpClientTimeout))
 	builder.WriteString(fmt.Sprintf("HTTP_CLIENT_MAX_BODY_SIZE: %v\n", o.httpClientMaxBodySize))
+	builder.WriteString(fmt.Sprintf("HTTP_CLIENT_PROXY: %v\n", o.httpClientProxy))
 	builder.WriteString(fmt.Sprintf("AUTH_PROXY_HEADER: %v\n", o.authProxyHeader))
 	builder.WriteString(fmt.Sprintf("AUTH_PROXY_USER_CREATION: %v\n", o.authProxyUserCreation))
+	builder.WriteString(fmt.Sprintf("MAINTENANCE_MODE: %v\n", o.maintenanceMode))
+	builder.WriteString(fmt.Sprintf("MAINTENANCE_MESSAGE: %v\n", o.maintenanceMessage))
 	return builder.String()
 }

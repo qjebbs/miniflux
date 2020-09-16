@@ -307,6 +307,7 @@
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
     "form.feed.label.ignore_http_cache": "Ignore HTTP cache",
+    "form.feed.label.fetch_via_proxy": "Fetch via proxy",
     "form.feed.label.disabled": "Do not refresh this feed",
     "form.category.label.title": "Title",
     "form.user.label.username": "Username",

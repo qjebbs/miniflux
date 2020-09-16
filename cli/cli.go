@@ -11,6 +11,7 @@ import (
 	"miniflux.app/config"
 	"miniflux.app/database"
 	"miniflux.app/logger"
+	"miniflux.app/model"
 	"miniflux.app/storage"
 	"miniflux.app/version"
 )
@@ -174,8 +175,15 @@ func Parse() {
 	}
 
 	if flagArchiveRead {
-		if err = store.ArchiveEntries(config.Opts.CleanupArchiveReadDays()); err != nil {
+		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveReadDays()); err != nil {
 			logger.Error("%v", err)
+		} else {
+			logger.Info("[ArchiveEntries] %d entries changed", rowsAffected)
+		}
+		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveUnreadDays()); err != nil {
+			logger.Error("%v", err)
+		} else {
+			logger.Info("[ArchiveEntries] %d entries changed", rowsAffected)
 		}
 		return
 	}

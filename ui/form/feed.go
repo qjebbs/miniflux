@@ -27,6 +27,7 @@ type FeedForm struct {
 	Password        string
 	View            string
 	IgnoreHTTPCache bool
+	FetchViaProxy   bool
 	Disabled        bool
 	NSFW            bool
 }
@@ -56,6 +57,7 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.Password = f.Password
 	feed.View = f.View
 	feed.IgnoreHTTPCache = f.IgnoreHTTPCache
+	feed.FetchViaProxy = f.FetchViaProxy
 	feed.Disabled = f.Disabled
 	feed.NSFW = f.NSFW
 	return feed
@@ -85,6 +87,7 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		Password:        r.FormValue("feed_password"),
 		View:            view,
 		IgnoreHTTPCache: r.FormValue("ignore_http_cache") == "1",
+		FetchViaProxy:   r.FormValue("fetch_via_proxy") == "1",
 		Disabled:        r.FormValue("disabled") == "1",
 		NSFW:            r.FormValue("nsfw") == "1",
 	}

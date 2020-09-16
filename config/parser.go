@@ -15,8 +15,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"miniflux.app/logger"
 )
 
 // Parser handles configuration parsing.
@@ -120,24 +118,10 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.cleanupFrequencyHours = parseInt(value, defaultCleanupFrequencyHours)
 		case "CLEANUP_ARCHIVE_READ_DAYS":
 			p.opts.cleanupArchiveReadDays = parseInt(value, defaultCleanupArchiveReadDays)
+		case "CLEANUP_ARCHIVE_UNREAD_DAYS":
+			p.opts.cleanupArchiveUnreadDays = parseInt(value, defaultCleanupArchiveUnreadDays)
 		case "CLEANUP_REMOVE_SESSIONS_DAYS":
 			p.opts.cleanupRemoveSessionsDays = parseInt(value, defaultCleanupRemoveSessionsDays)
-		case "CLEANUP_FREQUENCY":
-			logger.Error("[Config] CLEANUP_FREQUENCY has been deprecated in favor of CLEANUP_FREQUENCY_HOURS.")
-
-			if p.opts.cleanupFrequencyHours != defaultCleanupFrequencyHours {
-				logger.Error("[Config] Ignoring CLEANUP_FREQUENCY as CLEANUP_FREQUENCY_HOURS is already specified.")
-			} else {
-				p.opts.cleanupFrequencyHours = parseInt(value, defaultCleanupFrequencyHours)
-			}
-		case "ARCHIVE_READ_DAYS":
-			logger.Error("[Config] ARCHIVE_READ_DAYS has been deprecated in favor of CLEANUP_ARCHIVE_READ_DAYS.")
-
-			if p.opts.cleanupArchiveReadDays != defaultCleanupArchiveReadDays {
-				logger.Error("[Config] Ignoring ARCHIVE_READ_DAYS as CLEANUP_ARCHIVE_READ_DAYS is already specified.")
-			} else {
-				p.opts.cleanupArchiveReadDays = parseInt(value, defaultCleanupArchiveReadDays)
-			}
 		case "CACHE_FREQUENCY":
 			p.opts.cacheFrequency = parseInt(value, defaultCacheFrequency)
 		case "WORKER_POOL_SIZE":
@@ -192,10 +176,16 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.diskStorageRoot = parseString(value, defaultDiskStorageRoot)
 		case "CACHE_LOCATION":
 			p.opts.cacheLocation = parseString(value, defaultCacheLocation)
+		case "HTTP_CLIENT_PROXY":
+			p.opts.httpClientProxy = parseString(value, defaultHTTPClientProxy)
 		case "AUTH_PROXY_HEADER":
 			p.opts.authProxyHeader = parseString(value, defaultAuthProxyHeader)
 		case "AUTH_PROXY_USER_CREATION":
 			p.opts.authProxyUserCreation = parseBool(value, defaultAuthProxyUserCreation)
+		case "MAINTENANCE_MODE":
+			p.opts.maintenanceMode = parseBool(value, defaultMaintenanceMode)
+		case "MAINTENANCE_MESSAGE":
+			p.opts.maintenanceMessage = parseString(value, defaultMaintenanceMessage)
 		}
 	}
 

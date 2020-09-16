@@ -308,6 +308,7 @@
     "form.entry.label.cookies_placeholder": "Tab seprated name-value table, e.g.：'name\tvalue'",
     "form.feed.label.ignore_http_cache": "Ignorar cache HTTP",
     "form.feed.label.disabled": "Não atualizar esta fonte",
+    "form.feed.label.fetch_via_proxy": "Buscar via proxy",
     "form.category.label.title": "Título",
     "form.user.label.username": "Nome de usuário",
     "form.user.label.password": "Senha",

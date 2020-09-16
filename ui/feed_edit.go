@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"miniflux.app/config"
 	"miniflux.app/http/client"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
@@ -56,6 +57,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		Password:        feed.Password,
 		View:            feed.View,
 		IgnoreHTTPCache: feed.IgnoreHTTPCache,
+		FetchViaProxy:   feed.FetchViaProxy,
 		Disabled:        feed.Disabled,
 		NSFW:            feed.NSFW,
 	}
@@ -81,6 +83,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("mediaCount", all)
 	view.Set("cacheCount", count)
 	view.Set("cacheSize", byteSizeHumanReadable(size))
+	view.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
 
 	html.OK(w, r, view.Render("edit_feed"))
 }

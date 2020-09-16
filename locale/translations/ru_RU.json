@@ -309,6 +309,7 @@
     "form.entry.label.cookies": "Cookies (Tab seprated name-value table)",
     "form.entry.label.cookies_placeholder":"Tab seprated name-value table, e.g.：'name\tvalue'",
     "form.feed.label.ignore_http_cache": "Игнорировать HTTP-кеш",
+    "form.feed.label.fetch_via_proxy": "Получить через прокси",
     "form.feed.label.disabled": "Не обновлять этот канал",
     "form.category.label.title": "Название",
     "form.user.label.username": "Имя пользователя",

@@ -17,7 +17,8 @@
             "CREATE_ADMIN":1,
             "ADMIN_USERNAME":"admin",
             "ADMIN_PASSWORD":"123123",
-            "CACHE_LOCATION":"database",
+            // "CACHE_LOCATION":"database",
+            "DISK_STORAGE_ROOT":"~/Downloads/miniflux",
         },
         "args": [
             // "--cache-clean",

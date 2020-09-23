@@ -38,6 +38,7 @@ func (h *handler) showSettingsPage(w http.ResponseWriter, r *http.Request) {
 		KeyboardShortcuts: user.KeyboardShortcuts,
 		ShowReadingTime:   user.ShowReadingTime,
 		CustomCSS:         user.Extra["custom_css"],
+		CustomCSPScript:   user.Extra["custom_csp_script"],
 	}
 
 	timezones, err := h.store.Timezones()

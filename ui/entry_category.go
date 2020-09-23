@@ -99,5 +99,5 @@ func (h *handler) showCategoryEntryPage(w http.ResponseWriter, r *http.Request) 
 		view.Set("entryCached", false)
 	}
 
-	html.OK(w, r, view.Render("entry"))
+	html.OKWithoutCSP(w, r, view.Render("entry"))
 }

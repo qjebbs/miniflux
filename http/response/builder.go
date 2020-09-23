@@ -96,7 +96,9 @@ func (b *Builder) writeHeaders() {
 	b.headers["X-XSS-Protection"] = "1; mode=block"
 	b.headers["X-Content-Type-Options"] = "nosniff"
 	b.headers["X-Frame-Options"] = "DENY"
-	b.headers["Content-Security-Policy"] = "default-src 'self'; img-src *; media-src *; frame-src *"
+	if _, ok := b.headers["Content-Security-Policy"]; !ok {
+		b.headers["Content-Security-Policy"] = "default-src 'self'; img-src *; media-src *; frame-src *"
+	}
 
 	for key, value := range b.headers {
 		b.w.Header().Set(key, value)

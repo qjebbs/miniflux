@@ -26,6 +26,7 @@ type SettingsForm struct {
 	KeyboardShortcuts bool
 	ShowReadingTime   bool
 	CustomCSS         string
+	CustomCSPScript   string
 }
 
 // Merge updates the fields of the given user.
@@ -40,6 +41,7 @@ func (s *SettingsForm) Merge(user *model.User) *model.User {
 	user.KeyboardShortcuts = s.KeyboardShortcuts
 	user.ShowReadingTime = s.ShowReadingTime
 	user.Extra["custom_css"] = s.CustomCSS
+	user.Extra["custom_csp_script"] = s.CustomCSPScript
 
 	if s.Password != "" {
 		user.Password = s.Password
@@ -95,5 +97,6 @@ func NewSettingsForm(r *http.Request) *SettingsForm {
 		KeyboardShortcuts: r.FormValue("keyboard_shortcuts") == "1",
 		ShowReadingTime:   r.FormValue("show_reading_time") == "1",
 		CustomCSS:         r.FormValue("custom_css"),
+		CustomCSPScript:   r.FormValue("custom_csp_script"),
 	}
 }

@@ -194,6 +194,10 @@ func (s *Storage) UpdateUser(user *model.User) error {
 		return fmt.Errorf(`store: unable to update user custom css: %v`, err)
 	}
 
+	if err := s.UpdateExtraField(user.ID, "custom_csp_script", user.Extra["custom_csp_script"]); err != nil {
+		return fmt.Errorf(`store: unable to update user custom script CSP: %v`, err)
+	}
+
 	return nil
 }
 

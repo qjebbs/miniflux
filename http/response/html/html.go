@@ -20,6 +20,16 @@ func OK(w http.ResponseWriter, r *http.Request, body interface{}) {
 	builder.Write()
 }
 
+// OKWithoutCSP is simillar to OK, but response with user custome script csp.
+func OKWithoutCSP(w http.ResponseWriter, r *http.Request, body interface{}) {
+	builder := response.New(w, r)
+	builder.WithHeader("Content-Type", "text/html; charset=utf-8")
+	builder.WithHeader("Cache-Control", "no-cache, max-age=0, must-revalidate, no-store")
+	builder.WithHeader("Content-Security-Policy", "")
+	builder.WithBody(body)
+	builder.Write()
+}
+
 // ServerError sends an internal error to the client.
 func ServerError(w http.ResponseWriter, r *http.Request, err error) {
 	logger.Error("[HTTP:Internal Server Error] %s => %v", r.URL, err)

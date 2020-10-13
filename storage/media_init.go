@@ -22,20 +22,29 @@ func (s *Storage) CreateMediasRunOnce() {
 		return
 	}
 	var startID int64
+	tx, err := s.Begin()
+	if err != nil {
+		return
+	}
 	for {
 		entries, err := getEntriesForCreateMediasRunOnce(s.db, startID)
 		if err != nil {
 			logger.Error("[Storage:CreateMediasRunOnce] Error: %v", err)
-			return
+			break
 		}
 		if len(entries) == 0 {
-			return
+			break
 		}
-		err = s.CreateEntriesMedia(entries)
+		err = s.CreateEntriesMedia(tx, entries)
 		if err != nil {
 			logger.Error("[Storage:CreateMediasRunOnce] Error: %v", err)
 		}
 		startID = entries[len(entries)-1].ID
+	}
+	if err != nil {
+		tx.Rollback()
+	} else {
+		tx.Commit()
 	}
 }
 

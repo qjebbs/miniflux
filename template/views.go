@@ -234,7 +234,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -391,7 +391,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1084,7 +1084,7 @@ var templateViewsMap = map[string]string{
 {{ define "content"}}
 <section class="page-header clearfix">
     <h1 dir="auto">
-        <a href="{{ .feed.SiteURL | safeURL  }}" title="{{ .feed.SiteURL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-original-link="true">{{ .feed.Title }}</a> 
+        <a href="{{ .feed.SiteURL | safeURL  }}" title="{{ .feed.SiteURL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-original-link="true">{{ .feed.Title }}</a>
         ({{ .total }})
     </h1>
     <ul class="left">
@@ -1163,7 +1163,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1263,7 +1263,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1545,7 +1545,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1682,8 +1682,10 @@ var templateViewsMap = map[string]string{
     <input type="number" name="entries_per_page" id="form-entries-per-page" value="{{ .form.EntriesPerPage }}" min="1">
 
     <label><input type="checkbox" name="keyboard_shortcuts" value="1" {{ if .form.KeyboardShortcuts }}checked{{ end }}> {{ t "form.prefs.label.keyboard_shortcuts" }}</label>
-    
+
     <label><input type="checkbox" name="show_reading_time" value="1" {{ if .form.ShowReadingTime }}checked{{ end }}> {{ t "form.prefs.label.show_reading_time" }}</label>
+
+    <label><input type="checkbox" name="entry_swipe" value="1" {{ if .form.EntrySwipe }}checked{{ end }}> {{ t "form.prefs.label.entry_swipe" }}</label>
 
     <label>{{t "form.prefs.label.custom_css" }}</label><textarea name="custom_css" cols="40" rows="5">{{ .form.CustomCSS }}</textarea>
     <div class="buttons">
@@ -1739,7 +1741,7 @@ var templateViewsMap = map[string]string{
 {{ else }}
     <div class="items">
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}" data-id="{{ .ID }}">
+        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1940,7 +1942,7 @@ var templateViewsMap = map[string]string{
     <div class='{{ if eq .view "masonry" }}items masonry{{ else }}items hide-read-items{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item touch-item item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1988,7 +1990,8 @@ var templateViewsMap = map[string]string{
     {{ template "pagination" .pagination }}
 {{ end }}
 
-{{ end }}`,
+{{ end }}
+`,
 	"users": `{{ define "title"}}{{ t "page.users.title" }}{{ end }}
 
 {{ define "content"}}
@@ -2049,9 +2052,9 @@ var templateViewsMapChecksums = map[string]string{
 	"add_entry":           "5f94aa53c079c9551bf006533b56b134cc901c7ab8caec63e826f2d6807dff98",
 	"add_subscription":    "63961a83964acca354bc30eaae1f5e80f410ae4091af8da317380d4298f79032",
 	"api_keys":            "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
-	"bookmark_entries":    "63a73f766808ef97a13e50fc27aa9e9203eb51b199c051a92c14620b27264b15",
+	"bookmark_entries":    "6751659890c2a9ebdbbc040c45c568324e9d29ec5c325da3e49afc43e77a104b",
 	"categories":          "9dfc3cb7bb91c7750753fe962ee4540dd1843e5f75f9e0a575ee964f6f9923e9",
-	"category_entries":    "059a3540bcd1a11fcae4d398643b6d16d955d243825afb3e19f5864a716342cc",
+	"category_entries":    "3e8e2100868bdb5a45b6dbb42c0f00d02e1a32ea4eb9a4d97ae5af70b1603729",
 	"category_feeds":      "07154127087f9b127f7290abad6020c35ad9ceb2490b869120b7628bc4413808",
 	"choose_subscription": "22109d760ea8079c491561d0106f773c885efbf66f87d81fcf8700218260d2a0",
 	"create_api_key":      "5f74d4e92a6684927f5305096378c8be278159a5cd88ce652c7be3280a7d1685",
@@ -2062,17 +2065,17 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_feed":           "15537a06bac599fc6430833b06f648efd692a4df5e5f147bb4dd443282fa9774",
 	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
 	"entry":               "2f07107b226a97a48811700a08af938259048d8c9376e7a411bea930c6fad357",
-	"feed_entries":        "5debd04ff411a530a50f2cab4eda9a0c6aec839a367f3d155272bbddb15afca8",
+	"feed_entries":        "ae110a5026b3a5d5897b5b7fd2e48496544f138b23a3ca0c5bb5d3f031f626ed",
 	"feeds":               "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
-	"history_entries":     "bd367d247b810ecd44bbc6db1df98e14ac6d751359e74f9a99cd9930b50b856c",
+	"history_entries":     "87f588b37ef3901292796b2a646143102939ab860a7e0c78b9f1f821ae49c737",
 	"import":              "1b59b3bd55c59fcbc6fbb346b414dcdd26d1b4e0c307e437bb58b3f92ef01ad1",
 	"integrations":        "106f296e8904f21a7a6a8c263bbf4373ccda4af146687eda05e4df2fa07d25aa",
 	"login":               "79ff2ca488c0a19b37c8fa227a21f73e94472eb357a51a077197c852f7713f11",
-	"search_entries":      "a041baef25aae7d131579bfa2cdb695514ed8947c129f8446e6e657a4a5a1ebd",
+	"search_entries":      "ffc082b84808dca845243465e0e2a2517419f725ce557296bed5e41747e2be62",
 	"sessions":            "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
-	"settings":            "3a07b28ddc50a1520d64900a3120572b8d2f72893e828066f790a07f4f1a3a2f",
-	"shared_entries":      "1494d81e46f6af534a73cf6a91f8dfda1932a477bb3a70143513896ac0f0220b",
+	"settings":            "581f78d441436f9e833cc49484ef059f90a8ee9789d9ecffe6f50eb4769f2171",
+	"shared_entries":      "f87a42bf44dc3606c5a44b185263c1b9a612a8ae194f75061253d4dde7b095a2",
 	"stat":                "b119ac8d0819def88362c1657cfd768f7e6419f2cdd763444f03d9a0c9c67291",
-	"unread_entries":      "8b2fd59a0727a74ea95febd5cdf6b7275958e4a431f86bb1779e483cdad545e2",
+	"unread_entries":      "35b29dd79cbc9892404438bc781006473647b4cc68900bcd7ade9cc69423a7cd",
 	"users":               "d7ff52efc582bbad10504f4a04fa3adcc12d15890e45dff51cac281e0c446e45",
 }

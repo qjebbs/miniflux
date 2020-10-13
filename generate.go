@@ -200,8 +200,8 @@ func main() {
 			"ui/static/js/masonry.pkgd.min.js",
 			"ui/static/js/imagesloaded.pkgd.min.js",
 		},
-		"sw": []string{
-			"ui/static/js/sw.js",
+		"service-worker": []string{
+			"ui/static/js/service_worker.js",
 		},
 	}, map[string]string{
 		"app": "(function(){'use strict';",

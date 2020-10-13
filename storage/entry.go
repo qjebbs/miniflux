@@ -5,6 +5,7 @@
 package storage // import "miniflux.app/storage"
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -15,6 +16,39 @@ import (
 
 	"github.com/lib/pq"
 )
+
+// Begin starts a transaction.
+func (s Storage) Begin() (*sql.Tx, error) {
+	return s.db.Begin()
+}
+
+// CountAllEntries returns the number of entries for each status in the database.
+func (s *Storage) CountAllEntries() map[string]int64 {
+	rows, err := s.db.Query(`SELECT status, count(*) FROM entries GROUP BY status`)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	results := make(map[string]int64)
+	results["unread"] = 0
+	results["read"] = 0
+	results["removed"] = 0
+
+	for rows.Next() {
+		var status string
+		var count int64
+
+		if err := rows.Scan(&status, &count); err != nil {
+			continue
+		}
+
+		results[status] = count
+	}
+
+	results["total"] = results["unread"] + results["read"] + results["removed"]
+	return results
+}
 
 // CountUnreadEntries returns the number of unread entries.
 // If nsfw is enabled, it doesn't take nsfw entries into count
@@ -83,7 +117,7 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 }
 
 // CreateEntry add a new entry.
-func (s *Storage) CreateEntry(entry *model.Entry) error {
+func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 	query := `
 		INSERT INTO entries
 			(title, hash, url, comments_url, published_at, content, author, user_id, feed_id, changed_at, document_vectors)
@@ -92,7 +126,7 @@ func (s *Storage) CreateEntry(entry *model.Entry) error {
 		RETURNING
 			id, status
 	`
-	err := s.db.QueryRow(
+	err := tx.QueryRow(
 		query,
 		entry.Title,
 		entry.Hash,
@@ -109,7 +143,7 @@ func (s *Storage) CreateEntry(entry *model.Entry) error {
 		return fmt.Errorf(`store: unable to create entry %q (feed #%d): %v`, entry.URL, entry.FeedID, err)
 	}
 
-	err = s.CreateEntriesMedia(model.Entries{entry})
+	err = s.CreateEntriesMedia(tx, model.Entries{entry})
 	if err != nil {
 		return fmt.Errorf("unable to create entry medias records %q (feed #%d): %v", entry.URL, entry.FeedID, err)
 	}
@@ -117,7 +151,7 @@ func (s *Storage) CreateEntry(entry *model.Entry) error {
 	for i := 0; i < len(entry.Enclosures); i++ {
 		entry.Enclosures[i].EntryID = entry.ID
 		entry.Enclosures[i].UserID = entry.UserID
-		err := s.CreateEnclosure(entry.Enclosures[i])
+		err := s.createEnclosure(tx, entry.Enclosures[i])
 		if err != nil {
 			return err
 		}
@@ -129,7 +163,7 @@ func (s *Storage) CreateEntry(entry *model.Entry) error {
 // updateEntry updates an entry when a feed is refreshed.
 // Note: we do not update the published date because some feeds do not contains any date,
 // it default to time.Now() which could change the order of items on the history page.
-func (s *Storage) updateEntry(entry *model.Entry) error {
+func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 	query := `
 		UPDATE
 			entries
@@ -145,7 +179,7 @@ func (s *Storage) updateEntry(entry *model.Entry) error {
 		RETURNING
 			id
 	`
-	err := s.db.QueryRow(
+	err := tx.QueryRow(
 		query,
 		entry.Title,
 		entry.URL,
@@ -170,7 +204,7 @@ func (s *Storage) updateEntry(entry *model.Entry) error {
 	if err != nil {
 		return fmt.Errorf(`unable to update entry medias %q: %v`, entry.URL, err)
 	}
-	return s.UpdateEnclosures(entry.Enclosures)
+	return s.updateEnclosures(tx, entry.UserID, entry.ID, entry.Enclosures)
 }
 
 // UpdateEntryByID updates an entry when an entry is edited.
@@ -208,10 +242,26 @@ func (s *Storage) UpdateEntryByID(entry *model.Entry) error {
 
 // EntryExists checks if an entry already exists based on its hash when refreshing a feed.
 func (s *Storage) EntryExists(entry *model.Entry) bool {
-	var result int
-	query := `SELECT 1 FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`
-	s.db.QueryRow(query, entry.UserID, entry.FeedID, entry.Hash).Scan(&result)
-	return result == 1
+	var result bool
+	s.db.QueryRow(
+		`SELECT true FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`,
+		entry.UserID,
+		entry.FeedID,
+		entry.Hash,
+	).Scan(&result)
+	return result
+}
+
+// entryExists checks if an entry already exists based on its hash when refreshing a feed.
+func (s *Storage) entryExists(tx *sql.Tx, entry *model.Entry) bool {
+	var result bool
+	tx.QueryRow(
+		`SELECT true FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`,
+		entry.UserID,
+		entry.FeedID,
+		entry.Hash,
+	).Scan(&result)
+	return result
 }
 
 // cleanupEntries deletes from the database entries marked as "removed" and not visible anymore in the feed.
@@ -231,31 +281,44 @@ func (s *Storage) cleanupEntries(feedID int64, entryHashes []string) error {
 	return nil
 }
 
-// UpdateEntries updates a list of entries while refreshing a feed.
-func (s *Storage) UpdateEntries(userID, feedID int64, entries model.Entries, updateExistingEntries bool) (err error) {
+// RefreshFeedEntries updates feed entries while refreshing a feed.
+func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries, updateExistingEntries bool) (err error) {
 	var entryHashes []string
+
 	for _, entry := range entries {
 		entry.UserID = userID
 		entry.FeedID = feedID
 
-		if s.EntryExists(entry) {
+		tx, err := s.db.Begin()
+		if err != nil {
+			return fmt.Errorf(`store: unable to start transaction: %v`, err)
+		}
+
+		if s.entryExists(tx, entry) {
 			if updateExistingEntries {
-				err = s.updateEntry(entry)
+				err = s.updateEntry(tx, entry)
 			}
 		} else {
-			err = s.CreateEntry(entry)
+			err = s.CreateEntry(tx, entry)
 		}
 
 		if err != nil {
+			tx.Rollback()
 			return err
+		}
+
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf(`store: unable to commit transaction: %v`, err)
 		}
 
 		entryHashes = append(entryHashes, entry.Hash)
 	}
 
-	if err := s.cleanupEntries(feedID, entryHashes); err != nil {
-		logger.Error(`store: feed #%d: %v`, feedID, err)
-	}
+	go func() {
+		if err := s.cleanupEntries(feedID, entryHashes); err != nil {
+			logger.Error(`store: feed #%d: %v`, feedID, err)
+		}
+	}()
 
 	return nil
 }

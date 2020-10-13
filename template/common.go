@@ -259,10 +259,10 @@ SOFTWARE.
                 {{ else if eq .pageEntriesType "starred" }}
                     <a href="{{ route "feedEntriesStarred" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
                 {{ else }}
-                    <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+                    <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}" data-feed-link="true">{{ truncate .entry.Feed.Title 35 }}</a>
                 {{ end }}
             {{ else }}
-                <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}">{{ truncate .entry.Feed.Title 35 }}</a>
+                <a href="{{ route "feedEntries" "feedID" .entry.Feed.ID }}" title="{{ .entry.Feed.SiteURL }}" data-feed-link="true">{{ truncate .entry.Feed.Title 35 }}</a>
             {{ end }}
         </li>
         <li>
@@ -384,7 +384,7 @@ SOFTWARE.
     {{ end }}{{ end }}
 
     <script type="text/javascript" src="{{ route "javascript" "name" "app" }}?{{ .app_js_checksum }}" defer></script>
-    <script type="text/javascript" src="{{ route "javascript" "name" "sw" }}?{{ .sw_js_checksum }}" defer id="service-worker-script"></script>
+    <script type="text/javascript" src="{{ route "javascript" "name" "service-worker" }}?{{ .sw_js_checksum }}" defer id="service-worker-script"></script>
 </head>
 <body
     data-entries-status-url="{{ route "updateEntriesStatus" }}"
@@ -477,7 +477,7 @@ SOFTWARE.
                 <ul>
                     <li>{{ t "page.keyboard_shortcuts.go_to_previous_item" }} = <strong>p</strong>, <strong>k</strong>, <strong>◄</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.go_to_next_item" }} = <strong>n</strong>, <strong>j</strong>, <strong>►</strong></li>
-                    <li>{{ t "page.keyboard_shortcuts.go_to_feed" }} = <strong>g + f</strong></li>
+                    <li>{{ t "page.keyboard_shortcuts.go_to_feed" }} = <strong>F</strong></li>
                 </ul>
 
                 <p>{{ t "page.keyboard_shortcuts.subtitle.pages" }}</p>
@@ -577,8 +577,8 @@ var templateCommonMapChecksums = map[string]string{
 	"feed_list":        "931e43d328a116318c510de5658c688cd940b934c86b6ec82a472e1f81e020ae",
 	"feed_menu":        "318d8662dda5ca9dfc75b909c8461e79c86fb5082df1428f67aaf856f19f4b50",
 	"icons":            "adc8bf6157f4c648a4a9d5ccefeff390635b38ad0f5b07ae8e91632266774d26",
-	"item_meta":        "6891aecfef60a511f2ae14b7eb2ad0f895860dce23cd2643968d4dcdf7516eda",
-	"layout":           "ab4ce40729937a9d6ca6aa62f313a47ed0d31116778a4f3acf771b0f995702f1",
+	"item_meta":        "276c991166a1c6e882f8931a40bc31569f10a533ad457cb81a7183c3ce66f353",
+	"layout":           "0cf76cf485a5b8d6328656a58975f8f25d573a71c19de12ea5f7fa7763b36220",
 	"pagination":       "7b61288e86283c4cf0dc83bcbf8bf1c00c7cb29e60201c8c0b633b2450d2911f",
 	"settings_menu":    "e2b777630c0efdbc529800303c01d6744ed3af80ec505ac5a5b3f99c9b989156",
 }

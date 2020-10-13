@@ -7,6 +7,7 @@ package ui // import "miniflux.app/ui"
 import (
 	"net/http"
 
+	"miniflux.app/config"
 	"miniflux.app/http/client"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
@@ -45,7 +46,7 @@ func (h *handler) uploadOPML(w http.ResponseWriter, r *http.Request) {
 	view.Set("menu", "feeds")
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	if fileHeader.Size == 0 {
 		view.Set("errorMessage", "error.empty_file")
@@ -87,9 +88,9 @@ func (h *handler) fetchOPML(w http.ResponseWriter, r *http.Request) {
 	view.Set("menu", "feeds")
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
-	clt := client.New(url)
+	clt := client.NewClientWithConfig(url, config.Opts)
 	resp, err := clt.Get()
 	if err != nil {
 		view.Set("errorMessage", err)

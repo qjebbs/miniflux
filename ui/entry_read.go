@@ -70,7 +70,7 @@ func (h *handler) showReadEntryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("menu", "history")
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 
 	if config.Opts.HasCacheService() {

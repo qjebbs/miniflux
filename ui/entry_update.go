@@ -56,7 +56,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 	view.Set("feeds", feeds)
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	if err := entryForm.ValidateModification(); err != nil {
 		view.Set("errorMessage", err.Error())
@@ -77,7 +77,17 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 		})
 
 		if !h.store.EntryExists(entry) {
-			if err := h.store.CreateEntry(entry); err != nil {
+			tx, err := h.store.Begin()
+			if err == nil {
+				err = h.store.CreateEntry(tx, entry)
+			}
+			if err == nil {
+				err = tx.Commit()
+			}
+			if err != nil {
+				if tx != nil {
+					tx.Rollback()
+				}
 				view.Set("errorMessage", err.Error())
 				html.OK(w, r, view.Render("edit_entry"))
 				return

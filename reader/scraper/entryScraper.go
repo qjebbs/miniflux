@@ -44,7 +44,7 @@ func FetchEntry(websiteURL, rules, userAgent string, cookies []*http.Cookie) (*m
 		return nil, errors.New("scraper: unable to download web page")
 	}
 
-	if !isWhitelistedContentType(response.ContentType) {
+	if !isAllowedContentType(response.ContentType) {
 		return nil, fmt.Errorf("scraper: this resource is not a HTML document (%s)", response.ContentType)
 	}
 

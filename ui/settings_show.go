@@ -38,6 +38,7 @@ func (h *handler) showSettingsPage(w http.ResponseWriter, r *http.Request) {
 		KeyboardShortcuts: user.KeyboardShortcuts,
 		ShowReadingTime:   user.ShowReadingTime,
 		CustomCSS:         user.Extra["custom_css"],
+		EntrySwipe:        user.EntrySwipe,
 	}
 
 	timezones, err := h.store.Timezones()
@@ -54,7 +55,7 @@ func (h *handler) showSettingsPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("menu", "settings")
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("settings"))
 }

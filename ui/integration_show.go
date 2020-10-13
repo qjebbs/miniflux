@@ -38,7 +38,6 @@ func (h *handler) showIntegrationPage(w http.ResponseWriter, r *http.Request) {
 		InstapaperPassword:   integration.InstapaperPassword,
 		FeverEnabled:         integration.FeverEnabled,
 		FeverUsername:        integration.FeverUsername,
-		FeverPassword:        integration.FeverPassword,
 		WallabagEnabled:      integration.WallabagEnabled,
 		WallabagURL:          integration.WallabagURL,
 		WallabagClientID:     integration.WallabagClientID,
@@ -60,7 +59,7 @@ func (h *handler) showIntegrationPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("menu", "settings")
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
-	view.Set("countErrorFeeds", h.store.CountErrorFeeds(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("hasPocketConsumerKeyConfigured", config.Opts.PocketConsumerKey("") != "")
 
 	html.OK(w, r, view.Render("integrations"))

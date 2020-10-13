@@ -194,7 +194,7 @@ func (s *Storage) CreateEntryMedia(entry *model.Entry) ([]int64, error) {
 }
 
 // CreateEntriesMedia creates media for a slice of entries at a time
-func (s *Storage) CreateEntriesMedia(entries model.Entries) error {
+func (s *Storage) CreateEntriesMedia(tx *sql.Tx, entries model.Entries) error {
 	var err error
 	cap := len(entries) * 15
 	medias := make(map[string]string, cap)
@@ -236,7 +236,7 @@ func (s *Storage) CreateEntriesMedia(entries model.Entries) error {
 			SET created_at=current_timestamp
 		RETURNING id, url_hash
 	`, vals)
-	rows, err := s.db.Query(sql)
+	rows, err := tx.Query(sql)
 	defer rows.Close()
 	if err != nil {
 		return err
@@ -262,7 +262,7 @@ func (s *Storage) CreateEntriesMedia(entries model.Entries) error {
 		INSERT INTO entry_medias (entry_id, media_id) 
 		VALUES %s
 		ON CONFLICT DO NOTHING`, vals)
-	_, err = s.db.Exec(sql)
+	_, err = tx.Exec(sql)
 	return err
 }
 

@@ -86,6 +86,8 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 			subscriptionForm.Password,
 			subscriptionForm.ScraperRules,
 			subscriptionForm.RewriteRules,
+			subscriptionForm.BlocklistRules,
+			subscriptionForm.KeeplistRules,
 			subscriptionForm.FetchViaProxy,
 		)
 		if err != nil {

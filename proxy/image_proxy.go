@@ -5,6 +5,7 @@
 package proxy // import "miniflux.app/proxy"
 
 import (
+	"regexp"
 	"strings"
 
 	"miniflux.app/config"
@@ -12,6 +13,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gorilla/mux"
 )
+
+var regexSplitSrcset = regexp.MustCompile(`,\s+`)
 
 // ImageProxyRewriter replaces image URLs with internal proxy URLs.
 func ImageProxyRewriter(router *mux.Router, data string) string {
@@ -58,22 +61,29 @@ func ImageProxyRewriter(router *mux.Router, data string) string {
 func proxifySourceSet(element *goquery.Selection, router *mux.Router, attributeValue string) {
 	var proxifiedSources []string
 
-	for _, source := range strings.Split(attributeValue, ",") {
+	for _, source := range regexSplitSrcset.Split(attributeValue, -1) {
 		parts := strings.Split(strings.TrimSpace(source), " ")
 		nbParts := len(parts)
 
 		if nbParts > 0 {
-			source = ProxifyURL(router, parts[0])
-
-			if nbParts > 1 {
-				source += " " + parts[1]
+			rewrittenSource := parts[0]
+			if !isDataURL(rewrittenSource) {
+				rewrittenSource = ProxifyURL(router, rewrittenSource)
 			}
 
-			proxifiedSources = append(proxifiedSources, source)
+			if nbParts > 1 {
+				rewrittenSource += " " + parts[1]
+			}
+
+			proxifiedSources = append(proxifiedSources, rewrittenSource)
 		}
 	}
 
 	if len(proxifiedSources) > 0 {
 		element.SetAttr("srcset", strings.Join(proxifiedSources, ", "))
 	}
+}
+
+func isDataURL(s string) bool {
+	return strings.HasPrefix(s, "data:")
 }

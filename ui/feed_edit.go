@@ -49,6 +49,8 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		Title:           feed.Title,
 		ScraperRules:    feed.ScraperRules,
 		RewriteRules:    feed.RewriteRules,
+		BlocklistRules:  feed.BlocklistRules,
+		KeeplistRules:   feed.KeeplistRules,
 		Crawler:         feed.Crawler,
 		CacheMedia:      feed.CacheMedia,
 		UserAgent:       feed.UserAgent,

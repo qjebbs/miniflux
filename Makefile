@@ -1,18 +1,19 @@
-APP := miniflux
+APP          := miniflux
 DOCKER_IMAGE := miniflux/miniflux
-VERSION := $(shell git rev-parse --short HEAD)
-BUILD_DATE := `date +%FT%T%z`
-LD_FLAGS := "-s -w -X 'miniflux.app/version.Version=$(VERSION)' -X 'miniflux.app/version.BuildDate=$(BUILD_DATE)'"
-PKG_LIST := $(shell go list ./... | grep -v /vendor/)
-DB_URL := postgres://postgres:postgres@localhost/miniflux_test?sslmode=disable
+VERSION      := $(shell git describe --abbrev=0)
+COMMIT       := $(shell git rev-parse --short HEAD)
+BUILD_DATE   := `date +%FT%T%z`
+LD_FLAGS     := "-s -w -X 'miniflux.app/version.Version=$(VERSION)' -X 'miniflux.app/version.Commit=$(COMMIT)' -X 'miniflux.app/version.BuildDate=$(BUILD_DATE)'"
+PKG_LIST     := $(shell go list ./... | grep -v /vendor/)
+DB_URL       := postgres://postgres:postgres@localhost/miniflux_test?sslmode=disable
+DEB_IMG_ARCH := amd64
 
 export PGPASSWORD := postgres
-export GO111MODULE=on
 
 .PHONY: generate \
 	miniflux \
 	linux-amd64 \
-	linux-armv8 \
+	linux-arm64 \
 	linux-armv7 \
 	linux-armv6 \
 	linux-armv5 \
@@ -35,10 +36,12 @@ export GO111MODULE=on
 	clean-integration-test \
 	docker-image \
 	docker-images \
-	docker-manifest
+	rpm \
+	debian \
+	debian-packages
 
 generate:
-	@ go generate -mod=vendor
+	@ go generate
 
 miniflux: generate
 	@ go build -ldflags=$(LD_FLAGS) -o $(APP) main.go
@@ -46,8 +49,8 @@ miniflux: generate
 linux-amd64: generate
 	@ GOOS=linux GOARCH=amd64 go build -ldflags=$(LD_FLAGS) -o $(APP)-linux-amd64 main.go
 
-linux-armv8: generate
-	@ GOOS=linux GOARCH=arm64 go build -ldflags=$(LD_FLAGS) -o $(APP)-linux-armv8 main.go
+linux-arm64: generate
+	@ GOOS=linux GOARCH=arm64 go build -ldflags=$(LD_FLAGS) -o $(APP)-linux-arm64 main.go
 
 linux-armv7: generate
 	@ GOOS=linux GOARCH=arm GOARM=7 go build -ldflags=$(LD_FLAGS) -o $(APP)-linux-armv7 main.go
@@ -70,7 +73,7 @@ openbsd-amd64: generate
 windows-amd64: generate
 	@ GOOS=windows GOARCH=amd64 go build -ldflags=$(LD_FLAGS) -o $(APP)-windows-amd64 main.go
 
-build: linux-amd64 linux-armv8 linux-armv7 linux-armv6 linux-armv5 darwin-amd64 freebsd-amd64 openbsd-amd64 windows-amd64
+build: linux-amd64 linux-arm64 linux-armv7 linux-armv6 linux-armv5 darwin-amd64 freebsd-amd64 openbsd-amd64 windows-amd64
 
 # NOTE: unsupported targets
 netbsd-amd64: generate
@@ -95,7 +98,7 @@ run: generate
 	@ LOG_DATE_TIME=1 go run main.go -debug
 
 clean:
-	@ rm -f $(APP)-* $(APP)
+	@ rm -f $(APP)-* $(APP) $(APP)*.rpm $(APP)*.deb
 
 test:
 	go test -cover -race -count=1 ./...
@@ -120,52 +123,34 @@ clean-integration-test:
 	@ psql -U postgres -c 'drop database if exists miniflux_test;'
 
 docker-image:
-	docker build -t $(DOCKER_IMAGE):$(VERSION) \
-		--build-arg APP_VERSION=$(VERSION) \
-		--build-arg APP_ARCH=amd64 \
-		--build-arg BASE_IMAGE_ARCH=amd64 .
+	docker build -t $(DOCKER_IMAGE):$(VERSION) -f packaging/docker/Dockerfile .
 
 docker-images:
-	docker build -t $(DOCKER_IMAGE):amd64-$(VERSION) \
-		--build-arg APP_VERSION=$(VERSION) \
-		--build-arg APP_ARCH=amd64 \
-		--build-arg BASE_IMAGE_ARCH=amd64 .
-	docker tag $(DOCKER_IMAGE):amd64-$(VERSION) $(DOCKER_IMAGE):amd64-latest
+	docker buildx build \
+		--platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 \
+		--file packaging/docker/Dockerfile \
+		--tag $(DOCKER_IMAGE):$(VERSION) \
+		--push .
 
-	docker build -t $(DOCKER_IMAGE):arm32v6-$(VERSION) \
-		--build-arg APP_VERSION=$(VERSION) \
-		--build-arg APP_ARCH=armv6 \
-		--build-arg BASE_IMAGE_ARCH=arm32v6 .
-	docker tag $(DOCKER_IMAGE):arm32v6-$(VERSION) $(DOCKER_IMAGE):arm32v6-latest
+rpm: clean
+	@ docker build \
+		-t miniflux-rpm-builder \
+		-f packaging/rpm/Dockerfile \
+		.
+	@ docker run --rm \
+		-v ${PWD}:/root/rpmbuild/RPMS/x86_64 miniflux-rpm-builder \
+		rpmbuild -bb --define "_miniflux_version $(VERSION)" /root/rpmbuild/SPECS/miniflux.spec
 
-	docker build -t $(DOCKER_IMAGE):arm32v7-$(VERSION) \
-		--build-arg APP_VERSION=$(VERSION) \
-		--build-arg APP_ARCH=armv7 \
-		--build-arg BASE_IMAGE_ARCH=arm32v7 .
-	docker tag $(DOCKER_IMAGE):arm32v7-$(VERSION) $(DOCKER_IMAGE):arm32v7-latest
+debian:
+	@ docker build \
+		--build-arg BASE_IMAGE_ARCH=$(DEB_IMG_ARCH) \
+		-t $(DEB_IMG_ARCH)/miniflux-deb-builder \
+		-f packaging/debian/Dockerfile \
+		.
+	@ docker run --rm \
+		-v ${PWD}:/pkg $(DEB_IMG_ARCH)/miniflux-deb-builder
 
-	docker build -t $(DOCKER_IMAGE):arm64v8-$(VERSION) \
-		--build-arg APP_VERSION=$(VERSION) \
-		--build-arg APP_ARCH=armv8 \
-		--build-arg BASE_IMAGE_ARCH=arm64v8 .
-	docker tag $(DOCKER_IMAGE):arm64v8-$(VERSION) $(DOCKER_IMAGE):arm64v8-latest
-
-docker-manifest:
-	for version in $(VERSION) latest; do \
-		docker push $(DOCKER_IMAGE):amd64-$${version} && \
-		docker push $(DOCKER_IMAGE):arm32v6-$${version} && \
-		docker push $(DOCKER_IMAGE):arm32v7-$${version} && \
-		docker push $(DOCKER_IMAGE):arm64v8-$${version} && \
-		docker manifest create --amend $(DOCKER_IMAGE):$${version} \
-			$(DOCKER_IMAGE):amd64-$${version} \
-			$(DOCKER_IMAGE):arm32v6-$${version} \
-			$(DOCKER_IMAGE):arm32v7-$${version} \
-			$(DOCKER_IMAGE):arm64v8-$${version} && \
-		docker manifest annotate $(DOCKER_IMAGE):$${version} \
-			$(DOCKER_IMAGE):arm32v6-$${version} --os linux --arch arm --variant v6 && \
-		docker manifest annotate $(DOCKER_IMAGE):$${version} \
-			$(DOCKER_IMAGE):arm32v7-$${version} --os linux --arch arm --variant v7 && \
-		docker manifest annotate $(DOCKER_IMAGE):$${version} \
-			$(DOCKER_IMAGE):arm64v8-$${version} --os linux --arch arm64 --variant v8 && \
-		docker manifest push --purge $(DOCKER_IMAGE):$${version} ;\
-	done
+debian-packages: clean
+	$(MAKE) debian DEB_IMG_ARCH=amd64
+	$(MAKE) debian DEB_IMG_ARCH=arm64v8
+	$(MAKE) debian DEB_IMG_ARCH=arm32v7

@@ -26,6 +26,9 @@ func ShouldProxify(link string) bool {
 	}
 	hasCacheService := config.Opts.HasCacheService()
 	proxyImages := config.Opts.ProxyImages()
+	if isDataURL(link) {
+		return false
+	}
 	// if hasCacheService, force to proxify to use the cached images
 	// else, respect to proxy settings
 	return hasCacheService || proxyImages == "all" || (proxyImages != "none" && !url.IsHTTPS(link))

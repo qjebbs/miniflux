@@ -137,6 +137,12 @@ var templateViewsMap = map[string]string{
 
                 <label for="form-rewrite-rules">{{ t "form.feed.label.rewrite_rules" }}</label>
                 <input type="text" name="rewrite_rules" id="form-rewrite-rules" value="{{ .form.RewriteRules }}">
+
+                <label for="form-blocklist-rules">{{ t "form.feed.label.blocklist_rules" }}</label>
+                <input type="text" name="blocklist_rules" id="form-blocklist-rules" value="{{ .form.BlocklistRules }}">
+ 
+                <label for="form-keeplist-rules">{{ t "form.feed.label.keeplist_rules" }}</label>
+                <input type="text" name="keeplist_rules" id="form-keeplist-rules" value="{{ .form.KeeplistRules }}">
             </div>
         </details>
 
@@ -782,6 +788,12 @@ var templateViewsMap = map[string]string{
 
         <label for="form-rewrite-rules">{{ t "form.feed.label.rewrite_rules" }}</label>
         <input type="text" name="rewrite_rules" id="form-rewrite-rules" value="{{ .form.RewriteRules }}">
+
+        <label for="form-blocklist-rules">{{ t "form.feed.label.blocklist_rules" }}</label>
+        <input type="text" name="blocklist_rules" id="form-blocklist-rules" value="{{ .form.BlocklistRules }}">
+ 
+        <label for="form-keeplist-rules">{{ t "form.feed.label.keeplist_rules" }}</label>
+        <input type="text" name="keeplist_rules" id="form-keeplist-rules" value="{{ .form.KeeplistRules }}">
 
         <label for="form-category">{{ t "form.feed.label.category" }}</label>
         <select id="form-category" name="category_id">
@@ -2050,7 +2062,7 @@ var templateViewsMap = map[string]string{
 var templateViewsMapChecksums = map[string]string{
 	"about":               "4035658497363d7af7f79be83190404eb21ec633fe8ec636bdfc219d9fc78cfc",
 	"add_entry":           "5f94aa53c079c9551bf006533b56b134cc901c7ab8caec63e826f2d6807dff98",
-	"add_subscription":    "63961a83964acca354bc30eaae1f5e80f410ae4091af8da317380d4298f79032",
+	"add_subscription":    "82bf0dfadd64d3b6eda323a8174dd1446665b0804d27ca8718a828488627b287",
 	"api_keys":            "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
 	"bookmark_entries":    "6751659890c2a9ebdbbc040c45c568324e9d29ec5c325da3e49afc43e77a104b",
 	"categories":          "9dfc3cb7bb91c7750753fe962ee4540dd1843e5f75f9e0a575ee964f6f9923e9",
@@ -2062,7 +2074,7 @@ var templateViewsMapChecksums = map[string]string{
 	"create_user":         "9b73a55233615e461d1f07d99ad1d4d3b54532588ab960097ba3e090c85aaf3a",
 	"edit_category":       "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
 	"edit_entry":          "dbc662629184d13a710e721559065d4cae84f9adc37b4dd083d592d7730a2a29",
-	"edit_feed":           "15537a06bac599fc6430833b06f648efd692a4df5e5f147bb4dd443282fa9774",
+	"edit_feed":           "5c6555e8823abc2ddfc8f5ac2abc41fbfe0a988482fdeb976e62d6501a7ab718",
 	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
 	"entry":               "2f07107b226a97a48811700a08af938259048d8c9376e7a411bea930c6fad357",
 	"feed_entries":        "ae110a5026b3a5d5897b5b7fd2e48496544f138b23a3ca0c5bb5d3f031f626ed",

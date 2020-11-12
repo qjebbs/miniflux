@@ -29,10 +29,10 @@ func TestResponseHasCommonHeaders(t *testing.T) {
 	resp := w.Result()
 
 	headers := map[string]string{
-		"X-XSS-Protection":        "1; mode=block",
-		"X-Content-Type-Options":  "nosniff",
-		"X-Frame-Options":         "DENY",
-		"Content-Security-Policy": "default-src 'self'; img-src *; media-src *; frame-src *",
+		"X-XSS-Protection":       "1; mode=block",
+		"X-Content-Type-Options": "nosniff",
+		"X-Frame-Options":        "DENY",
+		// "Content-Security-Policy": "default-src 'self'; img-src *; media-src *; frame-src *",
 	}
 
 	for header, expected := range headers {

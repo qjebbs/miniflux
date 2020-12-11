@@ -6,7 +6,6 @@ package atom // import "miniflux.app/reader/atom"
 
 import (
 	"encoding/xml"
-	"html"
 	"strconv"
 	"strings"
 	"time"
@@ -32,12 +31,24 @@ type atom10Feed struct {
 	Entries []atom10Entry `xml:"entry"`
 }
 
-func (a *atom10Feed) Transform() *model.Feed {
-	feed := new(model.Feed)
-	feed.FeedURL = a.Links.firstLinkWithRelation("self")
-	feed.SiteURL = a.Links.originalLink()
-	feed.Title = a.Title.String()
+func (a *atom10Feed) Transform(baseURL string) *model.Feed {
+	var err error
 
+	feed := new(model.Feed)
+
+	feedURL := a.Links.firstLinkWithRelation("self")
+	feed.FeedURL, err = url.AbsoluteURL(baseURL, feedURL)
+	if err != nil {
+		feed.FeedURL = feedURL
+	}
+
+	siteURL := a.Links.originalLink()
+	feed.SiteURL, err = url.AbsoluteURL(baseURL, siteURL)
+	if err != nil {
+		feed.SiteURL = siteURL
+	}
+
+	feed.Title = a.Title.String()
 	if feed.Title == "" {
 		feed.Title = feed.SiteURL
 	}
@@ -124,7 +135,7 @@ func (a *atom10Entry) entryDate() time.Time {
 	if dateText != "" {
 		result, err := date.Parse(dateText)
 		if err != nil {
-			logger.Error("atom: %v", err)
+			logger.Error("atom: %v (entry ID = %s)", err, a.ID)
 			return time.Now()
 		}
 
@@ -221,10 +232,8 @@ func (a *atom10Text) String() string {
 	switch {
 	case a.Type == "xhtml":
 		content = a.XML
-	case a.Type == "html":
+	default:
 		content = a.Data
-	case a.Type == "text" || a.Type == "":
-		content = html.EscapeString(a.Data)
 	}
 
 	return strings.TrimSpace(content)

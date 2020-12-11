@@ -52,7 +52,8 @@ type Client struct {
 	requestPassword            string
 	requestUserAgent           string
 
-	useProxy bool
+	useProxy             bool
+	doNotFollowRedirects bool
 
 	ClientTimeout     int
 	ClientMaxBodySize int64
@@ -73,9 +74,13 @@ func New(url string) *Client {
 
 // NewClientWithConfig initializes a new HTTP client with application config options.
 func NewClientWithConfig(url string, opts *config.Options) *Client {
+	userAgent := opts.HTTPClientUserAgent()
+	if userAgent == "" {
+		userAgent = DefaultUserAgent
+	}
 	return &Client{
 		inputURL:          url,
-		requestUserAgent:  DefaultUserAgent,
+		requestUserAgent:  userAgent,
 		ClientTimeout:     opts.HTTPClientTimeout(),
 		ClientMaxBodySize: opts.HTTPClientMaxBodySize(),
 		ClientProxyURL:    opts.HTTPClientProxy(),
@@ -126,9 +131,15 @@ func (c *Client) WithCacheHeaders(etagHeader, lastModifiedHeader string) *Client
 	return c
 }
 
-// WithProxy enable proxy for the current HTTP request.
+// WithProxy enables proxy for the current HTTP request.
 func (c *Client) WithProxy() *Client {
 	c.useProxy = true
+	return c
+}
+
+// WithoutRedirects disables HTTP redirects.
+func (c *Client) WithoutRedirects() *Client {
+	c.doNotFollowRedirects = true
 	return c
 }
 
@@ -303,8 +314,12 @@ func (c *Client) buildRequest(method string, body io.Reader) (*http.Request, err
 }
 
 func (c *Client) buildClient() http.Client {
-	client := http.Client{Timeout: time.Duration(c.ClientTimeout) * time.Second}
+	client := http.Client{
+		Timeout: time.Duration(c.ClientTimeout) * time.Second,
+	}
+
 	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
 			// Default is 30s.
 			Timeout: 10 * time.Second,
@@ -318,6 +333,12 @@ func (c *Client) buildClient() http.Client {
 
 		// Default is 90s.
 		IdleConnTimeout: 10 * time.Second,
+	}
+
+	if c.doNotFollowRedirects {
+		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
 	}
 
 	if c.useProxy && c.ClientProxyURL != "" {

@@ -83,11 +83,11 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 		UPDATE
 			entries
 		SET
-			content=$1
+			content=$1, reading_time=$2
 		WHERE
-			id=$2 AND user_id=$3
+			id=$3 AND user_id=$4
 	`
-	_, err = tx.Exec(query, entry.Content, entry.ID, entry.UserID)
+	_, err = tx.Exec(query, entry.Content, entry.ReadingTime, entry.ID, entry.UserID)
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
@@ -120,9 +120,35 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 	query := `
 		INSERT INTO entries
-			(title, hash, url, comments_url, published_at, content, author, user_id, feed_id, changed_at, document_vectors)
+			(
+				title,
+				hash,
+				url,
+				comments_url,
+				published_at,
+				content,
+				author,
+				user_id,
+				feed_id,
+				reading_time,
+				changed_at,
+				document_vectors
+			)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), setweight(to_tsvector(substring(coalesce($1, '') for 1000000)), 'A') || setweight(to_tsvector(substring(coalesce($6, '') for 1000000)), 'B'))
+			(
+				$1,
+				$2,
+				$3,
+				$4,
+				$5,
+				$6,
+				$7,
+				$8,
+				$9,
+				$10,
+				now(),
+				setweight(to_tsvector(substring(coalesce($1, '') for 1000000)), 'A') || setweight(to_tsvector(substring(coalesce($6, '') for 1000000)), 'B')
+			)
 		RETURNING
 			id, status
 	`
@@ -137,6 +163,7 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.Author,
 		entry.UserID,
 		entry.FeedID,
+		entry.ReadingTime,
 	).Scan(&entry.ID, &entry.Status)
 
 	if err != nil {
@@ -173,9 +200,10 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 			comments_url=$3,
 			content=$4,
 			author=$5,
+			reading_time=$6,
 			document_vectors = setweight(to_tsvector(substring(coalesce($1, '') for 1000000)), 'A') || setweight(to_tsvector(substring(coalesce($4, '') for 1000000)), 'B')
 		WHERE
-			user_id=$6 AND feed_id=$7 AND hash=$8
+			user_id=$7 AND feed_id=$8 AND hash=$9
 		RETURNING
 			id
 	`
@@ -186,6 +214,7 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.CommentsURL,
 		entry.Content,
 		entry.Author,
+		entry.ReadingTime,
 		entry.UserID,
 		entry.FeedID,
 		entry.Hash,
@@ -335,7 +364,7 @@ func (s *Storage) ArchiveEntries(status string, days int) (int64, error) {
 		SET
 			status='removed'
 		WHERE
-			id=ANY(SELECT id FROM entries WHERE status=$1 AND starred is false AND share_code='' AND published_at < now () - '%d days'::interval ORDER BY published_at ASC LIMIT 5000)
+			id=ANY(SELECT id FROM entries WHERE status=$1 AND starred is false AND share_code='' AND created_at < now () - '%d days'::interval ORDER BY created_at ASC LIMIT 5000)
 	`
 
 	result, err := s.db.Exec(fmt.Sprintf(query, days), status)

@@ -17,10 +17,10 @@
         <li>
             <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed .user.Timezone .entry.Date }}</time>
         </li>
-        {{ if .user.ShowReadingTime }}
+        {{ if and .user.ShowReadingTime (gt .entry.ReadingTime 0) }}
         <li>
             <span>
-            {{ plural "entry.estimated_reading_time" (timeToRead .entry.Content) (timeToRead .entry.Content) }}
+            {{ plural "entry.estimated_reading_time" .entry.ReadingTime .entry.ReadingTime }}
             </span>
         </li>
         {{ end }}
@@ -68,7 +68,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 referrerpolicy="no-referrer"
-                data-original-link="true">{{ template "icon_original" }}<span class="icon-label">{{ t "entry.original.label" }}</span></a>
+                data-original-link="true">{{ template "icon_external_link" }}<span class="icon-label">{{ t "entry.external_link.label" }}</span></a>
         </li>
         {{ if .entry.CommentsURL }}
             <li>

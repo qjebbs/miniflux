@@ -25,10 +25,15 @@ type rdfFeed struct {
 	DublinCoreFeedElement
 }
 
-func (r *rdfFeed) Transform() *model.Feed {
+func (r *rdfFeed) Transform(baseURL string) *model.Feed {
+	var err error
 	feed := new(model.Feed)
 	feed.Title = sanitizer.StripTags(r.Title)
-	feed.SiteURL = r.Link
+	feed.FeedURL = baseURL
+	feed.SiteURL, err = url.AbsoluteURL(baseURL, r.Link)
+	if err != nil {
+		feed.SiteURL = r.Link
+	}
 
 	for _, item := range r.Items {
 		entry := item.Transform()
@@ -95,7 +100,7 @@ func (r *rdfItem) entryDate() time.Time {
 	if r.DublinCoreDate != "" {
 		result, err := date.Parse(r.DublinCoreDate)
 		if err != nil {
-			logger.Error("rdf: %v", err)
+			logger.Error("rdf: %v (entry link = %s)", err, r.Link)
 			return time.Now()
 		}
 

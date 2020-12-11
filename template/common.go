@@ -200,7 +200,7 @@ SOFTWARE.
     <line x1="16" y1="12" x2="16" y2="12.01" />
 </svg>
 {{ end }}
-{{ define "icon_original" }}
+{{ define "icon_external_link" }}
 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-external-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <path stroke="none" d="M0 0h24v24H0z"/>
     <path d="M11 7h-5a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-5" />
@@ -268,10 +268,10 @@ SOFTWARE.
         <li>
             <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed .user.Timezone .entry.Date }}</time>
         </li>
-        {{ if .user.ShowReadingTime }}
+        {{ if and .user.ShowReadingTime (gt .entry.ReadingTime 0) }}
         <li>
             <span>
-            {{ plural "entry.estimated_reading_time" (timeToRead .entry.Content) (timeToRead .entry.Content) }}
+            {{ plural "entry.estimated_reading_time" .entry.ReadingTime .entry.ReadingTime }}
             </span>
         </li>
         {{ end }}
@@ -319,7 +319,7 @@ SOFTWARE.
                 target="_blank"
                 rel="noopener noreferrer"
                 referrerpolicy="no-referrer"
-                data-original-link="true">{{ template "icon_original" }}<span class="icon-label">{{ t "entry.original.label" }}</span></a>
+                data-original-link="true">{{ template "icon_external_link" }}<span class="icon-label">{{ t "entry.external_link.label" }}</span></a>
         </li>
         {{ if .entry.CommentsURL }}
             <li>
@@ -577,8 +577,8 @@ var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "cdca9cf12586e41e5355190b06d9168f57f77b85924d1e63b13524bc15abcbf6",
 	"feed_list":        "931e43d328a116318c510de5658c688cd940b934c86b6ec82a472e1f81e020ae",
 	"feed_menu":        "318d8662dda5ca9dfc75b909c8461e79c86fb5082df1428f67aaf856f19f4b50",
-	"icons":            "adc8bf6157f4c648a4a9d5ccefeff390635b38ad0f5b07ae8e91632266774d26",
-	"item_meta":        "276c991166a1c6e882f8931a40bc31569f10a533ad457cb81a7183c3ce66f353",
+	"icons":            "bd9aadd9a9967c8b6219fd4edfe61aa9bbb89d7db9d32103788fb78b30882e84",
+	"item_meta":        "408132e67ba10e91e6b64537443eecd0aabeceabe9acd95e432a3665e5a73c08",
 	"layout":           "dc07fc1851b2de1bd49040ebc0ffd14d7bbcc00653c361c5d1fadbec232d0d7c",
 	"pagination":       "7b61288e86283c4cf0dc83bcbf8bf1c00c7cb29e60201c8c0b633b2450d2911f",
 	"settings_menu":    "e2b777630c0efdbc529800303c01d6744ed3af80ec505ac5a5b3f99c9b989156",

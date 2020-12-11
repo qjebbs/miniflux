@@ -15,6 +15,7 @@ var templateViewsMap = map[string]string{
     <h3>Miniflux</h3>
     <ul>
         <li><strong>{{ t "page.about.version" }}</strong> {{ .version }}</li>
+        <li><strong>Git Commit</strong> {{ .commit }}</li>
         <li><strong>{{ t "page.about.build_date" }}</strong> {{ .build_date }}</li>
     </ul>
 </div>
@@ -943,6 +944,13 @@ var templateViewsMap = map[string]string{
                             title="{{ t "entry.share.title" }}"
                             target="_blank">{{ template "icon_share" }}<span class="icon-label">{{ t "entry.share.label" }}</span></a>
                     {{ end }}
+                </li>
+                <li>
+                    <a href="{{ .entry.URL | safeURL  }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        referrerpolicy="no-referrer"
+                        data-original-link="true">{{ template "icon_external_link" }}<span class="icon-label">{{ t "entry.external_link.label" }}</span></a>
                 </li>
                 <li>
                     <a href="#"
@@ -2060,7 +2068,7 @@ var templateViewsMap = map[string]string{
 }
 
 var templateViewsMapChecksums = map[string]string{
-	"about":               "4035658497363d7af7f79be83190404eb21ec633fe8ec636bdfc219d9fc78cfc",
+	"about":               "504b3635a7f898c12a1120c2270a2911aa8378c0fa272ea0980feca1fa3161f2",
 	"add_entry":           "5f94aa53c079c9551bf006533b56b134cc901c7ab8caec63e826f2d6807dff98",
 	"add_subscription":    "82bf0dfadd64d3b6eda323a8174dd1446665b0804d27ca8718a828488627b287",
 	"api_keys":            "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
@@ -2076,7 +2084,7 @@ var templateViewsMapChecksums = map[string]string{
 	"edit_entry":          "dbc662629184d13a710e721559065d4cae84f9adc37b4dd083d592d7730a2a29",
 	"edit_feed":           "5c6555e8823abc2ddfc8f5ac2abc41fbfe0a988482fdeb976e62d6501a7ab718",
 	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
-	"entry":               "2f07107b226a97a48811700a08af938259048d8c9376e7a411bea930c6fad357",
+	"entry":               "d42d51bb3828d5c79e558833c4213b5afc10154d437567134c8a1e13a312aa5d",
 	"feed_entries":        "ae110a5026b3a5d5897b5b7fd2e48496544f138b23a3ca0c5bb5d3f031f626ed",
 	"feeds":               "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
 	"history_entries":     "87f588b37ef3901292796b2a646143102939ab860a7e0c78b9f1f821ae49c737",

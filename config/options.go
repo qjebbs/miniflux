@@ -7,6 +7,8 @@ package config // import "miniflux.app/config"
 import (
 	"fmt"
 	"strings"
+
+	"miniflux.app/version"
 )
 
 const (
@@ -16,6 +18,7 @@ const (
 	defaultHTTPService                        = true
 	defaultSchedulerService                   = true
 	defaultDebug                              = false
+	defaultTiming                             = false
 	defaultBaseURL                            = "http://localhost"
 	defaultRootURL                            = "http://localhost"
 	defaultBasePath                           = ""
@@ -52,7 +55,6 @@ const (
 	defaultHTTPClientTimeout                  = 20
 	defaultHTTPClientMaxBodySize              = 15
 	defaultHTTPClientProxy                    = ""
-	defaultHTTPClientUserAgent                = ""
 	defaultAuthProxyHeader                    = ""
 	defaultAuthProxyUserCreation              = false
 	defaultCacheService                       = true
@@ -66,6 +68,8 @@ const (
 	defaultMetricsAllowedNetworks             = "127.0.0.1/8"
 )
 
+var defaultHTTPClientUserAgent = "Mozilla/5.0 (compatible; Miniflux/" + version.Version + "; +https://miniflux.app)"
+
 // Options contains configuration options.
 type Options struct {
 	HTTPS                              bool
@@ -74,6 +78,7 @@ type Options struct {
 	httpService                        bool
 	schedulerService                   bool
 	debug                              bool
+	serverTimingHeader                 bool
 	baseURL                            string
 	rootURL                            string
 	basePath                           string
@@ -133,6 +138,7 @@ func NewOptions() *Options {
 		httpService:                        defaultHTTPService,
 		schedulerService:                   defaultSchedulerService,
 		debug:                              defaultDebug,
+		serverTimingHeader:                 defaultTiming,
 		baseURL:                            defaultBaseURL,
 		rootURL:                            defaultRootURL,
 		basePath:                           defaultBasePath,
@@ -167,6 +173,7 @@ func NewOptions() *Options {
 		httpClientTimeout:                  defaultHTTPClientTimeout,
 		httpClientMaxBodySize:              defaultHTTPClientMaxBodySize * 1024 * 1024,
 		httpClientProxy:                    defaultHTTPClientProxy,
+		httpClientUserAgent:                defaultHTTPClientUserAgent,
 		authProxyHeader:                    defaultAuthProxyHeader,
 		authProxyUserCreation:              defaultAuthProxyUserCreation,
 		cacheService:                       defaultCacheService,
@@ -178,7 +185,6 @@ func NewOptions() *Options {
 		metricsCollector:                   defaultMetricsCollector,
 		metricsRefreshInterval:             defaultMetricsRefreshInterval,
 		metricsAllowedNetworks:             []string{defaultMetricsAllowedNetworks},
-		httpClientUserAgent:                defaultHTTPClientUserAgent,
 	}
 }
 
@@ -200,6 +206,11 @@ func (o *Options) MaintenanceMessage() string {
 // HasDebugMode returns true if debug mode is enabled.
 func (o *Options) HasDebugMode() bool {
 	return o.debug
+}
+
+// HasServerTimingHeader returns true if server-timing headers enabled.
+func (o *Options) HasServerTimingHeader() bool {
+	return o.serverTimingHeader
 }
 
 // BaseURL returns the application base URL with path.
@@ -466,6 +477,7 @@ func (o *Options) String() string {
 	var builder strings.Builder
 	builder.WriteString(fmt.Sprintf("LOG_DATE_TIME: %v\n", o.logDateTime))
 	builder.WriteString(fmt.Sprintf("DEBUG: %v\n", o.debug))
+	builder.WriteString(fmt.Sprintf("SERVER_TIMING_HEADER: %v\n", o.serverTimingHeader))
 	builder.WriteString(fmt.Sprintf("HTTP_SERVICE: %v\n", o.httpService))
 	builder.WriteString(fmt.Sprintf("SCHEDULER_SERVICE: %v\n", o.schedulerService))
 	builder.WriteString(fmt.Sprintf("CACHE_SERVICE: %v\n", o.cacheService))

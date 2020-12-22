@@ -7,7 +7,7 @@ package ui // import "miniflux.app/ui"
 import (
 	"net/http"
 
-	"miniflux.app/http/client"
+	"miniflux.app/config"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
 	"miniflux.app/model"
@@ -46,7 +46,7 @@ func (h *handler) bookmarkletEntry(w http.ResponseWriter, r *http.Request) {
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
-	view.Set("defaultUserAgent", client.DefaultUserAgent)
+	view.Set("defaultUserAgent", config.Opts.HTTPClientUserAgent())
 	view.Set("form", &form.EntryForm{URL: bookmarkletURL})
 
 	html.OK(w, r, view.Render("add_entry"))

@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"miniflux.app/config"
-	"miniflux.app/http/client"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
 	"miniflux.app/http/route"
@@ -41,7 +40,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 	v.Set("user", user)
 	v.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	v.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
-	v.Set("defaultUserAgent", client.DefaultUserAgent)
+	v.Set("defaultUserAgent", config.Opts.HTTPClientUserAgent())
 	v.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
 
 	subscriptionForm := form.NewSubscriptionForm(r)

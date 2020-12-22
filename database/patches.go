@@ -4,13 +4,9 @@ import (
 	"database/sql"
 )
 
-type patcher struct {
-	db *sql.DB
-}
-
-func (p *patcher) do() error {
+func patch(tx *sql.Tx) error {
 	// CREATE TABLE IF NOT EXISTS since Postgres 9.1
-	_, err := p.db.Exec(`
+	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS medias (
 			id bigserial not null,
 			url text not null,
@@ -34,38 +30,38 @@ func (p *patcher) do() error {
 	if err != nil {
 		return err
 	}
-	if !p.columnExists("feeds", "cache_media") {
-		_, err = p.db.Exec("alter table feeds add column cache_media bool default 'f';")
+	if !columnExists(tx, "feeds", "cache_media") {
+		_, err = tx.Exec("alter table feeds add column cache_media bool default 'f';")
 		if err != nil {
 			return err
 		}
 	}
-	if !p.columnExists("users", "view") {
-		_, err = p.db.Exec("alter table users add column view text default 'default';")
+	if !columnExists(tx, "users", "view") {
+		_, err = tx.Exec("alter table users add column view text default 'default';")
 		if err != nil {
 			return err
 		}
 	}
-	if !p.columnExists("categories", "view") {
-		_, err = p.db.Exec("alter table categories add column view text default 'default';")
+	if !columnExists(tx, "categories", "view") {
+		_, err = tx.Exec("alter table categories add column view text default 'default';")
 		if err != nil {
 			return err
 		}
 	}
-	if !p.columnExists("feeds", "view") {
-		_, err = p.db.Exec("alter table feeds add column view text default 'default';")
+	if !columnExists(tx, "feeds", "view") {
+		_, err = tx.Exec("alter table feeds add column view text default 'default';")
 		if err != nil {
 			return err
 		}
 	}
-	if !p.columnExists("feeds", "nsfw") {
-		_, err = p.db.Exec("alter table feeds add column nsfw bool default 'f';")
+	if !columnExists(tx, "feeds", "nsfw") {
+		_, err = tx.Exec("alter table feeds add column nsfw bool default 'f';")
 		if err != nil {
 			return err
 		}
 	}
-	if !p.columnExists("medias", "error_count") {
-		_, err = p.db.Exec("alter table medias add column error_count int default 0;")
+	if !columnExists(tx, "medias", "error_count") {
+		_, err = tx.Exec("alter table medias add column error_count int default 0;")
 		if err != nil {
 			return err
 		}
@@ -73,11 +69,11 @@ func (p *patcher) do() error {
 	return nil
 }
 
-func (p *patcher) columnExists(table string, column string) bool {
+func columnExists(tx *sql.Tx, table string, column string) bool {
 	var result int
 	query := `SELECT 1 
 		FROM information_schema.columns 
 		WHERE table_name=$1 and column_name=$2;`
-	p.db.QueryRow(query, table, column).Scan(&result)
+	tx.QueryRow(query, table, column).Scan(&result)
 	return result == 1
 }

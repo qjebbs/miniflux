@@ -1528,10 +1528,10 @@ var templateViewsMap = map[string]string{
         {{ end }}
 
         <label for="form-username">{{ t "form.user.label.username" }}</label>
-        <input type="text" name="username" id="form-username" value="{{ .form.Username }}" required autofocus>
+        <input type="text" name="username" id="form-username" value="{{ .form.Username }}" autocomplete="username" required autofocus>
 
         <label for="form-password">{{ t "form.user.label.password" }}</label>
-        <input type="password" name="password" id="form-password" value="{{ .form.Password }}" required>
+        <input type="password" name="password" id="form-password" value="{{ .form.Password }}" autocomplete="current-password" required>
 
         <div class="buttons">
             <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.loading" }}">{{ t "action.login" }}</button>
@@ -2090,7 +2090,7 @@ var templateViewsMapChecksums = map[string]string{
 	"history_entries":     "87f588b37ef3901292796b2a646143102939ab860a7e0c78b9f1f821ae49c737",
 	"import":              "1b59b3bd55c59fcbc6fbb346b414dcdd26d1b4e0c307e437bb58b3f92ef01ad1",
 	"integrations":        "106f296e8904f21a7a6a8c263bbf4373ccda4af146687eda05e4df2fa07d25aa",
-	"login":               "79ff2ca488c0a19b37c8fa227a21f73e94472eb357a51a077197c852f7713f11",
+	"login":               "9165434b2405e9332de4bebbb54a93dc5692276ea72e7c5e07f655a002dfd290",
 	"search_entries":      "ffc082b84808dca845243465e0e2a2517419f725ce557296bed5e41747e2be62",
 	"sessions":            "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
 	"settings":            "581f78d441436f9e833cc49484ef059f90a8ee9789d9ecffe6f50eb4769f2171",

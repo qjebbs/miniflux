@@ -13,9 +13,14 @@ import (
 	"miniflux.app/model"
 	"miniflux.app/ui/session"
 	"miniflux.app/ui/view"
+
+	servertiming "github.com/mitchellh/go-server-timing"
 )
 
 func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
+	timing := servertiming.FromContext(r.Context())
+	prep := timing.NewMetric("pre_processing").Start()
+
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 
@@ -26,6 +31,7 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nsfw := request.IsNSFWEnabled(r)
+	m := timing.NewMetric("sql_count_unread_entries").Start()
 	offset := request.QueryIntParam(r, "offset", 0)
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithStatus(model.EntryStatusUnread)
@@ -37,11 +43,13 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
+	m.Stop()
 
 	if offset >= countUnread {
 		offset = 0
 	}
 
+	m = timing.NewMetric("sql_fetch_unread_entries").Start()
 	builder = h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithStatus(model.EntryStatusUnread)
 	builder.WithOrder(model.DefaultSortingOrder)
@@ -57,6 +65,7 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
+	m.Stop()
 
 	view.Set("entries", entries)
 	view.Set("pagination", getPagination(route.Path(h.router, "unread"), countUnread, offset, user.EntriesPerPage))
@@ -67,5 +76,11 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("pageEntriesType", "unread")
 
-	html.OK(w, r, view.Render("unread_entries"))
+	prep.Stop()
+
+	m = timing.NewMetric("template_rendering").Start()
+	render := view.Render("unread_entries")
+	m.Stop()
+
+	html.OK(w, r, render)
 }

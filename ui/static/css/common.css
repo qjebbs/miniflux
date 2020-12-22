@@ -502,10 +502,8 @@ textarea:focus {
     box-shadow: var(--input-focus-box-shadow);
 }
 
-::-moz-placeholder,
-::-ms-input-placeholder,
-::-webkit-input-placeholder {
-    color: #ddd;
+input::placeholder {
+    color: var(--input-placeholder-color);
     padding-top: 2px;
 }
 
@@ -1191,6 +1189,12 @@ article.feed-parsing-error {
 
 .entry-content sup {
     top: -0.5em;
+}
+
+.entry-content abbr {
+    cursor: pointer;
+    text-decoration: none;
+    border-bottom: 1px dashed var(--entry-content-abbr-border-color);
 }
 
 details.entry-enclosures {

@@ -17,7 +17,6 @@ import (
 	"miniflux.app/url"
 
 	"miniflux.app/crypto"
-	"miniflux.app/http/client"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response"
 	"miniflux.app/http/response/html"
@@ -90,7 +89,7 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
-	req.Header.Add("User-Agent", client.DefaultUserAgent)
+	req.Header.Add("User-Agent", config.Opts.HTTPClientUserAgent())
 	req.Header.Add("Connection", "close")
 
 	clt := &http.Client{

@@ -40,8 +40,8 @@ func (s *SettingsForm) Merge(user *model.User) *model.User {
 	user.EntriesPerPage = s.EntriesPerPage
 	user.KeyboardShortcuts = s.KeyboardShortcuts
 	user.ShowReadingTime = s.ShowReadingTime
-	user.Extra["custom_css"] = s.CustomCSS
-	user.EntrySwipe = s.EntrySwipe;
+	user.Stylesheet = s.CustomCSS
+	user.EntrySwipe = s.EntrySwipe
 
 	if s.Password != "" {
 		user.Password = s.Password
@@ -56,10 +56,6 @@ func (s *SettingsForm) Validate() error {
 		return errors.NewLocalizedError("error.settings_mandatory_fields")
 	}
 
-	if s.EntriesPerPage < 1 {
-		return errors.NewLocalizedError("error.entries_per_page_invalid")
-	}
-
 	if s.Confirmation == "" {
 		// Firefox insists on auto-completing the password field.
 		// If the confirmation field is blank, the user probably
@@ -68,10 +64,6 @@ func (s *SettingsForm) Validate() error {
 	} else if s.Password != "" {
 		if s.Password != s.Confirmation {
 			return errors.NewLocalizedError("error.different_passwords")
-		}
-
-		if len(s.Password) < 6 {
-			return errors.NewLocalizedError("error.password_min_length")
 		}
 	}
 

@@ -149,6 +149,12 @@ SOFTWARE.
     <path d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z" />
 </svg>
 {{ end }}
+{{ define "icon_unstar" }}
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-unstar" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z"/>
+    <path fill="currentColor" d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z" />
+</svg>
+{{ end }}
 {{ define "icon_save" }}
 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <path stroke="none" d="M0 0h24v24H0z"/>
@@ -281,20 +287,20 @@ SOFTWARE.
             <a href="#"
                 title="{{ t "entry.status.title" }}"
                 data-toggle-status="true"
-                data-label-read="✔&nbsp;{{ t "entry.status.read" }}"
-                data-label-unread="✘&nbsp;{{ t "entry.status.unread" }}"
+                data-label-read="{{ t "entry.status.read" }}"
+                data-label-unread="{{ t "entry.status.unread" }}"
                 data-value="{{ if eq .entry.Status "read" }}read{{ else }}unread{{ end }}"
-                ><span class="icon-label">{{ if eq .entry.Status "read" }}✘&nbsp;{{ t "entry.status.unread" }}{{ else }}✔&nbsp;{{ t "entry.status.read" }}{{ end }}</span></a>
+                >{{ if eq .entry.Status "read" }}{{ template "icon_unread" }}{{ else }}{{ template "icon_read" }}{{ end }}<span class="icon-label">{{ if eq .entry.Status "read" }}{{ t "entry.status.unread" }}{{ else }}{{ t "entry.status.read" }}{{ end }}</span></a>
         </li>
         <li>
             <a href="#"
                 data-toggle-bookmark="true"
                 data-bookmark-url="{{ route "toggleBookmark" "entryID" .entry.ID }}"
                 data-label-loading="{{ t "entry.state.saving" }}"
-                data-label-star="☆&nbsp;{{ t "entry.bookmark.toggle.on" }}"
-                data-label-unstar="★&nbsp;{{ t "entry.bookmark.toggle.off" }}"
+                data-label-star="{{ t "entry.bookmark.toggle.on" }}"
+                data-label-unstar="{{ t "entry.bookmark.toggle.off" }}"
                 data-value="{{ if .entry.Starred }}star{{ else }}unstar{{ end }}"
-                ><span class="icon-label">{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></a>
+                >{{ if .entry.Starred }}{{ template "icon_unstar" }}{{ else }}{{ template "icon_star" }}{{ end }}<span class="icon-label">{{ if .entry.Starred }}{{ t "entry.bookmark.toggle.off" }}{{ else }}{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></a>
         </li>
         {{ if .entry.ShareCode }}
             <li>
@@ -379,9 +385,9 @@ SOFTWARE.
 
     <meta name="theme-color" content="{{ theme_color .theme }}">
     <link rel="stylesheet" type="text/css" href="{{ route "stylesheet" "name" .theme }}?{{ .theme_checksum }}">
-    {{ if .user }} {{ if ne (index .user.Extra "custom_css") ("") }}
+    {{ if and .user .user.Stylesheet }}
     <link rel="stylesheet" type="text/css" href="{{ route "stylesheet" "name" "custom_css" }}">
-    {{ end }}{{ end }}
+    {{ end }}
 
     <script type="text/javascript" src="{{ route "javascript" "name" "app" }}?{{ .app_js_checksum }}" defer></script>
     <script type="text/javascript" src="{{ route "javascript" "name" "service-worker" }}?{{ .sw_js_checksum }}" defer id="service-worker-script"></script>
@@ -523,6 +529,18 @@ SOFTWARE.
             </div>
         </div>
     </template>
+    <template id="icon_read">
+        {{ template "icon_read" }}
+    </template>
+    <template id="icon_unread">
+        {{ template "icon_unread" }}
+    </template>
+    <template id="icon_star">
+        {{ template "icon_star" }}
+    </template>
+    <template id="icon_unstar">
+        {{ template "icon_unstar" }}
+    </template>
 </body>
 </html>
 {{ end }}
@@ -575,11 +593,11 @@ SOFTWARE.
 
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "cdca9cf12586e41e5355190b06d9168f57f77b85924d1e63b13524bc15abcbf6",
-	"feed_list":        "931e43d328a116318c510de5658c688cd940b934c86b6ec82a472e1f81e020ae",
-	"feed_menu":        "318d8662dda5ca9dfc75b909c8461e79c86fb5082df1428f67aaf856f19f4b50",
-	"icons":            "bd9aadd9a9967c8b6219fd4edfe61aa9bbb89d7db9d32103788fb78b30882e84",
-	"item_meta":        "408132e67ba10e91e6b64537443eecd0aabeceabe9acd95e432a3665e5a73c08",
-	"layout":           "dc07fc1851b2de1bd49040ebc0ffd14d7bbcc00653c361c5d1fadbec232d0d7c",
-	"pagination":       "7b61288e86283c4cf0dc83bcbf8bf1c00c7cb29e60201c8c0b633b2450d2911f",
-	"settings_menu":    "e2b777630c0efdbc529800303c01d6744ed3af80ec505ac5a5b3f99c9b989156",
+	"feed_list": "931e43d328a116318c510de5658c688cd940b934c86b6ec82a472e1f81e020ae",
+	"feed_menu": "318d8662dda5ca9dfc75b909c8461e79c86fb5082df1428f67aaf856f19f4b50",
+	"icons": "72a3b7d23ce20da720af7ae4a4e7d3a4d80a2072829b3ae7584b457b29cbbf70",
+	"item_meta": "2871d78c07a8237849b735d08aa1115d70a2c99bb67c3e6c904d56d8ab66e44b",
+	"layout": "43fd8df4fe2dfbece2b9e3fe2ae8d5832bde343c179a479092f325aac4a44485",
+	"pagination": "7b61288e86283c4cf0dc83bcbf8bf1c00c7cb29e60201c8c0b633b2450d2911f",
+	"settings_menu": "e2b777630c0efdbc529800303c01d6744ed3af80ec505ac5a5b3f99c9b989156",
 }

@@ -28,6 +28,17 @@ var templateViewsMap = map[string]string{
     </ul>
 </div>
 
+{{ if .user.IsAdmin }}
+<div class="panel">
+    <h3>{{ t "page.about.global_config_options" }}</h3>
+    <ul>
+    {{ range .globalConfigOptions }}
+    <li><code><strong>{{ .Key }}</strong>={{ .Value }}</code></li>
+    {{ end }}
+    </ul>
+</div>
+{{ end }}
+
 {{ end }}
 `,
 	"add_entry": `{{ define "title"}}{{ t "page.add_entry.title" }}{{ end }}
@@ -100,7 +111,7 @@ var templateViewsMap = map[string]string{
         {{ end }}
 
         <label for="form-url">{{ t "page.add_feed.label.url" }}</label>
-        <input type="url" name="url" id="form-url" placeholder="https://domain.tld/" value="{{ .form.URL }}" required autofocus>
+        <input type="url" name="url" id="form-url" placeholder="https://domain.tld/" value="{{ .form.URL }}" spellcheck="false" required autofocus>
 
         <label for="form-category">{{ t "form.feed.label.category" }}</label>
         <select id="form-category" name="category_id">
@@ -118,10 +129,10 @@ var templateViewsMap = map[string]string{
                 {{ end }}
 
                 <label for="form-user-agent">{{ t "form.feed.label.user_agent" }}</label>
-                <input type="text" name="user_agent" id="form-user-agent" placeholder="{{ .defaultUserAgent }}" value="{{ .form.UserAgent }}" autocomplete="off">
+                <input type="text" name="user_agent" id="form-user-agent" placeholder="{{ .defaultUserAgent }}" value="{{ .form.UserAgent }}"  spellcheck="false" autocomplete="off">
 
                 <label for="form-feed-username">{{ t "form.feed.label.feed_username" }}</label>
-                <input type="text" name="feed_username" id="form-feed-username" value="{{ .form.Username }}">
+                <input type="text" name="feed_username" id="form-feed-username" value="{{ .form.Username }}" spellcheck="false">
 
                 <label for="form-feed-password">{{ t "form.feed.label.feed_password" }}</label>
                 <!--
@@ -131,19 +142,19 @@ var templateViewsMap = map[string]string{
                     - Changing the input ID doesn't change anything
                     - Using a different input name doesn't change anything
                 -->
-                <input type="text" name="feed_password" id="form-feed-password" value="{{ .form.Password }}">
+                <input type="text" name="feed_password" id="form-feed-password" value="{{ .form.Password }}" spellcheck="false">
 
                 <label for="form-scraper-rules">{{ t "form.feed.label.scraper_rules" }}</label>
-                <input type="text" name="scraper_rules" id="form-scraper-rules" value="{{ .form.ScraperRules }}">
+                <input type="text" name="scraper_rules" id="form-scraper-rules" value="{{ .form.ScraperRules }}" spellcheck="false">
 
                 <label for="form-rewrite-rules">{{ t "form.feed.label.rewrite_rules" }}</label>
-                <input type="text" name="rewrite_rules" id="form-rewrite-rules" value="{{ .form.RewriteRules }}">
+                <input type="text" name="rewrite_rules" id="form-rewrite-rules" value="{{ .form.RewriteRules }}" spellcheck="false">
 
                 <label for="form-blocklist-rules">{{ t "form.feed.label.blocklist_rules" }}</label>
-                <input type="text" name="blocklist_rules" id="form-blocklist-rules" value="{{ .form.BlocklistRules }}">
+                <input type="text" name="blocklist_rules" id="form-blocklist-rules" value="{{ .form.BlocklistRules }}" spellcheck="false">
  
                 <label for="form-keeplist-rules">{{ t "form.feed.label.keeplist_rules" }}</label>
-                <input type="text" name="keeplist_rules" id="form-keeplist-rules" value="{{ .form.KeeplistRules }}">
+                <input type="text" name="keeplist_rules" id="form-keeplist-rules" value="{{ .form.KeeplistRules }}" spellcheck="false">
             </div>
         </details>
 
@@ -536,7 +547,7 @@ var templateViewsMap = map[string]string{
     {{ end }}
 
     <label for="form-description">{{ t "form.api_key.label.description" }}</label>
-    <input type="text" name="description" id="form-description" value="{{ .form.Description }}" required autofocus>
+    <input type="text" name="description" id="form-description" value="{{ .form.Description }}" spellcheck="false" required autofocus>
 
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.save" }}</button> {{ t "action.or" }} <a href="{{ route "apiKeys" }}">{{ t "action.cancel" }}</a>
@@ -569,7 +580,7 @@ var templateViewsMap = map[string]string{
     <label for="form-view">{{ t "form.prefs.label.view" }}</label>
     <select id="form-view" name="view">
         {{ range $key, $value := .views }}
-            <option value="{{ $key }}">{{ $value }}</option>
+            <option value="{{ $key }}">{{ t $value }}</option>
         {{ end }}
     </select>
 
@@ -595,13 +606,13 @@ var templateViewsMap = map[string]string{
     {{ end }}
 
     <label for="form-username">{{ t "form.user.label.username" }}</label>
-    <input type="text" name="username" id="form-username" value="{{ .form.Username }}" autocomplete="new-password" required autofocus>
+    <input type="text" name="username" id="form-username" value="{{ .form.Username }}" autocomplete="username" spellcheck="false" required autofocus>
 
     <label for="form-password">{{ t "form.user.label.password" }}</label>
     <input type="password" name="password" id="form-password" value="{{ .form.Password }}" autocomplete="new-password" required>
 
     <label for="form-confirmation">{{ t "form.user.label.confirmation" }}</label>
-    <input type="password" name="confirmation" id="form-confirmation" value="{{ .form.Confirmation }}" required>
+    <input type="password" name="confirmation" id="form-confirmation" value="{{ .form.Confirmation }}" autocomplete="new-password" required>
 
     <label><input type="checkbox" name="is_admin" value="1" {{ if .form.IsAdmin }}checked{{ end }}> {{ t "form.user.label.admin" }}</label>
 
@@ -760,16 +771,16 @@ var templateViewsMap = map[string]string{
         {{ end }}
 
         <label for="form-title">{{ t "form.feed.label.title" }}</label>
-        <input type="text" name="title" id="form-title" value="{{ .form.Title }}" required autofocus>
+        <input type="text" name="title" id="form-title" value="{{ .form.Title }}" spellcheck="false" required autofocus>
 
         <label for="form-site-url">{{ t "form.feed.label.site_url" }}</label>
-        <input type="url" name="site_url" id="form-site-url" placeholder="https://domain.tld/" value="{{ .form.SiteURL }}" required>
+        <input type="url" name="site_url" id="form-site-url" placeholder="https://domain.tld/" value="{{ .form.SiteURL }}" spellcheck="false" required>
 
         <label for="form-feed-url">{{ t "form.feed.label.feed_url" }}</label>
-        <input type="url" name="feed_url" id="form-feed-url" placeholder="https://domain.tld/" value="{{ .form.FeedURL }}" required>
+        <input type="url" name="feed_url" id="form-feed-url" placeholder="https://domain.tld/" value="{{ .form.FeedURL }}" spellcheck="false" required>
 
         <label for="form-feed-username">{{ t "form.feed.label.feed_username" }}</label>
-        <input type="text" name="feed_username" id="form-feed-username" value="{{ .form.Username }}">
+        <input type="text" name="feed_username" id="form-feed-username" value="{{ .form.Username }}" spellcheck="false">
 
         <label for="form-feed-password">{{ t "form.feed.label.feed_password" }}</label>
         <!--
@@ -779,22 +790,22 @@ var templateViewsMap = map[string]string{
             - Changing the input ID doesn't change anything
             - Using a different input name doesn't change anything
         -->
-        <input type="text" name="feed_password" id="form-feed-password" value="{{ .form.Password }}">
+        <input type="text" name="feed_password" id="form-feed-password" value="{{ .form.Password }}" spellcheck="false">
 
 	    <label for="form-user-agent">{{ t "form.feed.label.user_agent" }}</label>
-	    <input type="text" name="user_agent" id="form-user-agent" placeholder="{{ .defaultUserAgent }}" value="{{ .form.UserAgent }}">
+	    <input type="text" name="user_agent" id="form-user-agent" placeholder="{{ .defaultUserAgent }}" value="{{ .form.UserAgent }}" spellcheck="false">
 
         <label for="form-scraper-rules">{{ t "form.feed.label.scraper_rules" }}</label>
-        <input type="text" name="scraper_rules" id="form-scraper-rules" value="{{ .form.ScraperRules }}">
+        <input type="text" name="scraper_rules" id="form-scraper-rules" value="{{ .form.ScraperRules }}" spellcheck="false">
 
         <label for="form-rewrite-rules">{{ t "form.feed.label.rewrite_rules" }}</label>
-        <input type="text" name="rewrite_rules" id="form-rewrite-rules" value="{{ .form.RewriteRules }}">
+        <input type="text" name="rewrite_rules" id="form-rewrite-rules" value="{{ .form.RewriteRules }}" spellcheck="false">
 
         <label for="form-blocklist-rules">{{ t "form.feed.label.blocklist_rules" }}</label>
-        <input type="text" name="blocklist_rules" id="form-blocklist-rules" value="{{ .form.BlocklistRules }}">
+        <input type="text" name="blocklist_rules" id="form-blocklist-rules" value="{{ .form.BlocklistRules }}" spellcheck="false">
  
         <label for="form-keeplist-rules">{{ t "form.feed.label.keeplist_rules" }}</label>
-        <input type="text" name="keeplist_rules" id="form-keeplist-rules" value="{{ .form.KeeplistRules }}">
+        <input type="text" name="keeplist_rules" id="form-keeplist-rules" value="{{ .form.KeeplistRules }}" spellcheck="false">
 
         <label for="form-category">{{ t "form.feed.label.category" }}</label>
         <select id="form-category" name="category_id">
@@ -872,7 +883,7 @@ var templateViewsMap = map[string]string{
     {{ end }}
 
     <label for="form-username">{{ t "form.user.label.username" }}</label>
-    <input type="text" name="username" id="form-username" value="{{ .form.Username }}" autocomplete="new-password" required autofocus>
+    <input type="text" name="username" id="form-username" value="{{ .form.Username }}" autocomplete="username" spellcheck="false" required autofocus>
 
     <label for="form-password">{{ t "form.user.label.password" }}</label>
     <input type="password" name="password" id="form-password" value="{{ .form.Password }}" autocomplete="new-password">
@@ -903,24 +914,24 @@ var templateViewsMap = map[string]string{
                     <a href="#"
                         title="{{ t "entry.status.title" }}"
                         data-toggle-status="true"
-                        data-label-unread="✘&nbsp;{{ t "entry.status.unread" }}"
-                        data-label-read="✔︎&nbsp;{{ t "entry.status.read" }}"
+                        data-label-unread="{{ t "entry.status.unread" }}"
+                        data-label-read="{{ t "entry.status.read" }}"
                         data-toast-unread="✘&nbsp;{{ t "entry.status.toast.unread" }}"
                         data-toast-read="✔︎&nbsp;{{ t "entry.status.toast.read" }}"
                         data-value="{{ if eq .entry.Status "read" }}read{{ else }}unread{{ end }}"
-                        ><span class="icon-label">{{ if eq .entry.Status "unread" }}✔&nbsp;{{ t "entry.status.read" }}{{ else }}✘&nbsp;{{ t "entry.status.unread" }}{{ end }}</span></a>
+                        >{{ if eq .entry.Status "unread" }}{{ template "icon_read" }}{{ else }}{{ template "icon_unread" }}{{ end }}<span class="icon-label">{{ if eq .entry.Status "unread" }}{{ t "entry.status.read" }}{{ else }}{{ t "entry.status.unread" }}{{ end }}</span></a>
                 </li>
                 <li>
                     <a href="#"
                         data-toggle-bookmark="true"
                         data-bookmark-url="{{ route "toggleBookmark" "entryID" .entry.ID }}"
                         data-label-loading="{{ t "entry.state.saving" }}"
-                        data-label-star="☆&nbsp;{{ t "entry.bookmark.toggle.on" }}"
-                        data-label-unstar="★&nbsp;{{ t "entry.bookmark.toggle.off" }}"
+                        data-label-star="{{ t "entry.bookmark.toggle.on" }}"
+                        data-label-unstar="{{ t "entry.bookmark.toggle.off" }}"
                         data-toast-star="★&nbsp;{{ t "entry.bookmark.toast.on" }}"
                         data-toast-unstar="☆&nbsp;{{ t "entry.bookmark.toast.off" }}"
                         data-value="{{ if .entry.Starred }}star{{ else }}unstar{{ end }}"
-                        ><span class="icon-label">{{ if .entry.Starred }}★&nbsp;{{ t "entry.bookmark.toggle.off" }}{{ else }}☆&nbsp;{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></a>
+                        >{{ if .entry.Starred }}{{ template "icon_unstar" }}{{ else }}{{ template "icon_star" }}{{ end }}<span class="icon-label">{{ if .entry.Starred }}{{ t "entry.bookmark.toggle.off" }}{{ else }}{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></a>
                 </li>
                 {{ if .hasSaveEntry }}
                     <li>
@@ -1377,7 +1388,7 @@ var templateViewsMap = map[string]string{
         </label>
 
         <label for="form-fever-username">{{ t "form.integration.fever_username" }}</label>
-        <input type="text" name="fever_username" id="form-fever-username" value="{{ .form.FeverUsername }}">
+        <input type="text" name="fever_username" id="form-fever-username" value="{{ .form.FeverUsername }}" autocomplete="username" spellcheck="false">
 
         <label for="form-fever-password">{{ t "form.integration.fever_password" }}</label>
         <input type="password" name="fever_password" id="form-fever-password" value="{{ .form.FeverPassword }}" autocomplete="new-password">
@@ -1399,7 +1410,7 @@ var templateViewsMap = map[string]string{
         <input type="password" name="pinboard_token" id="form-pinboard-token" value="{{ .form.PinboardToken }}" autocomplete="new-password">
 
         <label for="form-pinboard-tags">{{ t "form.integration.pinboard_tags" }}</label>
-        <input type="text" name="pinboard_tags" id="form-pinboard-tags" value="{{ .form.PinboardTags }}">
+        <input type="text" name="pinboard_tags" id="form-pinboard-tags" value="{{ .form.PinboardTags }}" spellcheck="false">
 
         <label>
             <input type="checkbox" name="pinboard_mark_as_unread" value="1" {{ if .form.PinboardMarkAsUnread }}checked{{ end }}> {{ t "form.integration.pinboard_bookmark" }}
@@ -1417,7 +1428,7 @@ var templateViewsMap = map[string]string{
         </label>
 
         <label for="form-instapaper-username">{{ t "form.integration.instapaper_username" }}</label>
-        <input type="text" name="instapaper_username" id="form-instapaper-username" value="{{ .form.InstapaperUsername }}">
+        <input type="text" name="instapaper_username" id="form-instapaper-username" value="{{ .form.InstapaperUsername }}" spellcheck="false">
 
         <label for="form-instapaper-password">{{ t "form.integration.instapaper_password" }}</label>
         <input type="password" name="instapaper_password" id="form-instapaper-password" value="{{ .form.InstapaperPassword }}" autocomplete="new-password">
@@ -1435,7 +1446,7 @@ var templateViewsMap = map[string]string{
 
         {{ if not .hasPocketConsumerKeyConfigured }}
             <label for="form-pocket-consumer-key">{{ t "form.integration.pocket_consumer_key" }}</label>
-            <input type="text" name="pocket_consumer_key" id="form-pocket-consumer-key" value="{{ .form.PocketConsumerKey }}">
+            <input type="text" name="pocket_consumer_key" id="form-pocket-consumer-key" value="{{ .form.PocketConsumerKey }}" spellcheck="false">
         {{ end }}
 
         <label for="form-pocket-access-token">{{ t "form.integration.pocket_access_token" }}</label>
@@ -1457,16 +1468,16 @@ var templateViewsMap = map[string]string{
         </label>
 
         <label for="form-wallabag-url">{{ t "form.integration.wallabag_endpoint" }}</label>
-        <input type="url" name="wallabag_url" id="form-wallabag-url" value="{{ .form.WallabagURL }}" placeholder="http://v2.wallabag.org/">
+        <input type="url" name="wallabag_url" id="form-wallabag-url" value="{{ .form.WallabagURL }}" placeholder="http://v2.wallabag.org/" spellcheck="false">
 
         <label for="form-wallabag-client-id">{{ t "form.integration.wallabag_client_id" }}</label>
-        <input type="text" name="wallabag_client_id" id="form-wallabag-client-id" value="{{ .form.WallabagClientID }}">
+        <input type="text" name="wallabag_client_id" id="form-wallabag-client-id" value="{{ .form.WallabagClientID }}" spellcheck="false">
 
         <label for="form-wallabag-client-secret">{{ t "form.integration.wallabag_client_secret" }}</label>
         <input type="password" name="wallabag_client_secret" id="form-wallabag-client-secret" value="{{ .form.WallabagClientSecret }}" autocomplete="new-password">
 
         <label for="form-wallabag-username">{{ t "form.integration.wallabag_username" }}</label>
-        <input type="text" name="wallabag_username" id="form-wallabag-username" value="{{ .form.WallabagUsername }}">
+        <input type="text" name="wallabag_username" id="form-wallabag-username" value="{{ .form.WallabagUsername }}" spellcheck="false">
 
         <label for="form-wallabag-password">{{ t "form.integration.wallabag_password" }}</label>
         <input type="password" name="wallabag_password" id="form-wallabag-password" value="{{ .form.WallabagPassword }}" autocomplete="new-password">
@@ -1483,10 +1494,10 @@ var templateViewsMap = map[string]string{
         </label>
 
         <label for="form-nunux-keeper-url">{{ t "form.integration.nunux_keeper_endpoint" }}</label>
-        <input type="url" name="nunux_keeper_url" id="form-nunux-keeper-url" value="{{ .form.NunuxKeeperURL }}" placeholder="https://api.nunux.org/keeper">
+        <input type="url" name="nunux_keeper_url" id="form-nunux-keeper-url" value="{{ .form.NunuxKeeperURL }}" placeholder="https://api.nunux.org/keeper" spellcheck="false">
 
         <label for="form-nunux-keeper-api-key">{{ t "form.integration.nunux_keeper_api_key" }}</label>
-        <input type="text" name="nunux_keeper_api_key" id="form-nunux-keeper-api-key" value="{{ .form.NunuxKeeperAPIKey }}">
+        <input type="text" name="nunux_keeper_api_key" id="form-nunux-keeper-api-key" value="{{ .form.NunuxKeeperAPIKey }}" spellcheck="false">
         
         <div class="buttons">
             <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button>
@@ -1656,7 +1667,7 @@ var templateViewsMap = map[string]string{
     {{ end }}
 
     <label for="form-username">{{ t "form.user.label.username" }}</label>
-    <input type="text" name="username" id="form-username" value="{{ .form.Username }}" required>
+    <input type="text" name="username" id="form-username" value="{{ .form.Username }}" autocomplete="username" required>
 
     <label for="form-password">{{ t "form.user.label.password" }}</label>
     <input type="password" name="password" id="form-password" value="{{ .form.Password }}" autocomplete="new-password">
@@ -1707,7 +1718,7 @@ var templateViewsMap = map[string]string{
 
     <label><input type="checkbox" name="entry_swipe" value="1" {{ if .form.EntrySwipe }}checked{{ end }}> {{ t "form.prefs.label.entry_swipe" }}</label>
 
-    <label>{{t "form.prefs.label.custom_css" }}</label><textarea name="custom_css" cols="40" rows="5">{{ .form.CustomCSS }}</textarea>
+    <label>{{t "form.prefs.label.custom_css" }}</label><textarea name="custom_css" cols="40" rows="8" spellcheck="false">{{ .form.CustomCSS }}</textarea>
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button>
     </div>
@@ -1715,7 +1726,7 @@ var templateViewsMap = map[string]string{
 
 {{ if hasOAuth2Provider "google" }}
 <div class="panel">
-    {{ if hasKey .user.Extra "google_id" }}
+    {{ if .user.GoogleID }}
         <a href="{{ route "oauth2Unlink" "provider" "google" }}">{{ t "page.settings.unlink_google_account" }}</a>
     {{ else }}
         <a href="{{ route "oauth2Redirect" "provider" "google" }}">{{ t "page.settings.link_google_account" }}</a>
@@ -1723,7 +1734,7 @@ var templateViewsMap = map[string]string{
 </div>
 {{ else if hasOAuth2Provider "oidc" }}
 <div class="panel">
-    {{ if hasKey .user.Extra "oidc_id" }}
+    {{ if .user.OpenIDConnectID }}
         <a href="{{ route "oauth2Unlink" "provider" "oidc" }}">{{ t "page.settings.unlink_oidc_account" }}</a>
     {{ else }}
         <a href="{{ route "oauth2Redirect" "provider" "oidc" }}">{{ t "page.settings.link_oidc_account" }}</a>
@@ -2068,34 +2079,34 @@ var templateViewsMap = map[string]string{
 }
 
 var templateViewsMapChecksums = map[string]string{
-	"about":               "504b3635a7f898c12a1120c2270a2911aa8378c0fa272ea0980feca1fa3161f2",
-	"add_entry":           "5f94aa53c079c9551bf006533b56b134cc901c7ab8caec63e826f2d6807dff98",
-	"add_subscription":    "82bf0dfadd64d3b6eda323a8174dd1446665b0804d27ca8718a828488627b287",
-	"api_keys":            "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
-	"bookmark_entries":    "6751659890c2a9ebdbbc040c45c568324e9d29ec5c325da3e49afc43e77a104b",
-	"categories":          "9dfc3cb7bb91c7750753fe962ee4540dd1843e5f75f9e0a575ee964f6f9923e9",
-	"category_entries":    "3e8e2100868bdb5a45b6dbb42c0f00d02e1a32ea4eb9a4d97ae5af70b1603729",
-	"category_feeds":      "07154127087f9b127f7290abad6020c35ad9ceb2490b869120b7628bc4413808",
+	"about": "ed362f506b931186b2273655e3264110225154e7756e29d49ba4ede442caffc9",
+	"add_entry": "5f94aa53c079c9551bf006533b56b134cc901c7ab8caec63e826f2d6807dff98",
+	"add_subscription": "bc0f878b37692a00d51e834536f211843a59703991d2a743ef204b9d6ae38549",
+	"api_keys": "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
+	"bookmark_entries": "6751659890c2a9ebdbbc040c45c568324e9d29ec5c325da3e49afc43e77a104b",
+	"categories": "9dfc3cb7bb91c7750753fe962ee4540dd1843e5f75f9e0a575ee964f6f9923e9",
+	"category_entries": "3e8e2100868bdb5a45b6dbb42c0f00d02e1a32ea4eb9a4d97ae5af70b1603729",
+	"category_feeds": "07154127087f9b127f7290abad6020c35ad9ceb2490b869120b7628bc4413808",
 	"choose_subscription": "22109d760ea8079c491561d0106f773c885efbf66f87d81fcf8700218260d2a0",
-	"create_api_key":      "5f74d4e92a6684927f5305096378c8be278159a5cd88ce652c7be3280a7d1685",
-	"create_category":     "9e95aad17cd3bdd9d991ac3ad4e2922b2b5da4a10f7046095360c6eb125f6eee",
-	"create_user":         "9b73a55233615e461d1f07d99ad1d4d3b54532588ab960097ba3e090c85aaf3a",
-	"edit_category":       "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
-	"edit_entry":          "dbc662629184d13a710e721559065d4cae84f9adc37b4dd083d592d7730a2a29",
-	"edit_feed":           "5c6555e8823abc2ddfc8f5ac2abc41fbfe0a988482fdeb976e62d6501a7ab718",
-	"edit_user":           "c692db9de1a084c57b93e95a14b041d39bf489846cbb91fc982a62b72b77062a",
-	"entry":               "d42d51bb3828d5c79e558833c4213b5afc10154d437567134c8a1e13a312aa5d",
-	"feed_entries":        "ae110a5026b3a5d5897b5b7fd2e48496544f138b23a3ca0c5bb5d3f031f626ed",
-	"feeds":               "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
-	"history_entries":     "87f588b37ef3901292796b2a646143102939ab860a7e0c78b9f1f821ae49c737",
-	"import":              "1b59b3bd55c59fcbc6fbb346b414dcdd26d1b4e0c307e437bb58b3f92ef01ad1",
-	"integrations":        "106f296e8904f21a7a6a8c263bbf4373ccda4af146687eda05e4df2fa07d25aa",
-	"login":               "9165434b2405e9332de4bebbb54a93dc5692276ea72e7c5e07f655a002dfd290",
-	"search_entries":      "ffc082b84808dca845243465e0e2a2517419f725ce557296bed5e41747e2be62",
-	"sessions":            "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
-	"settings":            "581f78d441436f9e833cc49484ef059f90a8ee9789d9ecffe6f50eb4769f2171",
-	"shared_entries":      "f87a42bf44dc3606c5a44b185263c1b9a612a8ae194f75061253d4dde7b095a2",
-	"stat":                "b119ac8d0819def88362c1657cfd768f7e6419f2cdd763444f03d9a0c9c67291",
-	"unread_entries":      "35b29dd79cbc9892404438bc781006473647b4cc68900bcd7ade9cc69423a7cd",
-	"users":               "d7ff52efc582bbad10504f4a04fa3adcc12d15890e45dff51cac281e0c446e45",
+	"create_api_key": "2fbd74342176b9970d9162a54da99186589621e4c005566a5368fc4a7994ad20",
+	"create_category": "5e290ab3faf3120fb0a3f04b11d1fd3b3bece69cfe39ccc31ef02db37b73106b",
+	"create_user": "cca0dbdbd846639d5295707de0674e5e75df987dd22b80d75f030f8daa503a85",
+	"edit_category": "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
+	"edit_entry": "dbc662629184d13a710e721559065d4cae84f9adc37b4dd083d592d7730a2a29",
+	"edit_feed": "402c94f9d386b9405ffa587d573a8f587eddf29757f7e030f65a3a89c86e9c15",
+	"edit_user": "04423f5ea4249a97440ddd892f99ff96c646f6ce26313765ac5293abf257ef3c",
+	"entry": "feaff0d95596fa228ab6d0c898cc5435cf6a0ce68e5fc68d92a932723608c69d",
+	"feed_entries": "ae110a5026b3a5d5897b5b7fd2e48496544f138b23a3ca0c5bb5d3f031f626ed",
+	"feeds": "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
+	"history_entries": "87f588b37ef3901292796b2a646143102939ab860a7e0c78b9f1f821ae49c737",
+	"import": "1b59b3bd55c59fcbc6fbb346b414dcdd26d1b4e0c307e437bb58b3f92ef01ad1",
+	"integrations": "fc81c2827f625ad31ad345d17c20b667eabd6f983764fa899a0931c002da45b1",
+	"login": "9165434b2405e9332de4bebbb54a93dc5692276ea72e7c5e07f655a002dfd290",
+	"search_entries": "ffc082b84808dca845243465e0e2a2517419f725ce557296bed5e41747e2be62",
+	"sessions": "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
+	"settings": "72f5c99f62d9685066a1efdbcfb62ae1a6bb5889f9cdf680f0b908ac310b93a3",
+	"shared_entries": "f87a42bf44dc3606c5a44b185263c1b9a612a8ae194f75061253d4dde7b095a2",
+	"stat": "b119ac8d0819def88362c1657cfd768f7e6419f2cdd763444f03d9a0c9c67291",
+	"unread_entries": "35b29dd79cbc9892404438bc781006473647b4cc68900bcd7ade9cc69423a7cd",
+	"users": "d7ff52efc582bbad10504f4a04fa3adcc12d15890e45dff51cac281e0c446e45",
 }

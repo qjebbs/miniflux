@@ -5,7 +5,6 @@
 package model // import "miniflux.app/model"
 
 import (
-	"errors"
 	"time"
 
 	"miniflux.app/timezone"
@@ -13,74 +12,114 @@ import (
 
 // User represents a user in the system.
 type User struct {
-	ID                int64             `json:"id"`
-	Username          string            `json:"username"`
-	Password          string            `json:"password,omitempty"`
-	IsAdmin           bool              `json:"is_admin"`
-	Theme             string            `json:"theme"`
-	View              string            `json:"view"`
-	Language          string            `json:"language"`
-	Timezone          string            `json:"timezone"`
-	EntryDirection    string            `json:"entry_sorting_direction"`
-	EntriesPerPage    int               `json:"entries_per_page"`
-	KeyboardShortcuts bool              `json:"keyboard_shortcuts"`
-	ShowReadingTime   bool              `json:"show_reading_time"`
-	LastLoginAt       *time.Time        `json:"last_login_at,omitempty"`
-	Extra             map[string]string `json:"extra"`
-	EntrySwipe        bool              `json:"entry_swipe"`
+	ID                int64      `json:"id"`
+	Username          string     `json:"username"`
+	Password          string     `json:"-"`
+	IsAdmin           bool       `json:"is_admin"`
+	Theme             string     `json:"theme"`
+	View              string     `json:"view"`
+	Language          string     `json:"language"`
+	Timezone          string     `json:"timezone"`
+	EntryDirection    string     `json:"entry_sorting_direction"`
+	Stylesheet        string     `json:"stylesheet"`
+	GoogleID          string     `json:"google_id"`
+	OpenIDConnectID   string     `json:"openid_connect_id"`
+	EntriesPerPage    int        `json:"entries_per_page"`
+	KeyboardShortcuts bool       `json:"keyboard_shortcuts"`
+	ShowReadingTime   bool       `json:"show_reading_time"`
+	EntrySwipe        bool       `json:"entry_swipe"`
+	LastLoginAt       *time.Time `json:"last_login_at"`
 }
 
-// NewUser returns a new User.
-func NewUser() *User {
-	return &User{Extra: make(map[string]string)}
+// UserCreationRequest represents the request to create a user.
+type UserCreationRequest struct {
+	Username        string `json:"username"`
+	Password        string `json:"password"`
+	IsAdmin         bool   `json:"is_admin"`
+	GoogleID        string `json:"google_id"`
+	OpenIDConnectID string `json:"openid_connect_id"`
 }
 
-// ValidateUserCreation validates new user.
-func (u User) ValidateUserCreation() error {
-	if err := u.ValidateUserLogin(); err != nil {
-		return err
-	}
-
-	return u.ValidatePassword()
+// UserModificationRequest represents the request to update a user.
+type UserModificationRequest struct {
+	Username          *string `json:"username"`
+	Password          *string `json:"password"`
+	Theme             *string `json:"theme"`
+	View              *string `json:"view"`
+	Language          *string `json:"language"`
+	Timezone          *string `json:"timezone"`
+	EntryDirection    *string `json:"entry_sorting_direction"`
+	Stylesheet        *string `json:"stylesheet"`
+	GoogleID          *string `json:"google_id"`
+	OpenIDConnectID   *string `json:"openid_connect_id"`
+	EntriesPerPage    *int    `json:"entries_per_page"`
+	IsAdmin           *bool   `json:"is_admin"`
+	KeyboardShortcuts *bool   `json:"keyboard_shortcuts"`
+	ShowReadingTime   *bool   `json:"show_reading_time"`
+	EntrySwipe        *bool   `json:"entry_swipe"`
 }
 
-// ValidateUserModification validates user modification payload.
-func (u User) ValidateUserModification() error {
-	if u.Theme != "" {
-		return ValidateTheme(u.Theme)
+// Patch updates the User object with the modification request.
+func (u *UserModificationRequest) Patch(user *User) {
+	if u.Username != nil {
+		user.Username = *u.Username
 	}
 
-	if u.View != "" {
-		return ValidateView(u.View)
+	if u.Password != nil {
+		user.Password = *u.Password
 	}
 
-	if u.Password != "" {
-		return u.ValidatePassword()
+	if u.IsAdmin != nil {
+		user.IsAdmin = *u.IsAdmin
 	}
 
-	return nil
-}
-
-// ValidateUserLogin validates user credential requirements.
-func (u User) ValidateUserLogin() error {
-	if u.Username == "" {
-		return errors.New("The username is mandatory")
+	if u.View != nil {
+		user.View = *u.View
 	}
 
-	if u.Password == "" {
-		return errors.New("The password is mandatory")
+	if u.Theme != nil {
+		user.Theme = *u.Theme
 	}
 
-	return nil
-}
-
-// ValidatePassword validates user password requirements.
-func (u User) ValidatePassword() error {
-	if u.Password != "" && len(u.Password) < 6 {
-		return errors.New("The password must have at least 6 characters")
+	if u.Language != nil {
+		user.Language = *u.Language
 	}
 
-	return nil
+	if u.Timezone != nil {
+		user.Timezone = *u.Timezone
+	}
+
+	if u.EntryDirection != nil {
+		user.EntryDirection = *u.EntryDirection
+	}
+
+	if u.Stylesheet != nil {
+		user.Stylesheet = *u.Stylesheet
+	}
+
+	if u.GoogleID != nil {
+		user.GoogleID = *u.GoogleID
+	}
+
+	if u.OpenIDConnectID != nil {
+		user.OpenIDConnectID = *u.OpenIDConnectID
+	}
+
+	if u.EntriesPerPage != nil {
+		user.EntriesPerPage = *u.EntriesPerPage
+	}
+
+	if u.KeyboardShortcuts != nil {
+		user.KeyboardShortcuts = *u.KeyboardShortcuts
+	}
+
+	if u.ShowReadingTime != nil {
+		user.ShowReadingTime = *u.ShowReadingTime
+	}
+
+	if u.EntrySwipe != nil {
+		user.EntrySwipe = *u.EntrySwipe
+	}
 }
 
 // UseTimezone converts last login date to the given timezone.

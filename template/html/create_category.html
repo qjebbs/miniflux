@@ -23,7 +23,7 @@
     <label for="form-view">{{ t "form.prefs.label.view" }}</label>
     <select id="form-view" name="view">
         {{ range $key, $value := .views }}
-            <option value="{{ $key }}">{{ $value }}</option>
+            <option value="{{ $key }}">{{ t $value }}</option>
         {{ end }}
     </select>
 

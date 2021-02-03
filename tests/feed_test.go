@@ -26,7 +26,10 @@ func TestCannotCreateDuplicatedFeed(t *testing.T) {
 	client := createClient(t)
 	feed, category := createFeed(t, client)
 
-	_, err := client.CreateFeed(feed.FeedURL, category.ID)
+	_, err := client.CreateFeed(&miniflux.FeedCreationRequest{
+		FeedURL:    feed.FeedURL,
+		CategoryID: category.ID,
+	})
 	if err == nil {
 		t.Fatal(`Duplicated feeds should not be allowed`)
 	}
@@ -34,10 +37,168 @@ func TestCannotCreateDuplicatedFeed(t *testing.T) {
 
 func TestCreateFeedWithInexistingCategory(t *testing.T) {
 	client := createClient(t)
-
-	_, err := client.CreateFeed(testFeedURL, -1)
+	_, err := client.CreateFeed(&miniflux.FeedCreationRequest{
+		FeedURL:    testFeedURL,
+		CategoryID: -1,
+	})
 	if err == nil {
 		t.Fatal(`Feeds should not be created with inexisting category`)
+	}
+}
+
+func TestCreateFeedWithEmptyFeedURL(t *testing.T) {
+	client := createClient(t)
+	categories, err := client.Categories()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = client.CreateFeed(&miniflux.FeedCreationRequest{
+		FeedURL:    "",
+		CategoryID: categories[0].ID,
+	})
+	if err == nil {
+		t.Fatal(`Feeds should not be created with an empty feed URL`)
+	}
+}
+
+func TestCreateFeedWithInvalidFeedURL(t *testing.T) {
+	client := createClient(t)
+	categories, err := client.Categories()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = client.CreateFeed(&miniflux.FeedCreationRequest{
+		FeedURL:    "invalid",
+		CategoryID: categories[0].ID,
+	})
+	if err == nil {
+		t.Fatal(`Feeds should not be created with an invalid feed URL`)
+	}
+}
+
+func TestCreateDisabledFeed(t *testing.T) {
+	client := createClient(t)
+
+	categories, err := client.Categories()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	feedID, err := client.CreateFeed(&miniflux.FeedCreationRequest{
+		FeedURL:    testFeedURL,
+		CategoryID: categories[0].ID,
+		Disabled:   true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if feedID == 0 {
+		t.Fatalf(`Invalid feed ID, got %q`, feedID)
+	}
+
+	feed, err := client.Feed(feedID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !feed.Disabled {
+		t.Error(`The feed should be disabled`)
+	}
+}
+
+func TestCreateFeedWithDisabledCache(t *testing.T) {
+	client := createClient(t)
+
+	categories, err := client.Categories()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	feedID, err := client.CreateFeed(&miniflux.FeedCreationRequest{
+		FeedURL:         testFeedURL,
+		CategoryID:      categories[0].ID,
+		IgnoreHTTPCache: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if feedID == 0 {
+		t.Fatalf(`Invalid feed ID, got %q`, feedID)
+	}
+
+	feed, err := client.Feed(feedID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !feed.IgnoreHTTPCache {
+		t.Error(`The feed should be ignoring HTTP cache`)
+	}
+}
+
+func TestCreateFeedWithCrawlerEnabled(t *testing.T) {
+	client := createClient(t)
+
+	categories, err := client.Categories()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	feedID, err := client.CreateFeed(&miniflux.FeedCreationRequest{
+		FeedURL:    testFeedURL,
+		CategoryID: categories[0].ID,
+		Crawler:    true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if feedID == 0 {
+		t.Fatalf(`Invalid feed ID, got %q`, feedID)
+	}
+
+	feed, err := client.Feed(feedID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !feed.Crawler {
+		t.Error(`The feed should have the scraper enabled`)
+	}
+}
+
+func TestCreateFeedWithScraperRule(t *testing.T) {
+	client := createClient(t)
+
+	categories, err := client.Categories()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	feedID, err := client.CreateFeed(&miniflux.FeedCreationRequest{
+		FeedURL:      testFeedURL,
+		CategoryID:   categories[0].ID,
+		ScraperRules: "article",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if feedID == 0 {
+		t.Fatalf(`Invalid feed ID, got %q`, feedID)
+	}
+
+	feed, err := client.Feed(feedID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if feed.ScraperRules != "article" {
+		t.Error(`The feed should have the custom scraper rule saved`)
 	}
 }
 
@@ -45,8 +206,8 @@ func TestUpdateFeedURL(t *testing.T) {
 	client := createClient(t)
 	feed, _ := createFeed(t, client)
 
-	url := "test"
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{FeedURL: &url})
+	url := "https://www.example.org/feed.xml"
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{FeedURL: &url})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,15 +215,25 @@ func TestUpdateFeedURL(t *testing.T) {
 	if updatedFeed.FeedURL != url {
 		t.Fatalf(`Wrong FeedURL, got %q instead of %q`, updatedFeed.FeedURL, url)
 	}
+}
 
-	url = ""
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{FeedURL: &url})
-	if err != nil {
-		t.Fatal(err)
+func TestUpdateFeedWithEmptyFeedURL(t *testing.T) {
+	client := createClient(t)
+	feed, _ := createFeed(t, client)
+
+	url := ""
+	if _, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{FeedURL: &url}); err == nil {
+		t.Error(`Updating a feed with an empty feed URL should not be possible`)
 	}
+}
 
-	if updatedFeed.FeedURL == "" {
-		t.Fatalf(`The FeedURL should not be empty`)
+func TestUpdateFeedWithInvalidFeedURL(t *testing.T) {
+	client := createClient(t)
+	feed, _ := createFeed(t, client)
+
+	url := "invalid"
+	if _, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{FeedURL: &url}); err == nil {
+		t.Error(`Updating a feed with an invalid feed URL should not be possible`)
 	}
 }
 
@@ -70,8 +241,8 @@ func TestUpdateFeedSiteURL(t *testing.T) {
 	client := createClient(t)
 	feed, _ := createFeed(t, client)
 
-	url := "test"
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{SiteURL: &url})
+	url := "https://www.example.org/"
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{SiteURL: &url})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,15 +250,25 @@ func TestUpdateFeedSiteURL(t *testing.T) {
 	if updatedFeed.SiteURL != url {
 		t.Fatalf(`Wrong SiteURL, got %q instead of %q`, updatedFeed.SiteURL, url)
 	}
+}
 
-	url = ""
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{SiteURL: &url})
-	if err != nil {
-		t.Fatal(err)
+func TestUpdateFeedWithEmptySiteURL(t *testing.T) {
+	client := createClient(t)
+	feed, _ := createFeed(t, client)
+
+	url := ""
+	if _, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{SiteURL: &url}); err == nil {
+		t.Error(`Updating a feed with an empty site URL should not be possible`)
 	}
+}
 
-	if updatedFeed.SiteURL == "" {
-		t.Fatalf(`The SiteURL should not be empty`)
+func TestUpdateFeedWithInvalidSiteURL(t *testing.T) {
+	client := createClient(t)
+	feed, _ := createFeed(t, client)
+
+	url := "invalid"
+	if _, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{SiteURL: &url}); err == nil {
+		t.Error(`Updating a feed with an invalid site URL should not be possible`)
 	}
 }
 
@@ -96,7 +277,7 @@ func TestUpdateFeedTitle(t *testing.T) {
 	feed, _ := createFeed(t, client)
 
 	newTitle := "My new feed"
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{Title: &newTitle})
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{Title: &newTitle})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,15 +285,15 @@ func TestUpdateFeedTitle(t *testing.T) {
 	if updatedFeed.Title != newTitle {
 		t.Fatalf(`Wrong title, got %q instead of %q`, updatedFeed.Title, newTitle)
 	}
+}
 
-	newTitle = ""
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{Title: &newTitle})
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestUpdateFeedWithEmptyTitle(t *testing.T) {
+	client := createClient(t)
+	feed, _ := createFeed(t, client)
 
-	if updatedFeed.Title == "" {
-		t.Fatalf(`The Title should not be empty`)
+	title := ""
+	if _, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{Title: &title}); err == nil {
+		t.Error(`Updating a feed with an empty title should not be possible`)
 	}
 }
 
@@ -121,7 +302,7 @@ func TestUpdateFeedCrawler(t *testing.T) {
 	feed, _ := createFeed(t, client)
 
 	crawler := true
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{Crawler: &crawler})
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{Crawler: &crawler})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,7 +316,7 @@ func TestUpdateFeedCrawler(t *testing.T) {
 	}
 
 	crawler = false
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{Crawler: &crawler})
+	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{Crawler: &crawler})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +331,7 @@ func TestUpdateFeedScraperRules(t *testing.T) {
 	feed, _ := createFeed(t, client)
 
 	scraperRules := "test"
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{ScraperRules: &scraperRules})
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{ScraperRules: &scraperRules})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -160,7 +341,7 @@ func TestUpdateFeedScraperRules(t *testing.T) {
 	}
 
 	scraperRules = ""
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{ScraperRules: &scraperRules})
+	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{ScraperRules: &scraperRules})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +356,7 @@ func TestUpdateFeedRewriteRules(t *testing.T) {
 	feed, _ := createFeed(t, client)
 
 	rewriteRules := "test"
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{RewriteRules: &rewriteRules})
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{RewriteRules: &rewriteRules})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,7 +366,7 @@ func TestUpdateFeedRewriteRules(t *testing.T) {
 	}
 
 	rewriteRules = ""
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{RewriteRules: &rewriteRules})
+	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{RewriteRules: &rewriteRules})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -200,7 +381,7 @@ func TestUpdateFeedKeeplistRules(t *testing.T) {
 	feed, _ := createFeed(t, client)
 
 	keeplistRules := "test"
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{KeeplistRules: &keeplistRules})
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{KeeplistRules: &keeplistRules})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,7 +391,7 @@ func TestUpdateFeedKeeplistRules(t *testing.T) {
 	}
 
 	keeplistRules = ""
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{KeeplistRules: &keeplistRules})
+	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{KeeplistRules: &keeplistRules})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -225,7 +406,7 @@ func TestUpdateFeedUserAgent(t *testing.T) {
 	feed, _ := createFeed(t, client)
 
 	userAgent := "test"
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{UserAgent: &userAgent})
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{UserAgent: &userAgent})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -235,7 +416,7 @@ func TestUpdateFeedUserAgent(t *testing.T) {
 	}
 
 	userAgent = ""
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{UserAgent: &userAgent})
+	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{UserAgent: &userAgent})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +431,7 @@ func TestUpdateFeedUsername(t *testing.T) {
 	feed, _ := createFeed(t, client)
 
 	username := "test"
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{Username: &username})
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{Username: &username})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -260,7 +441,7 @@ func TestUpdateFeedUsername(t *testing.T) {
 	}
 
 	username = ""
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{Username: &username})
+	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{Username: &username})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -275,7 +456,7 @@ func TestUpdateFeedPassword(t *testing.T) {
 	feed, _ := createFeed(t, client)
 
 	password := "test"
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{Password: &password})
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{Password: &password})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -285,7 +466,7 @@ func TestUpdateFeedPassword(t *testing.T) {
 	}
 
 	password = ""
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{Password: &password})
+	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{Password: &password})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -304,7 +485,7 @@ func TestUpdateFeedCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModification{CategoryID: &newCategory.ID})
+	updatedFeed, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{CategoryID: &newCategory.ID})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -312,15 +493,25 @@ func TestUpdateFeedCategory(t *testing.T) {
 	if updatedFeed.Category.ID != newCategory.ID {
 		t.Fatalf(`Wrong CategoryID value, got "%v" instead of "%v"`, updatedFeed.Category.ID, newCategory.ID)
 	}
+}
+
+func TestUpdateFeedWithEmptyCategoryID(t *testing.T) {
+	client := createClient(t)
+	feed, _ := createFeed(t, client)
 
 	categoryID := int64(0)
-	updatedFeed, err = client.UpdateFeed(feed.ID, &miniflux.FeedModification{CategoryID: &categoryID})
-	if err != nil {
-		t.Fatal(err)
+	if _, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{CategoryID: &categoryID}); err == nil {
+		t.Error(`Updating a feed with an empty category should not be possible`)
 	}
+}
 
-	if updatedFeed.Category.ID == 0 {
-		t.Fatalf(`The CategoryID must defined`)
+func TestUpdateFeedWithInvalidCategoryID(t *testing.T) {
+	client := createClient(t)
+	feed, _ := createFeed(t, client)
+
+	categoryID := int64(-1)
+	if _, err := client.UpdateFeed(feed.ID, &miniflux.FeedModificationRequest{CategoryID: &categoryID}); err == nil {
+		t.Error(`Updating a feed with an invalid category should not be possible`)
 	}
 }
 
@@ -434,6 +625,48 @@ func TestGetFeeds(t *testing.T) {
 	feed, category := createFeed(t, client)
 
 	feeds, err := client.Feeds()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(feeds) != 1 {
+		t.Fatalf(`Invalid number of feeds`)
+	}
+
+	if feeds[0].ID != feed.ID {
+		t.Fatalf(`Invalid feed ID, got "%v" instead of "%v"`, feeds[0].ID, feed.ID)
+	}
+
+	if feeds[0].Title != testFeedTitle {
+		t.Fatalf(`Invalid feed title, got "%v" instead of "%v"`, feeds[0].Title, testFeedTitle)
+	}
+
+	if feeds[0].SiteURL != testWebsiteURL {
+		t.Fatalf(`Invalid site URL, got "%v" instead of "%v"`, feeds[0].SiteURL, testWebsiteURL)
+	}
+
+	if feeds[0].FeedURL != testFeedURL {
+		t.Fatalf(`Invalid feed URL, got "%v" instead of "%v"`, feeds[0].FeedURL, testFeedURL)
+	}
+
+	if feeds[0].Category.ID != category.ID {
+		t.Fatalf(`Invalid feed category ID, got "%v" instead of "%v"`, feeds[0].Category.ID, category.ID)
+	}
+
+	if feeds[0].Category.UserID != category.UserID {
+		t.Fatalf(`Invalid feed category user ID, got "%v" instead of "%v"`, feeds[0].Category.UserID, category.UserID)
+	}
+
+	if feeds[0].Category.Title != category.Title {
+		t.Fatalf(`Invalid feed category title, got "%v" instead of "%v"`, feeds[0].Category.Title, category.Title)
+	}
+}
+
+func TestGetFeedsByCategory(t *testing.T) {
+	client := createClient(t)
+	feed, category := createFeed(t, client)
+
+	feeds, err := client.CategoryFeeds(category.ID)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -7,7 +7,6 @@ package form // import "miniflux.app/ui/form"
 import (
 	"net/http"
 
-	"miniflux.app/errors"
 	"miniflux.app/model"
 )
 
@@ -15,21 +14,6 @@ import (
 type CategoryForm struct {
 	Title string
 	View  string
-}
-
-// Validate makes sure the form values are valid.
-func (c CategoryForm) Validate() error {
-	if c.Title == "" {
-		return errors.NewLocalizedError("error.title_required")
-	}
-	return nil
-}
-
-// Merge update the given category fields.
-func (c CategoryForm) Merge(category *model.Category) *model.Category {
-	category.Title = c.Title
-	category.View = c.View
-	return category
 }
 
 // NewCategoryForm returns a new CategoryForm.

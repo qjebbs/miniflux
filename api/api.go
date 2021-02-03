@@ -7,16 +7,20 @@ package api // import "miniflux.app/api"
 import (
 	"net/http"
 
-	"miniflux.app/reader/feed"
 	"miniflux.app/storage"
 	"miniflux.app/worker"
 
 	"github.com/gorilla/mux"
 )
 
+type handler struct {
+	store *storage.Storage
+	pool  *worker.Pool
+}
+
 // Serve declares API routes for the application.
-func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool, feedHandler *feed.Handler) {
-	handler := &handler{store, pool, feedHandler}
+func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
+	handler := &handler{store, pool}
 
 	sr := router.PathPrefix("/v1").Subrouter()
 	middleware := newMiddleware(store)
@@ -37,7 +41,10 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool, feedHa
 	sr.HandleFunc("/categories/{categoryID}", handler.updateCategory).Methods(http.MethodPut)
 	sr.HandleFunc("/categories/{categoryID}", handler.removeCategory).Methods(http.MethodDelete)
 	sr.HandleFunc("/categories/{categoryID}/mark-all-as-read", handler.markCategoryAsRead).Methods(http.MethodPut)
-	sr.HandleFunc("/discover", handler.getSubscriptions).Methods(http.MethodPost)
+	sr.HandleFunc("/categories/{categoryID}/feeds", handler.getCategoryFeeds).Methods(http.MethodGet)
+	sr.HandleFunc("/categories/{categoryID}/entries", handler.getCategoryEntries).Methods(http.MethodGet)
+	sr.HandleFunc("/categories/{categoryID}/entries/{entryID}", handler.getCategoryEntry).Methods(http.MethodGet)
+	sr.HandleFunc("/discover", handler.discoverSubscriptions).Methods(http.MethodPost)
 	sr.HandleFunc("/feeds", handler.createFeed).Methods(http.MethodPost)
 	sr.HandleFunc("/feeds", handler.getFeeds).Methods(http.MethodGet)
 	sr.HandleFunc("/feeds/refresh", handler.refreshAllFeeds).Methods(http.MethodPut)

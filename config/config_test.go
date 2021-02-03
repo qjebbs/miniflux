@@ -409,41 +409,6 @@ func TestDefaultCertDomainValue(t *testing.T) {
 	}
 }
 
-func TestCertCache(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("CERT_CACHE", "foobar")
-
-	parser := NewParser()
-	opts, err := parser.ParseEnvironmentVariables()
-	if err != nil {
-		t.Fatalf(`Parsing failure: %v`, err)
-	}
-
-	expected := "foobar"
-	result := opts.CertCache()
-
-	if result != expected {
-		t.Fatalf(`Unexpected CERT_CACHE value, got %q instead of %q`, result, expected)
-	}
-}
-
-func TestDefaultCertCacheValue(t *testing.T) {
-	os.Clearenv()
-
-	parser := NewParser()
-	opts, err := parser.ParseEnvironmentVariables()
-	if err != nil {
-		t.Fatalf(`Parsing failure: %v`, err)
-	}
-
-	expected := defaultCertCache
-	result := opts.CertCache()
-
-	if result != expected {
-		t.Fatalf(`Unexpected CERT_CACHE value, got %q instead of %q`, result, expected)
-	}
-}
-
 func TestDefaultCleanupFrequencyHoursValue(t *testing.T) {
 	os.Clearenv()
 
@@ -808,6 +773,24 @@ func TestDefautSchedulerCountBasedMinInterval(t *testing.T) {
 
 	if result != expected {
 		t.Fatalf(`Unexpected SCHEDULER_ENTRY_FREQUENCY_MIN_INTERVAL value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestPollingParsingErrorLimit(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("POLLING_PARSING_ERROR_LIMIT", "100")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := 100
+	result := opts.PollingParsingErrorLimit()
+
+	if result != expected {
+		t.Fatalf(`Unexpected POLLING_SCHEDULER value, got %v instead of %v`, result, expected)
 	}
 }
 

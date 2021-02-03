@@ -4,8 +4,6 @@
 
 package model // import "miniflux.app/model"
 
-import "miniflux.app/errors"
-
 // View types
 const (
 	ViewDefault = "default"
@@ -20,15 +18,4 @@ func Views() map[string]string {
 		"list":    "form.prefs.select.view_list",
 		"masonry": "form.prefs.select.view_masonry",
 	}
-}
-
-// ValidateView validates view value.
-func ValidateView(view string) error {
-	for key := range Views() {
-		if key == view {
-			return nil
-		}
-	}
-
-	return errors.NewLocalizedError("Invalid view")
 }

@@ -5,6 +5,7 @@
 package storage // import "miniflux.app/storage"
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 	"time"
@@ -181,13 +182,17 @@ func (e *EntryQueryBuilder) WithDirection(direction string) *EntryQueryBuilder {
 
 // WithLimit set the limit.
 func (e *EntryQueryBuilder) WithLimit(limit int) *EntryQueryBuilder {
-	e.limit = limit
+	if limit > 0 {
+		e.limit = limit
+	}
 	return e
 }
 
 // WithOffset set the offset.
 func (e *EntryQueryBuilder) WithOffset(offset int) *EntryQueryBuilder {
-	e.offset = offset
+	if offset > 0 {
+		e.offset = offset
+	}
 	return e
 }
 
@@ -289,7 +294,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 	entries := make(model.Entries, 0)
 	for rows.Next() {
 		var entry model.Entry
-		var iconID interface{}
+		var iconID sql.NullInt64
 		var tz string
 
 		entry.Feed = &model.Feed{}
@@ -331,10 +336,10 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			return nil, fmt.Errorf("unable to fetch entry row: %v", err)
 		}
 
-		if iconID == nil {
-			entry.Feed.Icon.IconID = 0
+		if iconID.Valid {
+			entry.Feed.Icon.IconID = iconID.Int64
 		} else {
-			entry.Feed.Icon.IconID = iconID.(int64)
+			entry.Feed.Icon.IconID = 0
 		}
 
 		// Make sure that timestamp fields contains timezone information (API)
@@ -395,11 +400,11 @@ func (e *EntryQueryBuilder) buildSorting() string {
 		parts = append(parts, fmt.Sprintf(`%s`, e.direction))
 	}
 
-	if e.limit != 0 {
+	if e.limit > 0 {
 		parts = append(parts, fmt.Sprintf(`LIMIT %d`, e.limit))
 	}
 
-	if e.offset != 0 {
+	if e.offset > 0 {
 		parts = append(parts, fmt.Sprintf(`OFFSET %d`, e.offset))
 	}
 

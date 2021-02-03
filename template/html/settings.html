@@ -14,7 +14,7 @@
     {{ end }}
 
     <label for="form-username">{{ t "form.user.label.username" }}</label>
-    <input type="text" name="username" id="form-username" value="{{ .form.Username }}" required>
+    <input type="text" name="username" id="form-username" value="{{ .form.Username }}" autocomplete="username" required>
 
     <label for="form-password">{{ t "form.user.label.password" }}</label>
     <input type="password" name="password" id="form-password" value="{{ .form.Password }}" autocomplete="new-password">
@@ -65,7 +65,7 @@
 
     <label><input type="checkbox" name="entry_swipe" value="1" {{ if .form.EntrySwipe }}checked{{ end }}> {{ t "form.prefs.label.entry_swipe" }}</label>
 
-    <label>{{t "form.prefs.label.custom_css" }}</label><textarea name="custom_css" cols="40" rows="5">{{ .form.CustomCSS }}</textarea>
+    <label>{{t "form.prefs.label.custom_css" }}</label><textarea name="custom_css" cols="40" rows="8" spellcheck="false">{{ .form.CustomCSS }}</textarea>
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button>
     </div>
@@ -73,7 +73,7 @@
 
 {{ if hasOAuth2Provider "google" }}
 <div class="panel">
-    {{ if hasKey .user.Extra "google_id" }}
+    {{ if .user.GoogleID }}
         <a href="{{ route "oauth2Unlink" "provider" "google" }}">{{ t "page.settings.unlink_google_account" }}</a>
     {{ else }}
         <a href="{{ route "oauth2Redirect" "provider" "google" }}">{{ t "page.settings.link_google_account" }}</a>
@@ -81,7 +81,7 @@
 </div>
 {{ else if hasOAuth2Provider "oidc" }}
 <div class="panel">
-    {{ if hasKey .user.Extra "oidc_id" }}
+    {{ if .user.OpenIDConnectID }}
         <a href="{{ route "oauth2Unlink" "provider" "oidc" }}">{{ t "page.settings.unlink_oidc_account" }}</a>
     {{ else }}
         <a href="{{ route "oauth2Redirect" "provider" "oidc" }}">{{ t "page.settings.link_oidc_account" }}</a>

@@ -5,57 +5,32 @@
 package api // import "miniflux.app/api"
 
 import (
-	"errors"
+	json_parser "encoding/json"
 	"net/http"
 	"time"
 
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/json"
+	"miniflux.app/model"
+	feedHandler "miniflux.app/reader/handler"
+	"miniflux.app/validator"
 )
 
 func (h *handler) createFeed(w http.ResponseWriter, r *http.Request) {
-	feedInfo, err := decodeFeedCreationRequest(r.Body)
-	if err != nil {
+	userID := request.UserID(r)
+
+	var feedCreationRequest model.FeedCreationRequest
+	if err := json_parser.NewDecoder(r.Body).Decode(&feedCreationRequest); err != nil {
 		json.BadRequest(w, r, err)
 		return
 	}
 
-	if feedInfo.FeedURL == "" {
-		json.BadRequest(w, r, errors.New("The feed_url is required"))
+	if validationErr := validator.ValidateFeedCreation(h.store, userID, &feedCreationRequest); validationErr != nil {
+		json.BadRequest(w, r, validationErr.Error())
 		return
 	}
 
-	if feedInfo.CategoryID <= 0 {
-		json.BadRequest(w, r, errors.New("The category_id is required"))
-		return
-	}
-
-	userID := request.UserID(r)
-
-	if h.store.FeedURLExists(userID, feedInfo.FeedURL) {
-		json.BadRequest(w, r, errors.New("This feed_url already exists"))
-		return
-	}
-
-	if !h.store.CategoryExists(userID, feedInfo.CategoryID) {
-		json.BadRequest(w, r, errors.New("This category_id doesn't exists or doesn't belongs to this user"))
-		return
-	}
-
-	feed, err := h.feedHandler.CreateFeed(
-		userID,
-		feedInfo.CategoryID,
-		feedInfo.FeedURL,
-		feedInfo.Crawler,
-		feedInfo.UserAgent,
-		feedInfo.Username,
-		feedInfo.Password,
-		feedInfo.ScraperRules,
-		feedInfo.RewriteRules,
-		feedInfo.BlocklistRules,
-		feedInfo.KeeplistRules,
-		feedInfo.FetchViaProxy,
-	)
+	feed, err := feedHandler.CreateFeed(h.store, userID, &feedCreationRequest)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -73,7 +48,7 @@ func (h *handler) refreshFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.feedHandler.RefreshFeed(userID, feedID)
+	err := feedHandler.RefreshFeed(h.store, userID, feedID)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -98,14 +73,14 @@ func (h *handler) refreshAllFeeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) updateFeed(w http.ResponseWriter, r *http.Request) {
-	feedID := request.RouteInt64Param(r, "feedID")
-	feedChanges, err := decodeFeedModificationRequest(r.Body)
-	if err != nil {
+	var feedModificationRequest model.FeedModificationRequest
+	if err := json_parser.NewDecoder(r.Body).Decode(&feedModificationRequest); err != nil {
 		json.BadRequest(w, r, err)
 		return
 	}
 
 	userID := request.UserID(r)
+	feedID := request.RouteInt64Param(r, "feedID")
 
 	originalFeed, err := h.store.FeedByID(userID, feedID)
 	if err != nil {
@@ -118,13 +93,12 @@ func (h *handler) updateFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	feedChanges.Update(originalFeed)
-
-	if !h.store.CategoryExists(userID, originalFeed.Category.ID) {
-		json.BadRequest(w, r, errors.New("This category_id doesn't exists or doesn't belongs to this user"))
+	if validationErr := validator.ValidateFeedModification(h.store, userID, &feedModificationRequest); validationErr != nil {
+		json.BadRequest(w, r, validationErr.Error())
 		return
 	}
 
+	feedModificationRequest.Patch(originalFeed)
 	if err := h.store.UpdateFeed(originalFeed); err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -160,6 +134,30 @@ func (h *handler) markFeedAsRead(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NoContent(w, r)
+}
+
+func (h *handler) getCategoryFeeds(w http.ResponseWriter, r *http.Request) {
+	userID := request.UserID(r)
+	categoryID := request.RouteInt64Param(r, "categoryID")
+
+	category, err := h.store.Category(userID, categoryID)
+	if err != nil {
+		json.ServerError(w, r, err)
+		return
+	}
+
+	if category == nil {
+		json.NotFound(w, r)
+		return
+	}
+
+	feeds, err := h.store.FeedsByCategoryWithCounters(userID, categoryID, false)
+	if err != nil {
+		json.ServerError(w, r, err)
+		return
+	}
+
+	json.OK(w, r, feeds)
 }
 
 func (h *handler) getFeeds(w http.ResponseWriter, r *http.Request) {

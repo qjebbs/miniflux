@@ -261,13 +261,46 @@ func TestUpdateUserTheme(t *testing.T) {
 	}
 
 	theme := "dark_serif"
-	user, err = client.UpdateUser(user.ID, &miniflux.UserModification{Theme: &theme})
+	user, err = client.UpdateUser(user.ID, &miniflux.UserModificationRequest{Theme: &theme})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if user.Theme != theme {
 		t.Fatalf(`Unable to update user Theme: got "%v" instead of "%v"`, user.Theme, theme)
+	}
+}
+
+func TestUpdateUserFields(t *testing.T) {
+	username := getRandomUsername()
+	client := miniflux.New(testBaseURL, testAdminUsername, testAdminPassword)
+	user, err := client.CreateUser(username, testStandardPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stylesheet := "body { color: red }"
+	swipe := false
+	entriesPerPage := 5
+	user, err = client.UpdateUser(user.ID, &miniflux.UserModificationRequest{
+		Stylesheet:     &stylesheet,
+		EntrySwipe:     &swipe,
+		EntriesPerPage: &entriesPerPage,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if user.Stylesheet != stylesheet {
+		t.Fatalf(`Unable to update user stylesheet: got %q instead of %q`, user.Stylesheet, stylesheet)
+	}
+
+	if user.EntrySwipe != swipe {
+		t.Fatalf(`Unable to update user EntrySwipe: got %v instead of %v`, user.EntrySwipe, swipe)
+	}
+
+	if user.EntriesPerPage != entriesPerPage {
+		t.Fatalf(`Unable to update user EntriesPerPage: got %q instead of %q`, user.EntriesPerPage, entriesPerPage)
 	}
 }
 
@@ -279,10 +312,100 @@ func TestUpdateUserThemeWithInvalidValue(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	theme := "something that doesn't exists"
-	_, err = client.UpdateUser(user.ID, &miniflux.UserModification{Theme: &theme})
+	theme := "invalid"
+	_, err = client.UpdateUser(user.ID, &miniflux.UserModificationRequest{Theme: &theme})
 	if err == nil {
 		t.Fatal(`Updating a user Theme with an invalid value should raise an error`)
+	}
+}
+
+func TestUpdateUserLanguageWithInvalidValue(t *testing.T) {
+	username := getRandomUsername()
+	client := miniflux.New(testBaseURL, testAdminUsername, testAdminPassword)
+	user, err := client.CreateUser(username, testStandardPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	language := "invalid"
+	_, err = client.UpdateUser(user.ID, &miniflux.UserModificationRequest{Language: &language})
+	if err == nil {
+		t.Fatal(`Updating a user language with an invalid value should raise an error`)
+	}
+}
+
+func TestUpdateUserTimezoneWithInvalidValue(t *testing.T) {
+	username := getRandomUsername()
+	client := miniflux.New(testBaseURL, testAdminUsername, testAdminPassword)
+	user, err := client.CreateUser(username, testStandardPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	timezone := "invalid"
+	_, err = client.UpdateUser(user.ID, &miniflux.UserModificationRequest{Timezone: &timezone})
+	if err == nil {
+		t.Fatal(`Updating a user timezone with an invalid value should raise an error`)
+	}
+}
+
+func TestUpdateUserEntriesPerPageWithInvalidValue(t *testing.T) {
+	username := getRandomUsername()
+	client := miniflux.New(testBaseURL, testAdminUsername, testAdminPassword)
+	user, err := client.CreateUser(username, testStandardPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entriesPerPage := -5
+	_, err = client.UpdateUser(user.ID, &miniflux.UserModificationRequest{EntriesPerPage: &entriesPerPage})
+	if err == nil {
+		t.Fatal(`Updating a user EntriesPerPage with an invalid value should raise an error`)
+	}
+}
+
+func TestUpdateUserEntryDirectionWithInvalidValue(t *testing.T) {
+	username := getRandomUsername()
+	client := miniflux.New(testBaseURL, testAdminUsername, testAdminPassword)
+	user, err := client.CreateUser(username, testStandardPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entryDirection := "invalid"
+	_, err = client.UpdateUser(user.ID, &miniflux.UserModificationRequest{EntryDirection: &entryDirection})
+	if err == nil {
+		t.Fatal(`Updating a user EntryDirection with an invalid value should raise an error`)
+	}
+}
+
+func TestUpdateUserPasswordWithInvalidValue(t *testing.T) {
+	username := getRandomUsername()
+	client := miniflux.New(testBaseURL, testAdminUsername, testAdminPassword)
+	user, err := client.CreateUser(username, testStandardPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	password := "short"
+	_, err = client.UpdateUser(user.ID, &miniflux.UserModificationRequest{Password: &password})
+	if err == nil {
+		t.Fatal(`Updating a user password with an invalid value should raise an error`)
+	}
+}
+
+func TestUpdateUserWithEmptyUsernameValue(t *testing.T) {
+	username := getRandomUsername()
+	client := miniflux.New(testBaseURL, testAdminUsername, testAdminPassword)
+	user, err := client.CreateUser(username, testStandardPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	newUsername := ""
+	_, err = client.UpdateUser(user.ID, &miniflux.UserModificationRequest{Username: &newUsername})
+	if err == nil {
+		t.Fatal(`Updating a user with an empty username should raise an error`)
 	}
 }
 
@@ -296,7 +419,7 @@ func TestCannotCreateDuplicateUser(t *testing.T) {
 
 	_, err = client.CreateUser(username, testStandardPassword, false)
 	if err == nil {
-		t.Fatal(`Duplicate users should not be allowed`)
+		t.Fatal(`Duplicated users should not be allowed`)
 	}
 }
 
@@ -339,21 +462,55 @@ func TestCannotGetUserAsNonAdmin(t *testing.T) {
 }
 
 func TestCannotUpdateUserAsNonAdmin(t *testing.T) {
-	username := getRandomUsername()
-	client := miniflux.New(testBaseURL, testAdminUsername, testAdminPassword)
-	user, err := client.CreateUser(username, testStandardPassword, false)
+	adminClient := miniflux.New(testBaseURL, testAdminUsername, testAdminPassword)
+
+	usernameA := getRandomUsername()
+	userA, err := adminClient.CreateUser(usernameA, testStandardPassword, false)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	client = miniflux.New(testBaseURL, username, testStandardPassword)
-	_, err = client.UpdateUser(user.ID, &miniflux.UserModification{})
+	usernameB := getRandomUsername()
+	_, err = adminClient.CreateUser(usernameB, testStandardPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entriesPerPage := 10
+	userAClient := miniflux.New(testBaseURL, usernameA, testStandardPassword)
+	userAAfterUpdate, err := userAClient.UpdateUser(userA.ID, &miniflux.UserModificationRequest{EntriesPerPage: &entriesPerPage})
+	if err != nil {
+		t.Fatal(`Standard users should be able to update themselves`)
+	}
+
+	if userAAfterUpdate.EntriesPerPage != entriesPerPage {
+		t.Fatalf(`The EntriesPerPage field of this user should be updated`)
+	}
+
+	isAdmin := true
+	_, err = userAClient.UpdateUser(userA.ID, &miniflux.UserModificationRequest{IsAdmin: &isAdmin})
 	if err == nil {
-		t.Fatal(`Standard users should not be able to update any users`)
+		t.Fatal(`Standard users should not be able to become admin`)
+	}
+
+	userBClient := miniflux.New(testBaseURL, usernameB, testStandardPassword)
+	_, err = userBClient.UpdateUser(userA.ID, &miniflux.UserModificationRequest{})
+	if err == nil {
+		t.Fatal(`Standard users should not be able to update other users`)
 	}
 
 	if err != miniflux.ErrForbidden {
 		t.Fatal(`A "Forbidden" error should be raised`)
+	}
+
+	stylesheet := "test"
+	userC, err := adminClient.UpdateUser(userA.ID, &miniflux.UserModificationRequest{Stylesheet: &stylesheet})
+	if err != nil {
+		t.Fatal(`Admin users should be able to update any users`)
+	}
+
+	if userC.Stylesheet != stylesheet {
+		t.Fatalf(`The Stylesheet field of this user should be updated`)
 	}
 }
 

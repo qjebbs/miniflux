@@ -17,13 +17,13 @@ import (
 )
 
 func (h *handler) updateUser(w http.ResponseWriter, r *http.Request) {
-	user, err := h.store.UserByID(request.UserID(r))
+	loggedUser, err := h.store.UserByID(request.UserID(r))
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
 	}
 
-	if !user.IsAdmin {
+	if !loggedUser.IsAdmin {
 		html.Forbidden(w, r)
 		return
 	}
@@ -46,9 +46,9 @@ func (h *handler) updateUser(w http.ResponseWriter, r *http.Request) {
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("menu", "settings")
-	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
+	view.Set("user", loggedUser)
+	view.Set("countUnread", h.store.CountUnreadEntries(loggedUser.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID, nsfw))
 	view.Set("selected_user", selectedUser)
 	view.Set("form", userForm)
 

@@ -15,10 +15,11 @@ import (
 	"miniflux.app/ui/form"
 	"miniflux.app/ui/session"
 	"miniflux.app/ui/view"
+	"miniflux.app/validator"
 )
 
 func (h *handler) saveCategory(w http.ResponseWriter, r *http.Request) {
-	user, err := h.store.UserByID(request.UserID(r))
+	loggedUser, err := h.store.UserByID(request.UserID(r))
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
@@ -31,35 +32,23 @@ func (h *handler) saveCategory(w http.ResponseWriter, r *http.Request) {
 	view := view.New(h.tpl, r, sess)
 	view.Set("form", categoryForm)
 	view.Set("menu", "categories")
-	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
+	view.Set("user", loggedUser)
+	view.Set("countUnread", h.store.CountUnreadEntries(loggedUser.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID, nsfw))
 
-	if err := categoryForm.Validate(); err != nil {
-		view.Set("errorMessage", err.Error())
+	categoryRequest := &model.CategoryRequest{
+		Title: categoryForm.Title,
+		View:  categoryForm.View,
+	}
+
+	if validationErr := validator.ValidateCategoryCreation(h.store, loggedUser.ID, categoryRequest); validationErr != nil {
+		view.Set("errorMessage", validationErr.TranslationKey)
 		html.OK(w, r, view.Render("create_category"))
 		return
 	}
 
-	duplicateCategory, err := h.store.CategoryByTitle(user.ID, categoryForm.Title)
-	if err != nil {
-		html.ServerError(w, r, err)
-		return
-	}
-
-	if duplicateCategory != nil {
-		view.Set("errorMessage", "error.category_already_exists")
-		html.OK(w, r, view.Render("create_category"))
-		return
-	}
-
-	category := model.Category{
-		Title:  categoryForm.Title,
-		View:   categoryForm.View,
-		UserID: user.ID,
-	}
-
-	if err = h.store.CreateCategory(&category); err != nil {
+	if _, err = h.store.CreateCategory(loggedUser.ID, categoryRequest); err != nil {
 		logger.Error("[UI:SaveCategory] %v", err)
 		view.Set("errorMessage", "error.unable_to_create_category")
 		html.OK(w, r, view.Render("create_category"))

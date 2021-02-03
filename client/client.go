@@ -96,7 +96,11 @@ func (c *Client) UserByUsername(username string) (*User, error) {
 
 // CreateUser creates a new user in the system.
 func (c *Client) CreateUser(username, password string, isAdmin bool) (*User, error) {
-	body, err := c.request.Post("/v1/users", &User{Username: username, Password: password, IsAdmin: isAdmin})
+	body, err := c.request.Post("/v1/users", &UserCreationRequest{
+		Username: username,
+		Password: password,
+		IsAdmin:  isAdmin,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +116,7 @@ func (c *Client) CreateUser(username, password string, isAdmin bool) (*User, err
 }
 
 // UpdateUser updates a user in the system.
-func (c *Client) UpdateUser(userID int64, userChanges *UserModification) (*User, error) {
+func (c *Client) UpdateUser(userID int64, userChanges *UserModificationRequest) (*User, error) {
 	body, err := c.request.Put(fmt.Sprintf("/v1/users/%d", userID), userChanges)
 	if err != nil {
 		return nil, err
@@ -219,6 +223,23 @@ func (c *Client) MarkCategoryAsRead(categoryID int64) error {
 	return err
 }
 
+// CategoryFeeds gets feeds of a cateogry.
+func (c *Client) CategoryFeeds(categoryID int64) (Feeds, error) {
+	body, err := c.request.Get(fmt.Sprintf("/v1/categories/%d/feeds", categoryID))
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	var feeds Feeds
+	decoder := json.NewDecoder(body)
+	if err := decoder.Decode(&feeds); err != nil {
+		return nil, fmt.Errorf("miniflux: response error (%v)", err)
+	}
+
+	return feeds, nil
+}
+
 // DeleteCategory removes a category.
 func (c *Client) DeleteCategory(categoryID int64) error {
 	return c.request.Delete(fmt.Sprintf("/v1/categories/%d", categoryID))
@@ -281,11 +302,8 @@ func (c *Client) Feed(feedID int64) (*Feed, error) {
 }
 
 // CreateFeed creates a new feed.
-func (c *Client) CreateFeed(url string, categoryID int64) (int64, error) {
-	body, err := c.request.Post("/v1/feeds", map[string]interface{}{
-		"feed_url":    url,
-		"category_id": categoryID,
-	})
+func (c *Client) CreateFeed(feedCreationRequest *FeedCreationRequest) (int64, error) {
+	body, err := c.request.Post("/v1/feeds", feedCreationRequest)
 	if err != nil {
 		return 0, err
 	}
@@ -305,7 +323,7 @@ func (c *Client) CreateFeed(url string, categoryID int64) (int64, error) {
 }
 
 // UpdateFeed updates a feed.
-func (c *Client) UpdateFeed(feedID int64, feedChanges *FeedModification) (*Feed, error) {
+func (c *Client) UpdateFeed(feedID int64, feedChanges *FeedModificationRequest) (*Feed, error) {
 	body, err := c.request.Put(fmt.Sprintf("/v1/feeds/%d", feedID), feedChanges)
 	if err != nil {
 		return nil, err
@@ -313,8 +331,7 @@ func (c *Client) UpdateFeed(feedID int64, feedChanges *FeedModification) (*Feed,
 	defer body.Close()
 
 	var f *Feed
-	decoder := json.NewDecoder(body)
-	if err := decoder.Decode(&f); err != nil {
+	if err := json.NewDecoder(body).Decode(&f); err != nil {
 		return nil, fmt.Errorf("miniflux: response error (%v)", err)
 	}
 
@@ -378,6 +395,23 @@ func (c *Client) FeedEntry(feedID, entryID int64) (*Entry, error) {
 	return entry, nil
 }
 
+// CategoryEntry gets a single category entry.
+func (c *Client) CategoryEntry(categoryID, entryID int64) (*Entry, error) {
+	body, err := c.request.Get(fmt.Sprintf("/v1/categories/%d/entries/%d", categoryID, entryID))
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	var entry *Entry
+	decoder := json.NewDecoder(body)
+	if err := decoder.Decode(&entry); err != nil {
+		return nil, fmt.Errorf("miniflux: response error (%v)", err)
+	}
+
+	return entry, nil
+}
+
 // Entry gets a single entry.
 func (c *Client) Entry(entryID int64) (*Entry, error) {
 	body, err := c.request.Get(fmt.Sprintf("/v1/entries/%d", entryID))
@@ -417,6 +451,25 @@ func (c *Client) Entries(filter *Filter) (*EntryResultSet, error) {
 // FeedEntries fetch feed entries.
 func (c *Client) FeedEntries(feedID int64, filter *Filter) (*EntryResultSet, error) {
 	path := buildFilterQueryString(fmt.Sprintf("/v1/feeds/%d/entries", feedID), filter)
+
+	body, err := c.request.Get(path)
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	var result EntryResultSet
+	decoder := json.NewDecoder(body)
+	if err := decoder.Decode(&result); err != nil {
+		return nil, fmt.Errorf("miniflux: response error (%v)", err)
+	}
+
+	return &result, nil
+}
+
+// CategoryEntries fetch entries of a category.
+func (c *Client) CategoryEntries(categoryID int64, filter *Filter) (*EntryResultSet, error) {
+	path := buildFilterQueryString(fmt.Sprintf("/v1/categories/%d/entries", categoryID), filter)
 
 	body, err := c.request.Get(path)
 	if err != nil {

@@ -5,6 +5,7 @@
 package api // import "miniflux.app/api"
 
 import (
+	json_parser "encoding/json"
 	"errors"
 	"net/http"
 	"time"
@@ -13,7 +14,23 @@ import (
 	"miniflux.app/http/response/json"
 	"miniflux.app/model"
 	"miniflux.app/storage"
+	"miniflux.app/validator"
 )
+
+func getEntryFromBuilder(w http.ResponseWriter, r *http.Request, b *storage.EntryQueryBuilder) {
+	entry, err := b.GetEntry()
+	if err != nil {
+		json.ServerError(w, r, err)
+		return
+	}
+
+	if entry == nil {
+		json.NotFound(w, r)
+		return
+	}
+
+	json.OK(w, r, entry)
+}
 
 func (h *handler) getFeedEntry(w http.ResponseWriter, r *http.Request) {
 	feedID := request.RouteInt64Param(r, "feedID")
@@ -23,18 +40,18 @@ func (h *handler) getFeedEntry(w http.ResponseWriter, r *http.Request) {
 	builder.WithFeedID(feedID)
 	builder.WithEntryID(entryID)
 
-	entry, err := builder.GetEntry()
-	if err != nil {
-		json.ServerError(w, r, err)
-		return
-	}
+	getEntryFromBuilder(w, r, builder)
+}
 
-	if entry == nil {
-		json.NotFound(w, r)
-		return
-	}
+func (h *handler) getCategoryEntry(w http.ResponseWriter, r *http.Request) {
+	categoryID := request.RouteInt64Param(r, "categoryID")
+	entryID := request.RouteInt64Param(r, "entryID")
 
-	json.OK(w, r, entry)
+	builder := h.store.NewEntryQueryBuilder(request.UserID(r))
+	builder.WithCategoryID(categoryID)
+	builder.WithEntryID(entryID)
+
+	getEntryFromBuilder(w, r, builder)
 }
 
 func (h *handler) getEntry(w http.ResponseWriter, r *http.Request) {
@@ -42,60 +59,54 @@ func (h *handler) getEntry(w http.ResponseWriter, r *http.Request) {
 	builder := h.store.NewEntryQueryBuilder(request.UserID(r))
 	builder.WithEntryID(entryID)
 
-	entry, err := builder.GetEntry()
-	if err != nil {
-		json.ServerError(w, r, err)
-		return
-	}
-
-	if entry == nil {
-		json.NotFound(w, r)
-		return
-	}
-
-	json.OK(w, r, entry)
+	getEntryFromBuilder(w, r, builder)
 }
 
 func (h *handler) getFeedEntries(w http.ResponseWriter, r *http.Request) {
 	feedID := request.RouteInt64Param(r, "feedID")
-	h.findEntries(w, r, feedID)
+	h.findEntries(w, r, feedID, 0)
+}
+
+func (h *handler) getCategoryEntries(w http.ResponseWriter, r *http.Request) {
+	categoryID := request.RouteInt64Param(r, "categoryID")
+	h.findEntries(w, r, 0, categoryID)
 }
 
 func (h *handler) getEntries(w http.ResponseWriter, r *http.Request) {
-	h.findEntries(w, r, 0)
+	h.findEntries(w, r, 0, 0)
 }
 
-func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int64) {
+func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int64, categoryID int64) {
 	statuses := request.QueryStringParamList(r, "status")
 	for _, status := range statuses {
-		if err := model.ValidateEntryStatus(status); err != nil {
+		if err := validator.ValidateEntryStatus(status); err != nil {
 			json.BadRequest(w, r, err)
 			return
 		}
 	}
 
 	order := request.QueryStringParam(r, "order", model.DefaultSortingOrder)
-	if err := model.ValidateEntryOrder(order); err != nil {
+	if err := validator.ValidateEntryOrder(order); err != nil {
 		json.BadRequest(w, r, err)
 		return
 	}
 
 	direction := request.QueryStringParam(r, "direction", model.DefaultSortingDirection)
-	if err := model.ValidateDirection(direction); err != nil {
+	if err := validator.ValidateDirection(direction); err != nil {
 		json.BadRequest(w, r, err)
 		return
 	}
 
 	limit := request.QueryIntParam(r, "limit", 100)
 	offset := request.QueryIntParam(r, "offset", 0)
-	if err := model.ValidateRange(offset, limit); err != nil {
+	if err := validator.ValidateRange(offset, limit); err != nil {
 		json.BadRequest(w, r, err)
 		return
 	}
 
 	userID := request.UserID(r)
-	categoryID := request.QueryInt64Param(r, "category_id", 0)
-	if categoryID > 0 && !h.store.CategoryExists(userID, categoryID) {
+	categoryID = request.QueryInt64Param(r, "category_id", categoryID)
+	if categoryID > 0 && !h.store.CategoryIDExists(userID, categoryID) {
 		json.BadRequest(w, r, errors.New("Invalid category ID"))
 		return
 	}
@@ -132,18 +143,18 @@ func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int
 }
 
 func (h *handler) setEntryStatus(w http.ResponseWriter, r *http.Request) {
-	entryIDs, status, err := decodeEntryStatusRequest(r.Body)
-	if err != nil {
-		json.BadRequest(w, r, errors.New("Invalid JSON payload"))
-		return
-	}
-
-	if err := model.ValidateEntryStatus(status); err != nil {
+	var entriesStatusUpdateRequest model.EntriesStatusUpdateRequest
+	if err := json_parser.NewDecoder(r.Body).Decode(&entriesStatusUpdateRequest); err != nil {
 		json.BadRequest(w, r, err)
 		return
 	}
 
-	if err := h.store.SetEntriesStatus(request.UserID(r), entryIDs, status); err != nil {
+	if err := validator.ValidateEntriesStatusUpdateRequest(&entriesStatusUpdateRequest); err != nil {
+		json.BadRequest(w, r, err)
+		return
+	}
+
+	if err := h.store.SetEntriesStatus(request.UserID(r), entriesStatusUpdateRequest.EntryIDs, entriesStatusUpdateRequest.Status); err != nil {
 		json.ServerError(w, r, err)
 		return
 	}

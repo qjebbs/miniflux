@@ -4,52 +4,31 @@
 
 package model // import "miniflux.app/model"
 
-import (
-	"errors"
-	"fmt"
-)
+import "fmt"
 
-// Category represents a category in the system.
+// Category represents a feed category.
 type Category struct {
 	ID        int64  `json:"id,omitempty"`
 	Title     string `json:"title,omitempty"`
 	UserID    int64  `json:"user_id,omitempty"`
 	FeedCount int    `json:"nb_feeds,omitempty"`
-	View      string `json:"view"`
+	View      string `json:"view,omitempty"`
 }
 
 func (c *Category) String() string {
 	return fmt.Sprintf("ID=%d, UserID=%d, Title=%s", c.ID, c.UserID, c.Title)
 }
 
-// ValidateCategoryCreation validates a category during the creation.
-func (c Category) ValidateCategoryCreation() error {
-	if c.Title == "" {
-		return errors.New("The title is mandatory")
-	}
-
-	if c.UserID == 0 {
-		return errors.New("The userID is mandatory")
-	}
-
-	return nil
+// CategoryRequest represents the request to create or update a category.
+type CategoryRequest struct {
+	Title string `json:"title"`
+	View  string `json:"view"`
 }
 
-// ValidateCategoryModification validates a category during the modification.
-func (c Category) ValidateCategoryModification() error {
-	if c.Title == "" {
-		return errors.New("The title is mandatory")
-	}
-
-	if c.UserID == 0 {
-		return errors.New("The userID is mandatory")
-	}
-
-	if c.ID <= 0 {
-		return errors.New("The ID is mandatory")
-	}
-
-	return nil
+// Patch updates category fields.
+func (cr *CategoryRequest) Patch(category *Category) {
+	category.Title = cr.Title
+	category.View = cr.View
 }
 
 // Categories represents a list of categories.

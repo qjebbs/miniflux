@@ -152,6 +152,9 @@ type FeedModificationRequest struct {
 	Disabled        *bool   `json:"disabled"`
 	IgnoreHTTPCache *bool   `json:"ignore_http_cache"`
 	FetchViaProxy   *bool   `json:"fetch_via_proxy"`
+	View            *string `json:"view"`
+	NSFW            *bool   `json:"nsfw"`
+	CacheMedia      *bool   `json:"cache_media"`
 }
 
 // Patch updates a feed with modified values.
@@ -214,6 +217,18 @@ func (f *FeedModificationRequest) Patch(feed *Feed) {
 
 	if f.FetchViaProxy != nil {
 		feed.FetchViaProxy = *f.FetchViaProxy
+	}
+
+	if f.View != nil {
+		feed.View = *f.View
+	}
+
+	if f.NSFW != nil {
+		feed.NSFW = *f.NSFW
+	}
+
+	if f.CacheMedia != nil {
+		feed.CacheMedia = *f.CacheMedia
 	}
 }
 

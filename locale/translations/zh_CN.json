@@ -287,6 +287,8 @@
     "error.site_url_not_empty": "源网站的网址不能为空。",
     "error.feed_title_not_empty": "订阅源的标题不能为空。",
     "error.feed_category_not_found": "此类别不存在或不属于该用户。",
+    "error.feed_invalid_blocklist_rule": "阻止列表规则无效。",
+    "error.feed_invalid_keeplist_rule": "保留列表规则无效。",
     "error.user_mandatory_fields": "必须填写用户名",
     "error.entry_mandatory_fields": "必须填写网址和源",
     "error.entry_existed": "无法创建文章，该文章在指定源中已存在。",

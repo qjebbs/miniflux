@@ -291,6 +291,8 @@
     "error.site_url_not_empty": "サイトのURLを空にすることはできません。",
     "error.feed_title_not_empty": "フィードのタイトルを空にすることはできません。",
     "error.feed_category_not_found": "このカテゴリは存在しないか、このユーザーに属していません。",
+    "error.feed_invalid_blocklist_rule": "ブロックリストルールが無効です。",
+    "error.feed_invalid_keeplist_rule": "リストの保持ルールが無効です。",
     "error.user_mandatory_fields": "ユーザー名が必要です。",
     "error.entry_mandatory_fields": "The URL and the feed are mandatory.",
     "error.entry_existed": "Cannot create article, it already exists in the feed.",

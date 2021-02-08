@@ -291,6 +291,8 @@
     "error.site_url_not_empty": "L'URL du site ne peut pas être vide.",
     "error.feed_title_not_empty": "Le titre du flux ne peut pas être vide.",
     "error.feed_category_not_found": "Cette catégorie n'existe pas ou n'appartient pas à cet utilisateur.",
+    "error.feed_invalid_blocklist_rule": "La règle de blocage n'est pas valide.",
+    "error.feed_invalid_keeplist_rule": "La règle d'autorisation n'est pas valide.",
     "error.user_mandatory_fields": "Le nom d'utilisateur est obligatoire.",
     "error.entry_mandatory_fields": "The URL and the feed are mandatory.",
     "error.entry_existed": "Cannot create article, it already exists in the feed.",

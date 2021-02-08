@@ -291,6 +291,8 @@
     "error.site_url_not_empty": "O URL do site não pode estar vazio.",
     "error.feed_title_not_empty": "O título do feed não pode estar vazio.",
     "error.feed_category_not_found": "Esta categoria não existe ou não pertence a este usuário.",
+    "error.feed_invalid_blocklist_rule": "A regra da lista de bloqueio é inválida.",
+    "error.feed_invalid_keeplist_rule": "A regra de manutenção da lista é inválida.",
     "error.user_mandatory_fields": "O nome de usuário é obrigatório.",
     "error.entry_mandatory_fields": "The URL and the feed are mandatory.",
     "error.entry_existed": "Cannot create article, it already exists in the feed.",

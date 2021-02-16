@@ -17,6 +17,7 @@ var templateViewsMap = map[string]string{
         <li><strong>{{ t "page.about.version" }}</strong> {{ .version }}</li>
         <li><strong>Git Commit</strong> {{ .commit }}</li>
         <li><strong>{{ t "page.about.build_date" }}</strong> {{ .build_date }}</li>
+        {{ if .user.IsAdmin }}<li><strong>{{ t "page.about.postgres_version" }}</strong> {{ .postgres_version }}</li>{{ end }}
     </ul>
 </div>
 
@@ -2097,7 +2098,7 @@ var templateViewsMap = map[string]string{
 }
 
 var templateViewsMapChecksums = map[string]string{
-	"about":               "ed362f506b931186b2273655e3264110225154e7756e29d49ba4ede442caffc9",
+	"about":               "ec7987f2612764363a07fa61bdbaacd3ccaa12f567b84677bbd20caf026fe5b2",
 	"add_entry":           "5f94aa53c079c9551bf006533b56b134cc901c7ab8caec63e826f2d6807dff98",
 	"add_subscription":    "bc0f878b37692a00d51e834536f211843a59703991d2a743ef204b9d6ae38549",
 	"api_keys":            "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",

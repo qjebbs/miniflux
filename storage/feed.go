@@ -79,6 +79,17 @@ func (s *Storage) CountFeeds(userID int64) int {
 	return result
 }
 
+// DatabaseVersion returns the version of the database which is in use
+func (s *Storage) DatabaseVersion() string {
+	var dbVersion string
+	err := s.db.QueryRow(`SELECT current_setting('server_version')`).Scan(&dbVersion)
+	if err != nil {
+		return err.Error()
+	}
+
+	return dbVersion
+}
+
 // CountUserFeedsWithErrors returns the number of feeds with parse errors that belong to the given user.
 // If nsfw is enabled, it doesn't take nsfw feeds into count
 func (s *Storage) CountUserFeedsWithErrors(userID int64, nsfw bool) int {

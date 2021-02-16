@@ -139,6 +139,7 @@ var translations = map[string]string{
     "page.about.author": "Autor:",
     "page.about.license": "Lizenz:",
     "page.about.global_config_options": "Globale Konfigurationsoptionen",
+    "page.about.postgres_version": "Postgres Version:",
     "page.add_feed.title": "Neues Abonnement",
     "page.add_feed.no_category": "Es ist keine Kategorie vorhanden. Wenigstens eine Kategorie muss angelegt sein.",
     "page.add_feed.label.url": "URL",
@@ -434,8 +435,7 @@ var translations = map[string]string{
     "You are not authorized to access this resource (invalid username/password)": "Sie sind nicht berechtigt, auf diese Ressource zuzugreifen (Benutzername/Passwort ungültig)",
     "Unable to fetch this resource (Status Code = %d)": "Ressource konnte nicht abgerufen werden (code=%d)",
     "Resource not found (404), this feed doesn't exists anymore, check the feed URL": "Ressource nicht gefunden (404), dieses Abonnement existiert nicht mehr, überprüfen Sie die Abonnement-URL"
-}
-`,
+}`,
 	"en_US": `{
     "confirm.question": "Are you sure?",
     "confirm.yes": "yes",
@@ -572,6 +572,7 @@ var translations = map[string]string{
     "page.about.author": "Author:",
     "page.about.license": "License:",
     "page.about.global_config_options": "Global configuration options",
+    "page.about.postgres_version": "Postgres version:",
     "page.add_feed.title": "New Subscription",
     "page.add_feed.no_category": "There is no category. You must have at least one category.",
     "page.add_feed.label.url": "URL",
@@ -984,6 +985,7 @@ var translations = map[string]string{
     "page.about.author": "Autor:",
     "page.about.license": "Licencia:",
     "page.about.global_config_options": "Opciones de configuración global",
+    "page.about.postgres_version": "Postgres versión:",
     "page.add_feed.title": "Nueva suscripción",
     "page.add_feed.no_category": "No hay categoría. Debe tener al menos una categoría.",
     "page.add_feed.label.url": "URL",
@@ -1259,8 +1261,7 @@ var translations = map[string]string{
         "hace %d año",
         "hace %d años"
     ]
-}
-`,
+}`,
 	"fr_FR": `{
     "confirm.question": "Êtes-vous sûr ?",
     "confirm.yes": "oui",
@@ -1397,6 +1398,7 @@ var translations = map[string]string{
     "page.about.author": "Auteur :",
     "page.about.license": "Licence :",
     "page.about.global_config_options": "Options de configuration globales",
+    "page.about.postgres_version": "Version de Postgresql :",
     "page.add_feed.title": "Nouvel Abonnement",
     "page.add_feed.no_category": "Il n'y a aucune catégorie. Vous devez avoir au moins une catégorie.",
     "page.add_feed.label.url": "Lien",
@@ -1829,6 +1831,7 @@ var translations = map[string]string{
     "page.about.author": "Autore:",
     "page.about.license": "Licenza:",
     "page.about.global_config_options": "Opzioni di configurazione globali",
+    "page.about.postgres_version": "Postgres versione:",
     "page.add_feed.title": "Nuovo feed",
     "page.add_feed.no_category": "Nessuna categoria selezionata. Devi scegliere almeno una categoria.",
     "page.add_feed.label.url": "URL",
@@ -2104,8 +2107,7 @@ var translations = map[string]string{
         "%d anno fa",
         "%d anni fa"
     ]
-}
-`,
+}`,
 	"ja_JP": `{
     "confirm.question": "よろしいですか?",
     "confirm.yes": "はい",
@@ -2242,6 +2244,7 @@ var translations = map[string]string{
     "page.about.author": "作者:",
     "page.about.license": "ライセンス:",
     "page.about.global_config_options": "グローバル構成オプション",
+    "page.about.postgres_version": "Postgres バージョン:",
     "page.add_feed.title": "新規購読",
     "page.add_feed.no_category": "カテゴリが存在しません。 少なくとも1つのカテゴリが必要です。",
     "page.add_feed.label.url": "URL",
@@ -2517,8 +2520,7 @@ var translations = map[string]string{
         "%d 年前",
         "%d 年前"
     ]
-}
-`,
+}`,
 	"nl_NL": `{
     "confirm.question": "Weet je het zeker?",
     "confirm.yes": "ja",
@@ -2656,6 +2658,7 @@ var translations = map[string]string{
     "page.about.author": "Auteur:",
     "page.about.license": "Licentie:",
     "page.about.global_config_options": "globale configuratie-opties",
+    "page.about.postgres_version": "Postgres versie:",
     "page.add_feed.title": "Nieuwe feed",
     "page.add_feed.no_category": "Er zijn geen categorieën. Je moet op zijn minst één caterogie hebben.",
     "page.add_feed.label.url": "URL",
@@ -2948,8 +2951,7 @@ var translations = map[string]string{
     "This website is temporarily unreachable (original error: %q)": "Deze website is tijdelijk onbereikbaar (originele error: %q)",
     "This website is permanently unreachable (original error: %q)": "Deze website is permanent onbereikbaar (originele error: %q)",
     "Website unreachable, the request timed out after %d seconds": "Website onbereikbaar, de request gaf een timeout na %d seconden"
-}
-`,
+}`,
 	"pl_PL": `{
     "confirm.question": "Czy jesteś pewny?",
     "confirm.yes": "tak",
@@ -3087,6 +3089,7 @@ var translations = map[string]string{
     "page.about.build_date": "Data opracowania:",
     "page.about.author": "Autor:",
     "page.about.license": "Licencja:",
+    "page.about.postgres_version": "Postgres wersja:",
     "page.about.global_config_options": "globalne opcje konfiguracji",
     "page.add_feed.title": "Nowa subskrypcja",
     "page.add_feed.no_category": "Nie ma żadnej kategorii. Musisz mieć co najmniej jedną kategorię.",
@@ -3387,8 +3390,7 @@ var translations = map[string]string{
     "This website is temporarily unreachable (original error: %q)": "Ta strona jest tymczasowo niedostępna (błąd: %q)",
     "This website is permanently unreachable (original error: %q)": "Ta strona jest niedostępna (błąd: %q)",
     "Website unreachable, the request timed out after %d seconds": "Strona internetowa nieosiągalna, żądanie wygasło po %d sekundach"
-}
-`,
+}`,
 	"pt_BR": `{
     "confirm.question": "Tem certeza?",
     "confirm.yes": "Sim",
@@ -3525,6 +3527,7 @@ var translations = map[string]string{
     "page.about.author": "Autor:",
     "page.about.license": "Licença:",
     "page.about.global_config_options": "opções de configuração global",
+    "page.about.postgres_version": "Postgres versão:",
     "page.add_feed.title": "Nova inscrição",
     "page.add_feed.no_category": "Não existe uma categoria. Deve existir pelo menos uma categoria.",
     "page.add_feed.label.url": "URL",
@@ -3938,6 +3941,7 @@ var translations = map[string]string{
     "page.about.build_date": "Дата сборки:",
     "page.about.author": "Автор:",
     "page.about.license": "Лицензия:",
+    "page.about.postgres_version": "Postgres bерсия:",
     "page.about.global_config_options": "глобальные параметры конфигурации",
     "page.add_feed.title": "Новая подписка",
     "page.add_feed.no_category": "Категории отсутствуют. У вас должна быть хотя бы одна категория.",
@@ -4220,8 +4224,7 @@ var translations = map[string]string{
         "%d года назад",
         "%d лет назад"
     ]
-}
-`,
+}`,
 	"zh_CN": `{
     "confirm.question": "您确认吗？",
     "confirm.yes": "是",
@@ -4355,6 +4358,7 @@ var translations = map[string]string{
     "page.about.build_date": "构建日期：",
     "page.about.author": "作者：",
     "page.about.license": "协议：",
+    "page.about.postgres_version": "Postgres 版本号：",
     "page.about.global_config_options": "全局配置选项",
     "page.add_feed.title": "新增订阅",
     "page.add_feed.no_category": "没有类别，您必须至少有一个类别",
@@ -4646,15 +4650,15 @@ var translations = map[string]string{
 }
 
 var translationsChecksums = map[string]string{
-	"de_DE": "8685f43ad65f8d54d4ec4697a63df41eadf86d9e9a0f4c1d07379730bbc7544b",
-	"en_US": "48ef7c12163885e39b96df81bb524e432bc1bc92cd3e098c2cf964149ff0b6f5",
-	"es_ES": "d350879c59385a7392fff3ea7d07fd0c68c04872837400f195c5b71fe1f2a5a7",
-	"fr_FR": "cf1aa8068d28dd1c7a68f7de9f95911736e0a16a48567eede63f7275214e58ff",
-	"it_IT": "19181db91982b8e2bfe63c23cd0ddb833b20d58f93a96c4562871c4a31278773",
-	"ja_JP": "1af8187a1752f449c466d86319415d367fb36a6c5ca87bd99599d3453aa6dde0",
-	"nl_NL": "07fbb2f79107e789ad9a3f5dae4963a916720b75e31b6c40837af9a65093328d",
-	"pl_PL": "1e66d424d78a597ac6bc1ce5eb8a43c9120c2216299b9868f177f2a659def15f",
-	"pt_BR": "20eb1f92de168dc3975855227aa4c56d2e4a41776f4c3daa5b6b41a110f0dca9",
-	"ru_RU": "b496b786209103935bf01175eddb0e25c3d624d94e324bea565080b6db8e4b56",
-	"zh_CN": "8b61de0ef5118a8ae8bad034f7f40183b4f6c1aabe257e9c1c06a5ac87fff148",
+	"de_DE": "068fdaa24f2f6ffbc3ffffb651a378b976ee7388ad7e212f585f071f929c66ea",
+	"en_US": "7121614396bf2abb147b7c01b23003c7dbe5ed69915579a721f34ef1b78dc263",
+	"es_ES": "95e0206ed98ac52b2c44dcf4f9e576cb37a80a136341f277c041f168b3c006a4",
+	"fr_FR": "b7d4a969755493ce643af1eb8fd3d74f06040bec340c0d4ef7532b7f89280018",
+	"it_IT": "f53f24908ea29e30c4aa1de4f5ce23268a952f5d210215dc4206e55e15997d34",
+	"ja_JP": "6c930dff3c908b59edbb8fb6604782ae8661eb506212a7a826de780bf42e432b",
+	"nl_NL": "c5d6ee4530669f716e06111fd30fb1dbf10656b17657d26aee118de7869f9a63",
+	"pl_PL": "ad9762f244f3c822fb7f5f41b5e31965ac50c8d2c5da5861325f7f98b1ad23a0",
+	"pt_BR": "6a1bf3313445bbef9e96a9f0a024cd1e8092b90df300430b83586c551a1ffe95",
+	"ru_RU": "25b71575e0f82921b57f05c7aa0a59db4e220fc58a9f50cedb66f0f1b80d2e90",
+	"zh_CN": "5dfd674d02c341845d29b643c3e787b45f5e247d931a5ec1edbdb7723e9329d2",
 }

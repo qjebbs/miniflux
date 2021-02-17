@@ -5,7 +5,6 @@
 package config // import "miniflux.app/config"
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -1443,7 +1442,7 @@ DEBUG = yes
 Invalid text
 `)
 
-	tmpfile, err := ioutil.TempFile(".", "miniflux.*.unit_test.conf")
+	tmpfile, err := os.CreateTemp(".", "miniflux.*.unit_test.conf")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -44,7 +44,7 @@ func New(tpl *template.Engine, r *http.Request, sess *session.Session) *View {
 	b.params["theme"] = theme
 	b.params["view"] = view
 	b.params["nsfw"] = nsfw
-	b.params["theme_checksum"] = static.StylesheetsChecksums[theme]
+	b.params["theme_checksum"] = static.StylesheetBundleChecksums[theme]
 	b.params["app_js_checksum"] = static.JavascriptsChecksums["app"]
 	b.params["sw_js_checksum"] = static.JavascriptsChecksums["service-worker"]
 	return b

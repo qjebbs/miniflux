@@ -33,6 +33,7 @@ const (
 	flagCacheToDiskHelp     = "Move media caches from database to disk"
 	flagCleanCacheHelp      = "Remove unused caches from disk and database"
 	flagArchiveReadHelp     = "Archive read articles"
+	flagHealthCheckHelp     = `Perform a health check on the given endpoint (the value "auto" try to guess the health check endpoint).`
 )
 
 // Parse parses command line arguments.
@@ -53,6 +54,7 @@ func Parse() {
 		flagCleanCache      bool
 		flagCache           bool
 		flagArchiveRead     bool
+		flagHealthCheck     string
 	)
 
 	flag.BoolVar(&flagInfo, "info", false, flagInfoHelp)
@@ -72,6 +74,7 @@ func Parse() {
 	flag.BoolVar(&flagCacheToDisk, "cache-to-disk", false, flagCacheToDiskHelp)
 	flag.BoolVar(&flagCleanCache, "cache-clean", false, flagCleanCacheHelp)
 	flag.BoolVar(&flagArchiveRead, "archive-read", false, flagArchiveReadHelp)
+	flag.StringVar(&flagHealthCheck, "healthcheck", "", flagHealthCheckHelp)
 	flag.Parse()
 
 	cfg := config.NewParser()
@@ -99,6 +102,11 @@ func Parse() {
 
 	if flagDebugMode || config.Opts.HasDebugMode() {
 		logger.EnableDebug()
+	}
+
+	if flagHealthCheck != "" {
+		doHealthCheck(flagHealthCheck)
+		return
 	}
 
 	if flagInfo {

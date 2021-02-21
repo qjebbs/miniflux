@@ -24,36 +24,37 @@ const (
 
 // Feed represents a feed in the application.
 type Feed struct {
-	ID                 int64     `json:"id"`
-	UserID             int64     `json:"user_id"`
-	FeedURL            string    `json:"feed_url"`
-	SiteURL            string    `json:"site_url"`
-	Title              string    `json:"title"`
-	CheckedAt          time.Time `json:"checked_at"`
-	NextCheckAt        time.Time `json:"next_check_at"`
-	EtagHeader         string    `json:"etag_header"`
-	LastModifiedHeader string    `json:"last_modified_header"`
-	ParsingErrorMsg    string    `json:"parsing_error_message"`
-	ParsingErrorCount  int       `json:"parsing_error_count"`
-	ScraperRules       string    `json:"scraper_rules"`
-	RewriteRules       string    `json:"rewrite_rules"`
-	Crawler            bool      `json:"crawler"`
-	CacheMedia         bool      `json:"cache_media"`
-	BlocklistRules     string    `json:"blocklist_rules"`
-	KeeplistRules      string    `json:"keeplist_rules"`
-	UserAgent          string    `json:"user_agent"`
-	Username           string    `json:"username"`
-	Password           string    `json:"password"`
-	Disabled           bool      `json:"disabled"`
-	IgnoreHTTPCache    bool      `json:"ignore_http_cache"`
-	FetchViaProxy      bool      `json:"fetch_via_proxy"`
-	Category           *Category `json:"category,omitempty"`
-	Entries            Entries   `json:"entries,omitempty"`
-	Icon               *FeedIcon `json:"icon"`
-	View               string    `json:"view"`
-	NSFW               bool      `json:"nsfw"`
-	UnreadCount        int       `json:"-"`
-	ReadCount          int       `json:"-"`
+	ID                          int64     `json:"id"`
+	UserID                      int64     `json:"user_id"`
+	FeedURL                     string    `json:"feed_url"`
+	SiteURL                     string    `json:"site_url"`
+	Title                       string    `json:"title"`
+	CheckedAt                   time.Time `json:"checked_at"`
+	NextCheckAt                 time.Time `json:"next_check_at"`
+	EtagHeader                  string    `json:"etag_header"`
+	LastModifiedHeader          string    `json:"last_modified_header"`
+	ParsingErrorMsg             string    `json:"parsing_error_message"`
+	ParsingErrorCount           int       `json:"parsing_error_count"`
+	ScraperRules                string    `json:"scraper_rules"`
+	RewriteRules                string    `json:"rewrite_rules"`
+	Crawler                     bool      `json:"crawler"`
+	CacheMedia                  bool      `json:"cache_media"`
+	BlocklistRules              string    `json:"blocklist_rules"`
+	KeeplistRules               string    `json:"keeplist_rules"`
+	UserAgent                   string    `json:"user_agent"`
+	Username                    string    `json:"username"`
+	Password                    string    `json:"password"`
+	Disabled                    bool      `json:"disabled"`
+	IgnoreHTTPCache             bool      `json:"ignore_http_cache"`
+	AllowSelfSignedCertificates bool      `json:"allow_self_signed_certificates"`
+	FetchViaProxy               bool      `json:"fetch_via_proxy"`
+	Category                    *Category `json:"category,omitempty"`
+	Entries                     Entries   `json:"entries,omitempty"`
+	Icon                        *FeedIcon `json:"icon"`
+	View                        string    `json:"view"`
+	NSFW                        bool      `json:"nsfw"`
+	UnreadCount                 int       `json:"-"`
+	ReadCount                   int       `json:"-"`
 }
 
 func (f *Feed) String() string {
@@ -120,41 +121,43 @@ func (f *Feed) ScheduleNextCheck(weeklyCount int) {
 
 // FeedCreationRequest represents the request to create a feed.
 type FeedCreationRequest struct {
-	FeedURL         string `json:"feed_url"`
-	CategoryID      int64  `json:"category_id"`
-	UserAgent       string `json:"user_agent"`
-	Username        string `json:"username"`
-	Password        string `json:"password"`
-	Crawler         bool   `json:"crawler"`
-	Disabled        bool   `json:"disabled"`
-	IgnoreHTTPCache bool   `json:"ignore_http_cache"`
-	FetchViaProxy   bool   `json:"fetch_via_proxy"`
-	ScraperRules    string `json:"scraper_rules"`
-	RewriteRules    string `json:"rewrite_rules"`
-	BlocklistRules  string `json:"blocklist_rules"`
-	KeeplistRules   string `json:"keeplist_rules"`
+	FeedURL                     string `json:"feed_url"`
+	CategoryID                  int64  `json:"category_id"`
+	UserAgent                   string `json:"user_agent"`
+	Username                    string `json:"username"`
+	Password                    string `json:"password"`
+	Crawler                     bool   `json:"crawler"`
+	Disabled                    bool   `json:"disabled"`
+	IgnoreHTTPCache             bool   `json:"ignore_http_cache"`
+	AllowSelfSignedCertificates bool   `json:"allow_self_signed_certificates"`
+	FetchViaProxy               bool   `json:"fetch_via_proxy"`
+	ScraperRules                string `json:"scraper_rules"`
+	RewriteRules                string `json:"rewrite_rules"`
+	BlocklistRules              string `json:"blocklist_rules"`
+	KeeplistRules               string `json:"keeplist_rules"`
 }
 
 // FeedModificationRequest represents the request to update a feed.
 type FeedModificationRequest struct {
-	FeedURL         *string `json:"feed_url"`
-	SiteURL         *string `json:"site_url"`
-	Title           *string `json:"title"`
-	ScraperRules    *string `json:"scraper_rules"`
-	RewriteRules    *string `json:"rewrite_rules"`
-	BlocklistRules  *string `json:"blocklist_rules"`
-	KeeplistRules   *string `json:"keeplist_rules"`
-	Crawler         *bool   `json:"crawler"`
-	UserAgent       *string `json:"user_agent"`
-	Username        *string `json:"username"`
-	Password        *string `json:"password"`
-	CategoryID      *int64  `json:"category_id"`
-	Disabled        *bool   `json:"disabled"`
-	IgnoreHTTPCache *bool   `json:"ignore_http_cache"`
-	FetchViaProxy   *bool   `json:"fetch_via_proxy"`
-	View            *string `json:"view"`
-	NSFW            *bool   `json:"nsfw"`
-	CacheMedia      *bool   `json:"cache_media"`
+	FeedURL                     *string `json:"feed_url"`
+	SiteURL                     *string `json:"site_url"`
+	Title                       *string `json:"title"`
+	ScraperRules                *string `json:"scraper_rules"`
+	RewriteRules                *string `json:"rewrite_rules"`
+	BlocklistRules              *string `json:"blocklist_rules"`
+	KeeplistRules               *string `json:"keeplist_rules"`
+	Crawler                     *bool   `json:"crawler"`
+	UserAgent                   *string `json:"user_agent"`
+	Username                    *string `json:"username"`
+	Password                    *string `json:"password"`
+	CategoryID                  *int64  `json:"category_id"`
+	Disabled                    *bool   `json:"disabled"`
+	IgnoreHTTPCache             *bool   `json:"ignore_http_cache"`
+	AllowSelfSignedCertificates *bool   `json:"allow_self_signed_certificates"`
+	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
+	View                        *string `json:"view"`
+	NSFW                        *bool   `json:"nsfw"`
+	CacheMedia                  *bool   `json:"cache_media"`
 }
 
 // Patch updates a feed with modified values.
@@ -213,6 +216,10 @@ func (f *FeedModificationRequest) Patch(feed *Feed) {
 
 	if f.IgnoreHTTPCache != nil {
 		feed.IgnoreHTTPCache = *f.IgnoreHTTPCache
+	}
+
+	if f.AllowSelfSignedCertificates != nil {
+		feed.AllowSelfSignedCertificates = *f.AllowSelfSignedCertificates
 	}
 
 	if f.FetchViaProxy != nil {

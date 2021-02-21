@@ -158,7 +158,9 @@ func Parse() {
 	}
 
 	if flagMigrate {
-		database.Migrate(db)
+		if err := database.Migrate(db); err != nil {
+			logger.Fatal(`%v`, err)
+		}
 		return
 	}
 

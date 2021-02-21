@@ -6,6 +6,7 @@ package client // import "miniflux.app/http/client"
 
 import (
 	"bytes"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
@@ -50,11 +51,12 @@ type Client struct {
 	useProxy             bool
 	doNotFollowRedirects bool
 
-	ClientTimeout     int
-	ClientMaxBodySize int64
-	ClientProxyURL    string
-	cookies           []*http.Cookie
-	referrer          string
+	ClientTimeout               int
+	ClientMaxBodySize           int64
+	ClientProxyURL              string
+	cookies                     []*http.Cookie
+	referrer                    string
+	AllowSelfSignedCertificates bool
 }
 
 // New initializes a new HTTP client.
@@ -89,13 +91,14 @@ func (c *Client) String() string {
 	}
 
 	return fmt.Sprintf(
-		`InputURL=%q RequestURL=%q ETag=%s LastModified=%s Auth=%v UserAgent=%q`,
+		`InputURL=%q RequestURL=%q ETag=%s LastMod=%s Auth=%v UserAgent=%q Verify=%v`,
 		c.inputURL,
 		c.requestURL,
 		etagHeader,
 		lastModifiedHeader,
 		c.requestAuthorizationHeader != "" || (c.requestUsername != "" && c.requestPassword != ""),
 		c.requestUserAgent,
+		!c.AllowSelfSignedCertificates,
 	)
 }
 
@@ -323,6 +326,10 @@ func (c *Client) buildClient() http.Client {
 
 		// Default is 90s.
 		IdleConnTimeout: 10 * time.Second,
+	}
+
+	if c.AllowSelfSignedCertificates {
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
 	if c.doNotFollowRedirects {

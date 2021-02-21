@@ -216,10 +216,11 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			blocklist_rules,
 			keeplist_rules,
 			ignore_http_cache,
+			allow_self_signed_certificates,
 			fetch_via_proxy
 		)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
 		RETURNING
 			id
 	`
@@ -242,6 +243,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.BlocklistRules,
 		feed.KeeplistRules,
 		feed.IgnoreHTTPCache,
+		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
 	).Scan(&feed.ID)
 	if err != nil {
@@ -301,9 +303,10 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			nsfw=$21,
 			next_check_at=$22,
 			ignore_http_cache=$23,
-			fetch_via_proxy=$24
+			allow_self_signed_certificates=$24,
+			fetch_via_proxy=$25
 		WHERE
-			id=$25 AND user_id=$26
+			id=$26 AND user_id=$27
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -329,6 +332,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.NSFW,
 		feed.NextCheckAt,
 		feed.IgnoreHTTPCache,
+		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
 		feed.ID,
 		feed.UserID,

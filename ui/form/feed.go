@@ -13,24 +13,25 @@ import (
 
 // FeedForm represents a feed form in the UI
 type FeedForm struct {
-	FeedURL         string
-	SiteURL         string
-	Title           string
-	ScraperRules    string
-	RewriteRules    string
-	BlocklistRules  string
-	KeeplistRules   string
-	Crawler         bool
-	CacheMedia      bool
-	UserAgent       string
-	CategoryID      int64
-	Username        string
-	Password        string
-	View            string
-	IgnoreHTTPCache bool
-	FetchViaProxy   bool
-	Disabled        bool
-	NSFW            bool
+	FeedURL                     string
+	SiteURL                     string
+	Title                       string
+	ScraperRules                string
+	RewriteRules                string
+	BlocklistRules              string
+	KeeplistRules               string
+	Crawler                     bool
+	CacheMedia                  bool
+	UserAgent                   string
+	CategoryID                  int64
+	Username                    string
+	Password                    string
+	View                        string
+	IgnoreHTTPCache             bool
+	AllowSelfSignedCertificates bool
+	FetchViaProxy               bool
+	Disabled                    bool
+	NSFW                        bool
 }
 
 // Merge updates the fields of the given feed.
@@ -52,6 +53,7 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.Password = f.Password
 	feed.View = f.View
 	feed.IgnoreHTTPCache = f.IgnoreHTTPCache
+	feed.AllowSelfSignedCertificates = f.AllowSelfSignedCertificates
 	feed.FetchViaProxy = f.FetchViaProxy
 	feed.Disabled = f.Disabled
 	feed.NSFW = f.NSFW
@@ -69,23 +71,24 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		view = model.ViewDefault
 	}
 	return &FeedForm{
-		FeedURL:         r.FormValue("feed_url"),
-		SiteURL:         r.FormValue("site_url"),
-		Title:           r.FormValue("title"),
-		ScraperRules:    r.FormValue("scraper_rules"),
-		UserAgent:       r.FormValue("user_agent"),
-		RewriteRules:    r.FormValue("rewrite_rules"),
-		BlocklistRules:  r.FormValue("blocklist_rules"),
-		KeeplistRules:   r.FormValue("keeplist_rules"),
-		Crawler:         r.FormValue("crawler") == "1",
-		CacheMedia:      r.FormValue("cache_media") == "1",
-		CategoryID:      int64(categoryID),
-		Username:        r.FormValue("feed_username"),
-		Password:        r.FormValue("feed_password"),
-		View:            view,
-		IgnoreHTTPCache: r.FormValue("ignore_http_cache") == "1",
-		FetchViaProxy:   r.FormValue("fetch_via_proxy") == "1",
-		Disabled:        r.FormValue("disabled") == "1",
-		NSFW:            r.FormValue("nsfw") == "1",
+		FeedURL:                     r.FormValue("feed_url"),
+		SiteURL:                     r.FormValue("site_url"),
+		Title:                       r.FormValue("title"),
+		ScraperRules:                r.FormValue("scraper_rules"),
+		UserAgent:                   r.FormValue("user_agent"),
+		RewriteRules:                r.FormValue("rewrite_rules"),
+		BlocklistRules:              r.FormValue("blocklist_rules"),
+		KeeplistRules:               r.FormValue("keeplist_rules"),
+		Crawler:                     r.FormValue("crawler") == "1",
+		CacheMedia:                  r.FormValue("cache_media") == "1",
+		CategoryID:                  int64(categoryID),
+		Username:                    r.FormValue("feed_username"),
+		Password:                    r.FormValue("feed_password"),
+		View:                        view,
+		IgnoreHTTPCache:             r.FormValue("ignore_http_cache") == "1",
+		AllowSelfSignedCertificates: r.FormValue("allow_self_signed_certificates") == "1",
+		FetchViaProxy:               r.FormValue("fetch_via_proxy") == "1",
+		Disabled:                    r.FormValue("disabled") == "1",
+		NSFW:                        r.FormValue("nsfw") == "1",
 	}
 }

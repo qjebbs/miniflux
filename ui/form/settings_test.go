@@ -15,6 +15,7 @@ func TestValid(t *testing.T) {
 		Timezone:       "UTC",
 		EntryDirection: "asc",
 		EntriesPerPage: 50,
+		DisplayMode:    "standalone",
 	}
 
 	err := settings.Validate()
@@ -34,6 +35,7 @@ func TestConfirmationEmpty(t *testing.T) {
 		Timezone:       "UTC",
 		EntryDirection: "asc",
 		EntriesPerPage: 50,
+		DisplayMode:    "standalone",
 	}
 
 	err := settings.Validate()
@@ -56,6 +58,7 @@ func TestConfirmationIncorrect(t *testing.T) {
 		Timezone:       "UTC",
 		EntryDirection: "asc",
 		EntriesPerPage: 50,
+		DisplayMode:    "standalone",
 	}
 
 	err := settings.Validate()

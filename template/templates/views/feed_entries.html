@@ -77,6 +77,15 @@
                     data-label-loading="{{ t "confirm.loading" }}"
                     data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
             </li>
+            <li>
+                <a href="#"
+                    data-confirm="true"
+                    data-label-question="{{ t "confirm.question" }}"
+                    data-label-yes="{{ t "confirm.yes" }}"
+                    data-label-no="{{ t "confirm.no" }}"
+                    data-label-loading="{{ t "confirm.loading" }}"
+                    data-url="{{ route "markFeedAsRead" "feedID" .feed.ID }}">{{ t "menu.mark_all_as_read" }}</a>
+            </li>
         </ul>
     </section>
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
@@ -123,6 +132,15 @@
                     data-label-no="{{ t "confirm.no" }}"
                     data-label-loading="{{ t "confirm.loading" }}"
                     data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
+            </li>
+            <li>
+                <a href="#"
+                    data-confirm="true"
+                    data-label-question="{{ t "confirm.question" }}"
+                    data-label-yes="{{ t "confirm.yes" }}"
+                    data-label-no="{{ t "confirm.no" }}"
+                    data-label-loading="{{ t "confirm.loading" }}"
+                    data-url="{{ route "markFeedAsRead" "feedID" .feed.ID }}">{{ t "menu.mark_all_as_read" }}</a>
             </li>
         </ul>
     </section>

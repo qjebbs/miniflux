@@ -56,6 +56,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 	subscriptions, findErr := subscription.FindSubscriptions(
 		subscriptionForm.URL,
 		subscriptionForm.UserAgent,
+		subscriptionForm.Cookie,
 		subscriptionForm.Username,
 		subscriptionForm.Password,
 		subscriptionForm.FetchViaProxy,
@@ -84,6 +85,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 			Crawler:                     subscriptionForm.Crawler,
 			AllowSelfSignedCertificates: subscriptionForm.AllowSelfSignedCertificates,
 			UserAgent:                   subscriptionForm.UserAgent,
+			Cookie:                      subscriptionForm.Cookie,
 			Username:                    subscriptionForm.Username,
 			Password:                    subscriptionForm.Password,
 			ScraperRules:                subscriptionForm.ScraperRules,

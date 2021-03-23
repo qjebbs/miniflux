@@ -259,6 +259,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			f.crawler,
 			f.user_agent,
 			coalesce(m.url, '') as thumbnail,
+			f.cookie,
 			fi.icon_id,
 			u.timezone
 		FROM
@@ -328,6 +329,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.Feed.Crawler,
 			&entry.Feed.UserAgent,
 			&entry.Thumbnail,
+			&entry.Feed.Cookie,
 			&iconID,
 			&tz,
 		)

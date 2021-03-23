@@ -23,6 +23,7 @@ type FeedForm struct {
 	Crawler                     bool
 	CacheMedia                  bool
 	UserAgent                   string
+	Cookie                      string
 	CategoryID                  int64
 	Username                    string
 	Password                    string
@@ -47,6 +48,7 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.Crawler = f.Crawler
 	feed.CacheMedia = f.CacheMedia
 	feed.UserAgent = f.UserAgent
+	feed.Cookie = f.Cookie
 	feed.ParsingErrorCount = 0
 	feed.ParsingErrorMsg = ""
 	feed.Username = f.Username
@@ -76,6 +78,7 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		Title:                       r.FormValue("title"),
 		ScraperRules:                r.FormValue("scraper_rules"),
 		UserAgent:                   r.FormValue("user_agent"),
+		Cookie:                      r.FormValue("cookie"),
 		RewriteRules:                r.FormValue("rewrite_rules"),
 		BlocklistRules:              r.FormValue("blocklist_rules"),
 		KeeplistRules:               r.FormValue("keeplist_rules"),

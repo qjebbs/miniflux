@@ -47,6 +47,7 @@ type Client struct {
 	requestUsername            string
 	requestPassword            string
 	requestUserAgent           string
+	requestCookie              string
 
 	useProxy             bool
 	doNotFollowRedirects bool
@@ -54,7 +55,6 @@ type Client struct {
 	ClientTimeout               int
 	ClientMaxBodySize           int64
 	ClientProxyURL              string
-	cookies                     []*http.Cookie
 	referrer                    string
 	AllowSelfSignedCertificates bool
 }
@@ -144,26 +144,6 @@ func (c *Client) WithUserAgent(userAgent string) *Client {
 	return c
 }
 
-// WithCookie add a cookies for outgoing requests.
-func (c *Client) WithCookie(cookie *http.Cookie) *Client {
-
-	if c.cookies == nil {
-		c.cookies = make([]*http.Cookie, 0)
-	}
-	c.cookies = append(c.cookies, cookie)
-	return c
-}
-
-// WithCookies add multiple cookies for outgoing requests.
-func (c *Client) WithCookies(cookies []*http.Cookie) *Client {
-
-	if c.cookies == nil {
-		c.cookies = make([]*http.Cookie, 0)
-	}
-	c.cookies = append(c.cookies, cookies...)
-	return c
-}
-
 // WithReferrer add referrer for outgoing requests.
 func (c *Client) WithReferrer(referrer string) *Client {
 	if referrer != "" {
@@ -172,7 +152,14 @@ func (c *Client) WithReferrer(referrer string) *Client {
 	return c
 }
 
-// Get execute a GET HTTP request.
+// WithCookie defines the Cookies to use for HTTP requests.
+func (c *Client) WithCookie(cookie string) *Client {
+	if cookie != "" {
+		c.requestCookie = cookie
+	}
+	return c
+}
+
 // Get performs a GET HTTP request.
 func (c *Client) Get() (*Response, error) {
 	request, err := c.buildRequest(http.MethodGet, nil)
@@ -293,12 +280,6 @@ func (c *Client) buildRequest(method string, body io.Reader) (*http.Request, err
 
 	request.Header = c.buildHeaders()
 
-	if c.cookies != nil {
-		for _, cookie := range c.cookies {
-			request.AddCookie(cookie)
-		}
-	}
-
 	if c.requestUsername != "" && c.requestPassword != "" {
 		request.SetBasicAuth(c.requestUsername, c.requestPassword)
 	}
@@ -375,6 +356,9 @@ func (c *Client) buildHeaders() http.Header {
 
 	if c.referrer != "" {
 		headers.Add("Referer", c.referrer)
+	}
+	if c.requestCookie != "" {
+		headers.Add("Cookie", c.requestCookie)
 	}
 
 	headers.Add("Connection", "close")

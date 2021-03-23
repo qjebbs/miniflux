@@ -53,6 +53,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		Crawler:                     feed.Crawler,
 		CacheMedia:                  feed.CacheMedia,
 		UserAgent:                   feed.UserAgent,
+		Cookie:                      feed.Cookie,
 		CategoryID:                  feed.Category.ID,
 		Username:                    feed.Username,
 		Password:                    feed.Password,

@@ -210,6 +210,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			last_modified_header,
 			crawler,
 			user_agent,
+			cookie,
 			username,
 			password,
 			disabled,
@@ -222,7 +223,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			fetch_via_proxy
 		)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
 		RETURNING
 			id
 	`
@@ -237,6 +238,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.LastModifiedHeader,
 		feed.Crawler,
 		feed.UserAgent,
+		feed.Cookie,
 		feed.Username,
 		feed.Password,
 		feed.Disabled,
@@ -297,18 +299,19 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			keeplist_rules=$13,
 			crawler=$14,
 			user_agent=$15,
-			username=$16,
-			password=$17,
-			cache_media=$18,
-			view=$19,
-			disabled=$20,
-			nsfw=$21,
-			next_check_at=$22,
-			ignore_http_cache=$23,
-			allow_self_signed_certificates=$24,
-			fetch_via_proxy=$25
+			cookie=$16,
+			username=$17,
+			password=$18,
+			cache_media=$19,
+			view=$20,
+			disabled=$21,
+			nsfw=$22,
+			next_check_at=$23,
+			ignore_http_cache=$24,
+			allow_self_signed_certificates=$25,
+			fetch_via_proxy=$26
 		WHERE
-			id=$26 AND user_id=$27
+			id=$27 AND user_id=$28
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -326,6 +329,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.KeeplistRules,
 		feed.Crawler,
 		feed.UserAgent,
+		feed.Cookie,
 		feed.Username,
 		feed.Password,
 		feed.CacheMedia,

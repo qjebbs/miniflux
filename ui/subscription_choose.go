@@ -56,6 +56,7 @@ func (h *handler) showChooseSubscriptionPage(w http.ResponseWriter, r *http.Requ
 		Crawler:                     subscriptionForm.Crawler,
 		AllowSelfSignedCertificates: subscriptionForm.AllowSelfSignedCertificates,
 		UserAgent:                   subscriptionForm.UserAgent,
+		Cookie:                      subscriptionForm.Cookie,
 		Username:                    subscriptionForm.Username,
 		Password:                    subscriptionForm.Password,
 		ScraperRules:                subscriptionForm.ScraperRules,

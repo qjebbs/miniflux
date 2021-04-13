@@ -1099,7 +1099,7 @@ article.feed-parsing-error {
 }
 
 .entry-content a:visited {
-    color: purple;
+    color: var(--link-visited-color);
 }
 
 .entry-content dt {

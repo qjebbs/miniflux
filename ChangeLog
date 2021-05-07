@@ -1,3 +1,87 @@
+Version 2.0.30 (May 7, 2021)
+----------------------------
+
+* Security fix: any user can delete any feed (Regression introduced in commit 51fb949)
+* Fix password reset via CLI
+* Increase default batch size value
+* Handle RSS feed title with encoded Unicode entities
+* Show number of unread per category in category list instead of number of feeds
+* Bump github.com/lib/pq from 1.10.0 to 1.10.1
+* Filtering doesn't work when selecting from multiple found feeds
+* Bump github.com/tdewolff/minify/v2 from 2.9.15 to 2.9.16
+* Use an appropriate color for visited links on dark theme
+* Fix typo in reader/json/doc.go
+* Create SECURITY.md
+* Setup golangci-lint Github Action
+* Add per feed cookies option
+* Bump github.com/prometheus/client_golang from 1.9.0 to 1.10.0
+* Bump github.com/tdewolff/minify/v2 from 2.9.13 to 2.9.15
+
+Version 2.0.29 (Mar 21, 2021)
+-----------------------------
+
+* Miniflux requires at least Go 1.16 now
+* Improved support of Atom text constructs
+    - Improve handling of CDATA in text elements
+    - Omit XHTML root element because it should not be part of the content
+    - Fix incorrect parsing of HTML elements
+* Handle RDF feed with HTML encoded entry title
+* Add Turkish language
+* Improve deletion of feeds with lots of entries
+* Add support of Systemd readiness notification using the sd_notify protocol
+* Remove feed_icons service worker cache because it's causing more problems than it solves (and HTTP cache seems faster)
+* Add basic PWA offline page
+    - Add basic offline mode when using the service worker
+    - Starting in Chrome 93, offline mode is going to be a requirement to install the PWA
+* Replace icon for "Add to home screen" button
+* Use SVG icons for "toast" notifications
+* Use SVG sprite for icons instead of inline elements
+* Reset scroll position on mark page as read
+* Add link to mark all feed entries as read
+* Make web app display mode configurable (The change is visible after reinstalling the web app)
+* Handle RSS feeds with CDATA in author item element
+* Add read time on the article page
+* Avoid showing a broken image when there is no feed icon
+* Add option to allow self-signed or invalid certificates
+* Add new config option to scrape YouTube's website to get video duration as read time (disabled by default)
+* Send full article content to Wallabag
+* Add more extensive health check support
+    - Improve endpoint to test database connection
+    - Add new cli argument: -healthcheck
+    - Update Docker Compose examples
+* Update iframe "allow list" to support Bilibili videos
+* Remove completely generated files and use embed package to bundle JS/CSS/Images/Translations files into the final binary
+* Remove deprecated io/ioutil package
+* Show Postgres version in "About" page
+
+Version 2.0.28 (Feb 15, 2021)
+-----------------------------
+
+* Add HTTP header "Referrer-Policy: no-referrer"
+* Handle entry title with double encoded entities
+* Add Open Containers annotations to Docker image
+* Remove iframe inner HTML contents (iframe element never has fallback content)
+* Update date parser to fix another time zone issue
+* Update German translation for blocklist and keeplist
+* Validate Keep list and Block list rules syntax
+* Add support for IPv6 with zone index
+* Allow images with data URLs
+* Limit full-text search indexation to first 500K characters (tsvector has a size limit of 1MB)
+* Change PWA display mode to standalone
+* ETag value is not set correctly in HTTP client (regression)
+* Add database backed Let's Encrypt certificate cache
+* Add global option POLLING_PARSING_ERROR_LIMIT
+* Update systemd service file comments to use `systemctl edit` for editing
+* Update Go version to 1.15 in go.mod
+* Don't discard the "Fetch via Proxy" option
+* Update man page to show the default values
+* Add PostgreSQL indices
+* Add API endpoints to get feeds and entries of a category
+* Create feed query builder
+* Bump github.com/PuerkitoBio/goquery from 1.6.0 to 1.6.1
+* Show global options in the about page
+* Update man page to mention -1 can be used for CLEANUP_ARCHIVE_* options
+
 Version 2.0.27 (Jan 9, 2021)
 ----------------------------
 

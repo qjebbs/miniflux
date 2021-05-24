@@ -121,6 +121,8 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.cleanupArchiveReadDays = parseInt(value, defaultCleanupArchiveReadDays)
 		case "CLEANUP_ARCHIVE_UNREAD_DAYS":
 			p.opts.cleanupArchiveUnreadDays = parseInt(value, defaultCleanupArchiveUnreadDays)
+		case "CLEANUP_ARCHIVE_BATCH_SIZE":
+			p.opts.cleanupArchiveBatchSize = parseInt(value, defaultCleanupArchiveBatchSize)
 		case "CLEANUP_REMOVE_SESSIONS_DAYS":
 			p.opts.cleanupRemoveSessionsDays = parseInt(value, defaultCleanupRemoveSessionsDays)
 		case "CACHE_FREQUENCY":

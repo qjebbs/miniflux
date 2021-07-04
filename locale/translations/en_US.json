@@ -19,7 +19,7 @@
     "action.mark_above_read": "Mark above as read",
     "action.home_screen": "Add to home screen",
     "tooltip.keyboard_shortcuts": "Keyboard Shortcut: %s",
-    "tooltip.logged_user": "Logged as %s",
+    "tooltip.logged_user": "Logged in as %s",
     "menu.home": "Home",
     "menu.unread": "Unread",
     "menu.starred": "Starred",

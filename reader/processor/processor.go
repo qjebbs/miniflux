@@ -11,6 +11,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"miniflux.app/integration"
+
 	"miniflux.app/config"
 	"miniflux.app/logger"
 	"miniflux.app/metric"
@@ -34,7 +36,8 @@ func ProcessFeedEntries(store *storage.Storage, feed *model.Feed) {
 			continue
 		}
 
-		if feed.Crawler {
+		entryIsNew := !store.EntryURLExists(feed.ID, entry.URL)
+		if feed.Crawler && entryIsNew {
 			if !store.EntryURLExists(feed.ID, entry.URL) {
 				logger.Debug("[Processor] Crawling entry %q from feed %q", entry.URL, feed.FeedURL)
 
@@ -63,7 +66,19 @@ func ProcessFeedEntries(store *storage.Storage, feed *model.Feed) {
 		// The sanitizer should always run at the end of the process to make sure unsafe HTML is filtered.
 		entry.Content = sanitizer.Sanitize(entry.URL, entry.Content)
 
-		entry.ReadingTime = calculateReadingTime(entry.Content)
+		if entryIsNew {
+			entry.ReadingTime = calculateReadingTime(entry.Content)
+			intg, err := store.Integration(feed.UserID)
+			if err != nil {
+				logger.Error("[Processor] Get integrations for user %d failed: %v; the refresh process will go on, but no integrations will run this time.", feed.UserID, err)
+			} else if intg != nil {
+				localEntry := entry
+				go func() {
+					integration.PushEntry(localEntry, intg)
+				}()
+			}
+		}
+
 		filteredEntries = append(filteredEntries, entry)
 	}
 

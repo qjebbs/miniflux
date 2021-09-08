@@ -252,7 +252,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article role="article" class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -305,7 +305,7 @@ var templateViewsMap = map[string]string{
 {{ else }}
     <div class="items">
         {{ range .categories }}
-        <article class="item">
+        <article role="article" class="item">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     <a href="{{ route "categoryEntries" "categoryID" .ID }}">{{ .Title }}</a>
@@ -409,7 +409,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article role="article" class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -721,7 +721,7 @@ var templateViewsMap = map[string]string{
                     <textarea name="content" id="form-content" required>{{ .form.Content }}</textarea>
                 </div>
                 <div class="tab-content">
-                    <article id="preview-content" class="panel entry-content">
+                    <article role="article" id="preview-content" class="panel entry-content">
                     </article>
                 </div>
             </div>
@@ -1057,7 +1057,7 @@ var templateViewsMap = map[string]string{
     </div>
     {{ end }}
     {{ end }}
-    <article class="entry-content" dir="auto">
+    <article role="article" class="entry-content" dir="auto">
         {{ if .user }}
             {{ noescape (proxyFilter .entry.Content) }}
         {{ else }}
@@ -1194,7 +1194,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article role="article" class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1294,7 +1294,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article role="article" class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1504,6 +1504,24 @@ var templateViewsMap = map[string]string{
         </div>
     </div>
 
+    <h3>Telegram Bot</h3>
+    <div class="form-section">
+        <label>
+            <input type="checkbox" name="telegram_bot_enabled" value="1" {{ if .form.TelegramBotEnabled }}checked{{ end }}> {{ t "form.integration.telegram_bot_activate" }}
+        </label>
+
+        <label for="form-telegram-bot-token">{{ t "form.integration.telegram_bot_token" }}</label>
+        <input type="text" name="telegram_bot_token" id="form-telegram-bot-token" value="{{ .form.TelegramBotToken }}" placeholder="bot123456:Abcdefg" spellcheck="false">
+
+        <label for="form-telegram-chat-id">{{ t "form.integration.telegram_chat_id" }}</label>
+        <input type="text" name="telegram_bot_chat_id" id="form-telegram-chat-id" value="{{ .form.TelegramBotChatID }}" spellcheck="false">
+
+        <div class="buttons">
+            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button>
+        </div>
+    </div>
+
+
 </form>
 
 <h3>{{ t "page.integration.bookmarklet" }}</h3>
@@ -1576,7 +1594,7 @@ var templateViewsMap = map[string]string{
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article role="article" class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1772,7 +1790,7 @@ var templateViewsMap = map[string]string{
 {{ else }}
     <div class="items">
         {{ range .entries }}
-        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}" data-id="{{ .ID }}">
+        <article role="article" class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -1973,7 +1991,7 @@ var templateViewsMap = map[string]string{
     <div class='{{ if eq .view "masonry" }}items masonry{{ else }}items hide-read-items{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
-        <article class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
+        <article role="article" class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if ne .Feed.Icon.IconID 0 }}
@@ -2079,34 +2097,34 @@ var templateViewsMap = map[string]string{
 }
 
 var templateViewsMapChecksums = map[string]string{
-	"about": "ed362f506b931186b2273655e3264110225154e7756e29d49ba4ede442caffc9",
-	"add_entry": "5f94aa53c079c9551bf006533b56b134cc901c7ab8caec63e826f2d6807dff98",
-	"add_subscription": "bc0f878b37692a00d51e834536f211843a59703991d2a743ef204b9d6ae38549",
-	"api_keys": "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
-	"bookmark_entries": "6751659890c2a9ebdbbc040c45c568324e9d29ec5c325da3e49afc43e77a104b",
-	"categories": "9dfc3cb7bb91c7750753fe962ee4540dd1843e5f75f9e0a575ee964f6f9923e9",
-	"category_entries": "3e8e2100868bdb5a45b6dbb42c0f00d02e1a32ea4eb9a4d97ae5af70b1603729",
-	"category_feeds": "07154127087f9b127f7290abad6020c35ad9ceb2490b869120b7628bc4413808",
+	"about":               "ed362f506b931186b2273655e3264110225154e7756e29d49ba4ede442caffc9",
+	"add_entry":           "5f94aa53c079c9551bf006533b56b134cc901c7ab8caec63e826f2d6807dff98",
+	"add_subscription":    "bc0f878b37692a00d51e834536f211843a59703991d2a743ef204b9d6ae38549",
+	"api_keys":            "27d401b31a72881d5232486ba17eb47edaf5246eaedce81de88698c15ebb2284",
+	"bookmark_entries":    "d7597f575e949bef66e66f329f8af40e89736569492fa2f767de3f10ad4d0807",
+	"categories":          "97aa978b9af85a6ce09742c5be718050204386552e33492289f035efd9b24890",
+	"category_entries":    "9ba5da8dd1176c747624b83fc98f835ec3dc71b94e82876c5df642c1b05bde08",
+	"category_feeds":      "07154127087f9b127f7290abad6020c35ad9ceb2490b869120b7628bc4413808",
 	"choose_subscription": "22109d760ea8079c491561d0106f773c885efbf66f87d81fcf8700218260d2a0",
-	"create_api_key": "2fbd74342176b9970d9162a54da99186589621e4c005566a5368fc4a7994ad20",
-	"create_category": "5e290ab3faf3120fb0a3f04b11d1fd3b3bece69cfe39ccc31ef02db37b73106b",
-	"create_user": "cca0dbdbd846639d5295707de0674e5e75df987dd22b80d75f030f8daa503a85",
-	"edit_category": "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
-	"edit_entry": "dbc662629184d13a710e721559065d4cae84f9adc37b4dd083d592d7730a2a29",
-	"edit_feed": "402c94f9d386b9405ffa587d573a8f587eddf29757f7e030f65a3a89c86e9c15",
-	"edit_user": "04423f5ea4249a97440ddd892f99ff96c646f6ce26313765ac5293abf257ef3c",
-	"entry": "feaff0d95596fa228ab6d0c898cc5435cf6a0ce68e5fc68d92a932723608c69d",
-	"feed_entries": "ae110a5026b3a5d5897b5b7fd2e48496544f138b23a3ca0c5bb5d3f031f626ed",
-	"feeds": "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
-	"history_entries": "87f588b37ef3901292796b2a646143102939ab860a7e0c78b9f1f821ae49c737",
-	"import": "1b59b3bd55c59fcbc6fbb346b414dcdd26d1b4e0c307e437bb58b3f92ef01ad1",
-	"integrations": "fc81c2827f625ad31ad345d17c20b667eabd6f983764fa899a0931c002da45b1",
-	"login": "9165434b2405e9332de4bebbb54a93dc5692276ea72e7c5e07f655a002dfd290",
-	"search_entries": "ffc082b84808dca845243465e0e2a2517419f725ce557296bed5e41747e2be62",
-	"sessions": "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
-	"settings": "72f5c99f62d9685066a1efdbcfb62ae1a6bb5889f9cdf680f0b908ac310b93a3",
-	"shared_entries": "f87a42bf44dc3606c5a44b185263c1b9a612a8ae194f75061253d4dde7b095a2",
-	"stat": "b119ac8d0819def88362c1657cfd768f7e6419f2cdd763444f03d9a0c9c67291",
-	"unread_entries": "35b29dd79cbc9892404438bc781006473647b4cc68900bcd7ade9cc69423a7cd",
-	"users": "d7ff52efc582bbad10504f4a04fa3adcc12d15890e45dff51cac281e0c446e45",
+	"create_api_key":      "2fbd74342176b9970d9162a54da99186589621e4c005566a5368fc4a7994ad20",
+	"create_category":     "5e290ab3faf3120fb0a3f04b11d1fd3b3bece69cfe39ccc31ef02db37b73106b",
+	"create_user":         "cca0dbdbd846639d5295707de0674e5e75df987dd22b80d75f030f8daa503a85",
+	"edit_category":       "6eb28aa347f5cb4b41f7ebaae97426ee3a54301dfe4fa3a71808908c8191f1b7",
+	"edit_entry":          "54b19981390c505f8cb927d660eb2568101bc6ada1f6bdd3a7a645038d75e564",
+	"edit_feed":           "402c94f9d386b9405ffa587d573a8f587eddf29757f7e030f65a3a89c86e9c15",
+	"edit_user":           "04423f5ea4249a97440ddd892f99ff96c646f6ce26313765ac5293abf257ef3c",
+	"entry":               "e3c03bd1b1fc5ffd9c079a3873e62bcac8d0d0f1e856a4642c850c76b481fda4",
+	"feed_entries":        "5b21b36d0b73d7007c129f906fe309cf68413574bcfb180c97b54948eec2a25f",
+	"feeds":               "ec7d3fa96735bd8422ba69ef0927dcccddc1cc51327e0271f0312d3f881c64fd",
+	"history_entries":     "7c86bb122057a1a2ffab72b1eba2b76770a529c105ea7905004b34c858ea82bc",
+	"import":              "1b59b3bd55c59fcbc6fbb346b414dcdd26d1b4e0c307e437bb58b3f92ef01ad1",
+	"integrations":        "812682a1aacb87cbd324b432812910e53b00ddfac3cea237da841124a8afde75",
+	"login":               "9165434b2405e9332de4bebbb54a93dc5692276ea72e7c5e07f655a002dfd290",
+	"search_entries":      "20010912237e83df2a065e323a94224b0f7d33a5a624a7f0186185ee27373136",
+	"sessions":            "5d5c677bddbd027e0b0c9f7a0dd95b66d9d95b4e130959f31fb955b926c2201c",
+	"settings":            "72f5c99f62d9685066a1efdbcfb62ae1a6bb5889f9cdf680f0b908ac310b93a3",
+	"shared_entries":      "7abdb761147337960e09d679a6d8acb00c594ee47d4979c9a31a94af72ba1773",
+	"stat":                "b119ac8d0819def88362c1657cfd768f7e6419f2cdd763444f03d9a0c9c67291",
+	"unread_entries":      "55a886bdc2485921b8eef0369c5fe8d137b05694b38e1562878d2d94c2b345ea",
+	"users":               "d7ff52efc582bbad10504f4a04fa3adcc12d15890e45dff51cac281e0c446e45",
 }

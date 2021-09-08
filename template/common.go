@@ -26,7 +26,7 @@ var templateCommonMap = map[string]string{
 	"feed_list": `{{ define "feed_list" }}
     <div class="items">
         {{ range .feeds }}
-        <article class="item {{ if ne .ParsingErrorCount 0 }}feed-parsing-error{{ end }}">
+        <article role="article" class="item {{ if ne .ParsingErrorCount 0 }}feed-parsing-error{{ end }}">
             <div class="item-header" dir="auto">
                 <span class="item-title">
                     {{ if .Icon }}
@@ -593,11 +593,11 @@ SOFTWARE.
 
 var templateCommonMapChecksums = map[string]string{
 	"entry_pagination": "cdca9cf12586e41e5355190b06d9168f57f77b85924d1e63b13524bc15abcbf6",
-	"feed_list": "931e43d328a116318c510de5658c688cd940b934c86b6ec82a472e1f81e020ae",
-	"feed_menu": "318d8662dda5ca9dfc75b909c8461e79c86fb5082df1428f67aaf856f19f4b50",
-	"icons": "72a3b7d23ce20da720af7ae4a4e7d3a4d80a2072829b3ae7584b457b29cbbf70",
-	"item_meta": "2871d78c07a8237849b735d08aa1115d70a2c99bb67c3e6c904d56d8ab66e44b",
-	"layout": "43fd8df4fe2dfbece2b9e3fe2ae8d5832bde343c179a479092f325aac4a44485",
-	"pagination": "7b61288e86283c4cf0dc83bcbf8bf1c00c7cb29e60201c8c0b633b2450d2911f",
-	"settings_menu": "e2b777630c0efdbc529800303c01d6744ed3af80ec505ac5a5b3f99c9b989156",
+	"feed_list":        "a8927b941ddc28cefa29ef9b5841f5e4f2b4f1fd7c71cc2f2d7e51d6f5518279",
+	"feed_menu":        "318d8662dda5ca9dfc75b909c8461e79c86fb5082df1428f67aaf856f19f4b50",
+	"icons":            "72a3b7d23ce20da720af7ae4a4e7d3a4d80a2072829b3ae7584b457b29cbbf70",
+	"item_meta":        "2871d78c07a8237849b735d08aa1115d70a2c99bb67c3e6c904d56d8ab66e44b",
+	"layout":           "43fd8df4fe2dfbece2b9e3fe2ae8d5832bde343c179a479092f325aac4a44485",
+	"pagination":       "7b61288e86283c4cf0dc83bcbf8bf1c00c7cb29e60201c8c0b633b2450d2911f",
+	"settings_menu":    "e2b777630c0efdbc529800303c01d6744ed3af80ec505ac5a5b3f99c9b989156",
 }

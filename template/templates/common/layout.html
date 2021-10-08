@@ -85,9 +85,11 @@
                 <li {{ if eq .menu "settings" }}class="active"{{ end }} title="{{ t "tooltip.keyboard_shortcuts" "g s" }}">
                     <a href="{{ route "settings" }}" data-page="settings">{{ t "menu.settings" }}</a>
                 </li>
-                <li>
-                    <a href="{{ route "logout" }}" title="{{ t "tooltip.logged_user" .user.Username }}">{{ t "menu.logout" }}</a>
-                </li>
+                {{ if not hasAuthProxy }}
+                    <li>
+                        <a href="{{ route "logout" }}" title="{{ t "tooltip.logged_user" .user.Username }}">{{ t "menu.logout" }}</a>
+                    </li>
+                {{ end }}
                 <li class="mobile-only" title="{{ t "tooltip.keyboard_shortcuts" "N" }}">
                     <a href="#" data-action="nsfw" data-url="{{ route "nsfw" }}">{{ t "menu.nsfw" }}</a>
                 </li>

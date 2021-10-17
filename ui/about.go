@@ -32,7 +32,7 @@ func (h *handler) showAboutPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
-	view.Set("globalConfigOptions", config.Opts.SortedOptions())
+	view.Set("globalConfigOptions", config.Opts.SortedOptions(true))
 
 	html.OK(w, r, view.Render("about"))
 }

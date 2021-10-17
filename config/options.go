@@ -481,9 +481,9 @@ func (o *Options) HTTPClientUserAgent() string {
 }
 
 // SortedOptions returns options as a list of key value pairs, sorted by keys.
-func (o *Options) SortedOptions() []*Option {
+func (o *Options) SortedOptions(redactSecret bool) []*Option {
 	var keyValues = map[string]interface{}{
-		"ADMIN_PASSWORD":                         o.adminPassword,
+		"ADMIN_PASSWORD":                         redactSecretValue(o.adminPassword, redactSecret),
 		"ADMIN_USERNAME":                         o.adminUsername,
 		"AUTH_PROXY_HEADER":                      o.authProxyHeader,
 		"AUTH_PROXY_USER_CREATION":               o.authProxyUserCreation,
@@ -499,7 +499,7 @@ func (o *Options) SortedOptions() []*Option {
 		"CREATE_ADMIN":                           o.createAdmin,
 		"DATABASE_MAX_CONNS":                     o.databaseMaxConns,
 		"DATABASE_MIN_CONNS":                     o.databaseMinConns,
-		"DATABASE_URL":                           o.databaseURL,
+		"DATABASE_URL":                           redactSecretValue(o.databaseURL, redactSecret),
 		"DEBUG":                                  o.debug,
 		"HSTS":                                   o.hsts,
 		"HTTPS":                                  o.HTTPS,
@@ -513,16 +513,16 @@ func (o *Options) SortedOptions() []*Option {
 		"LOG_DATE_TIME":                          o.logDateTime,
 		"MAINTENANCE_MESSAGE":                    o.maintenanceMessage,
 		"MAINTENANCE_MODE":                       o.maintenanceMode,
-		"METRICS_ALLOWED_NETWORKS":               o.metricsAllowedNetworks,
+		"METRICS_ALLOWED_NETWORKS":               strings.Join(o.metricsAllowedNetworks, ","),
 		"METRICS_COLLECTOR":                      o.metricsCollector,
 		"METRICS_REFRESH_INTERVAL":               o.metricsRefreshInterval,
 		"OAUTH2_CLIENT_ID":                       o.oauth2ClientID,
-		"OAUTH2_CLIENT_SECRET":                   o.oauth2ClientSecret,
+		"OAUTH2_CLIENT_SECRET":                   redactSecretValue(o.oauth2ClientSecret, redactSecret),
 		"OAUTH2_OIDC_DISCOVERY_ENDPOINT":         o.oauth2OidcDiscoveryEndpoint,
 		"OAUTH2_PROVIDER":                        o.oauth2Provider,
 		"OAUTH2_REDIRECT_URL":                    o.oauth2RedirectURL,
 		"OAUTH2_USER_CREATION":                   o.oauth2UserCreationAllowed,
-		"POCKET_CONSUMER_KEY":                    o.pocketConsumerKey,
+		"POCKET_CONSUMER_KEY":                    redactSecretValue(o.pocketConsumerKey, redactSecret),
 		"POLLING_FREQUENCY":                      o.pollingFrequency,
 		"POLLING_PARSING_ERROR_LIMIT":            o.pollingParsingErrorLimit,
 		"POLLING_SCHEDULER":                      o.pollingScheduler,
@@ -556,9 +556,16 @@ func (o *Options) SortedOptions() []*Option {
 func (o *Options) String() string {
 	var builder strings.Builder
 
-	for _, option := range o.SortedOptions() {
-		builder.WriteString(fmt.Sprintf("%s: %v\n", option.Key, option.Value))
+	for _, option := range o.SortedOptions(false) {
+		fmt.Fprintf(&builder, "%s=%v\n", option.Key, option.Value)
 	}
 
 	return builder.String()
+}
+
+func redactSecretValue(value string, redactSecret bool) string {
+	if redactSecret && value != "" {
+		return "******"
+	}
+	return value
 }

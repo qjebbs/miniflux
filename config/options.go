@@ -534,6 +534,10 @@ func (o *Options) SortedOptions() []*Option {
 		"SCHEDULER_SERVICE":                      o.schedulerService,
 		"SERVER_TIMING_HEADER":                   o.serverTimingHeader,
 		"WORKER_POOL_SIZE":                       o.workerPoolSize,
+		"CACHE_SERVICE":                          o.cacheService,
+		"CACHE_LOCATION":                         o.cacheLocation,
+		"DISK_STORAGE_ROOT":                      o.diskStorageRoot,
+		"CACHE_FREQUENCY":                        o.cacheFrequency,
 	}
 
 	keys := make([]string, 0, len(keyValues))

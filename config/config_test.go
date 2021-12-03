@@ -1406,7 +1406,7 @@ func TestDefaultDiskStorageRoot(t *testing.T) {
 		t.Fatalf(`Parsing failure: %v`, err)
 	}
 
-	expected := "./"
+	expected := defaultDiskStorageRoot
 	result := opts.DiskStorageRoot()
 
 	if result != expected {

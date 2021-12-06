@@ -237,10 +237,10 @@ func (s *Storage) CreateEntriesMedia(tx *sql.Tx, entries model.Entries) error {
 		RETURNING id, url_hash
 	`, vals)
 	rows, err := tx.Query(sql)
-	defer rows.Close()
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var m model.Media
 		err = rows.Scan(&m.ID, &m.URLHash)

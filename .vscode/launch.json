@@ -10,7 +10,7 @@
         "mode": "auto",
         "program": "${workspaceFolder}",
         "env": {
-            "DATABASE_URL": "postgres://miniflux:miniflux@localhost/miniflux?sslmode=disable",
+            "DATABASE_URL": "postgres://admin:admin@localhost/miniflux?sslmode=disable",
             "PORT": 80,
             "DEBUG": 1,
             "RUN_MIGRATIONS":1,

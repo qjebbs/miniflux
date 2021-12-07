@@ -210,12 +210,12 @@ func Parse() {
 	}
 
 	if flagArchiveRead {
-		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveReadDays()); err != nil {
+		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveReadDays(), config.Opts.CleanupArchiveBatchSize()); err != nil {
 			logger.Error("%v", err)
 		} else {
 			logger.Info("[ArchiveEntries] %d entries changed", rowsAffected)
 		}
-		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveUnreadDays()); err != nil {
+		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveUnreadDays(), config.Opts.CleanupArchiveBatchSize()); err != nil {
 			logger.Error("%v", err)
 		} else {
 			logger.Info("[ArchiveEntries] %d entries changed", rowsAffected)

@@ -516,15 +516,6 @@ var migrations = []func(tx *sql.Tx) error{
 		return err
 	},
 	func(tx *sql.Tx) (err error) {
-		sql := `
-			ALTER TABLE integrations ADD COLUMN telegram_bot_enabled bool default 'f';
-			ALTER TABLE integrations ADD COLUMN telegram_bot_token text default '';
-			ALTER TABLE integrations ADD COLUMN telegram_bot_chat_id text default '';
-		`
-		_, err = tx.Exec(sql)
-		return err
-	},
-	func(tx *sql.Tx) (err error) {
 		_, err = tx.Exec(`
 			ALTER TABLE feeds ADD COLUMN allow_self_signed_certificates boolean not null default false
 		`)
@@ -540,6 +531,15 @@ var migrations = []func(tx *sql.Tx) error{
 	},
 	func(tx *sql.Tx) (err error) {
 		sql := `ALTER TABLE feeds ADD COLUMN cookie text default ''`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+			ALTER TABLE integrations ADD COLUMN telegram_bot_enabled bool default 'f';
+			ALTER TABLE integrations ADD COLUMN telegram_bot_token text default '';
+			ALTER TABLE integrations ADD COLUMN telegram_bot_chat_id text default '';
+		`
 		_, err = tx.Exec(sql)
 		return err
 	},

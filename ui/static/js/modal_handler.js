@@ -1,4 +1,8 @@
 class ModalHandler {
+    static exists() {
+        return document.getElementById("modal-container") !== null;
+    }
+    
     static open(fragment) {
         ModalHandler.close();
         let container = document.createElement("div");

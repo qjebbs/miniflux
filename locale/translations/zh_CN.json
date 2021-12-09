@@ -357,7 +357,7 @@
     "form.prefs.select.standalone": "独立",
     "form.prefs.select.minimal_ui": "最小",
     "form.prefs.select.browser": "浏览器",
-    "form.prefs.select.publish_time": "发布布时间",
+    "form.prefs.select.publish_time": "发布时间",
     "form.prefs.select.created_time": "创建时间",
     "form.prefs.label.keyboard_shortcuts": "启用键盘快捷键",
     "form.prefs.label.entry_swipe": "在移动设备上启用滑动手势",

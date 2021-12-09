@@ -169,8 +169,8 @@ func (s *Storage) UpdateUser(user *model.User) error {
 				stylesheet=$12,
 				google_id=$13,
 				openid_connect_id=$14,
-				view=$15
-				display_mode=$16
+				view=$15,
+				display_mode=$16,
 				entry_order=$17
 			WHERE
 				id=$18
@@ -216,8 +216,8 @@ func (s *Storage) UpdateUser(user *model.User) error {
 				stylesheet=$11,
 				google_id=$12,
 				openid_connect_id=$13,
-				view=$14
-				display_mode=$15
+				view=$14,
+				display_mode=$15,
 				entry_order=$16
 			WHERE
 				id=$17

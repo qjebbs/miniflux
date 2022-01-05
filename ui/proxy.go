@@ -118,6 +118,7 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 
 	response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+		b.WithHeader("Content-Security-Policy", `default-src 'self'`)
 		b.WithHeader("Content-Type", resp.Header.Get("Content-Type"))
 		b.WithBody(resp.Body)
 		b.WithoutCompression()

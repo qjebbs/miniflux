@@ -27,7 +27,13 @@ const (
 	PocketRequestTokenContextKey
 	ClientIPContextKey
 	NSFWContextKey
+	GoogleReaderToken
 )
+
+// GoolgeReaderToken returns the google reader token if it exists.
+func GoolgeReaderToken(r *http.Request) string {
+	return getContextStringValue(r, GoogleReaderToken)
+}
 
 // IsAdminUser checks if the logged user is administrator.
 func IsAdminUser(r *http.Request) bool {

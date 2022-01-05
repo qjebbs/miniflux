@@ -13,9 +13,8 @@ require (
 	github.com/mitchellh/go-server-timing v1.0.2-0.20201108055052-feb680ab92c2
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
 	github.com/prometheus/client_golang v1.11.0
-	github.com/rylans/getlang v0.0.0-20201227074721-9e7f44ff8aa0
-	github.com/stretchr/testify v1.7.0 // indirect
-	github.com/tdewolff/minify/v2 v2.9.22
+	github.com/rylans/getlang v0.0.0-20200505200108-4c3188ff8a2d
+	github.com/tdewolff/minify/v2 v2.9.26
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
 	golang.org/x/net v0.0.0-20211205041911-012df41ee64c

@@ -419,31 +419,7 @@ func (s *Storage) SetEntriesStatus(userID int64, entryIDs []int64, status string
 	return nil
 }
 
-func (s *Storage) SetEntriesStatusCount(userID int64, entryIDs []int64, status string) (int, error) {
-	if err := s.SetEntriesStatus(userID, entryIDs, status); err != nil {
-		return 0, err
-	}
-
-	query := `
-		SELECT count(*)
-		FROM entries e
-		    JOIN feeds f ON (f.id = e.feed_id)
-		    JOIN categories c ON (c.id = f.category_id)
-		WHERE e.user_id = $1
-			AND e.id = ANY($2)
-			AND NOT f.hide_globally
-			AND NOT c.hide_globally
-	`
-	row := s.db.QueryRow(query, userID, pq.Array(entryIDs))
-	visible := 0
-	if err := row.Scan(&visible); err != nil {
-		return 0, fmt.Errorf(`store: unable to query entries visibility %v: %v`, entryIDs, err)
-	}
-
-	return visible, nil
-}
-
-// SetEntriesBookmarked update the bookmarked state for the given list of entries.
+// SetEntriesBookmarkedState update the bookmarked state for the given list of entries.
 func (s *Storage) SetEntriesBookmarkedState(userID int64, entryIDs []int64, starred bool) error {
 	query := `UPDATE entries SET starred=$1, changed_at=now() WHERE user_id=$2 AND id=ANY($3)`
 	result, err := s.db.Exec(query, starred, userID, pq.Array(entryIDs))

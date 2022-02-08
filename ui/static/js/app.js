@@ -163,36 +163,45 @@ function handleEntryStatus(item, element, setToRead) {
 function toggleEntryStatus(element, toasting) {
     let entryID = parseInt(element.dataset.id, 10);
     let link = element.querySelector("a[data-toggle-status]");
-
-    let currentStatus = link.dataset.value;
-    let newStatus = currentStatus === "read" ? "unread" : "read";
+    let newStatus = link.dataset.value === "read" ? "unread" : "read";
 
     link.querySelector("span").innerHTML = link.dataset.labelLoading;
     updateEntriesStatus([entryID], newStatus, () => {
-        let iconElement, label;
-
-        if (currentStatus === "read") {
-            iconElement = document.querySelector("template#icon-read");
-            label = link.dataset.labelRead;
-            if (toasting) {
-                showToast(link.dataset.toastUnread, iconElement);
-            }
-        } else {
-            iconElement = document.querySelector("template#icon-unread");
-            label = link.dataset.labelUnread;
-            if (toasting) {
-                showToast(link.dataset.toastRead, iconElement);
-            }
-        }
-
-        link.innerHTML = iconElement.innerHTML + '<span class="icon-label">' + label + '</span>';
-        link.dataset.value = newStatus;
-
-        if (element.classList.contains("item-status-" + currentStatus)) {
-            element.classList.remove("item-status-" + currentStatus);
-            element.classList.add("item-status-" + newStatus);
-        }
+        updateEntriesStatusUI(element, newStatus, toasting)
     });
+}
+
+function updateEntriesStatusUI(element, newStatus, toasting) {
+    let link = element.querySelector("a[data-toggle-status]");
+    let currentStatus = link.dataset.value;
+
+    if (currentStatus === newStatus) {
+        return
+    }
+
+    let iconElement, label;
+
+    if (currentStatus === "read") {
+        iconElement = document.querySelector("template#icon-read");
+        label = link.dataset.labelRead;
+        if (toasting) {
+            showToast(link.dataset.toastUnread, iconElement);
+        }
+    } else {
+        iconElement = document.querySelector("template#icon-unread");
+        label = link.dataset.labelUnread;
+        if (toasting) {
+            showToast(link.dataset.toastRead, iconElement);
+        }
+    }
+
+    link.innerHTML = iconElement.innerHTML + '<span class="icon-label">' + label + '</span>';
+    link.dataset.value = newStatus;
+
+    if (element.classList.contains("item-status-" + currentStatus)) {
+        element.classList.remove("item-status-" + currentStatus);
+        element.classList.add("item-status-" + newStatus);
+    }
 }
 
 // Mark a single entry as read.
@@ -223,15 +232,19 @@ function handleRefreshAllFeeds() {
 function updateEntriesStatus(entryIDs, status, callback) {
     let url = document.body.dataset.entriesStatusUrl;
     let request = new RequestBuilder(url);
-    request.withBody({entry_ids: entryIDs, status: status});
-    request.withCallback(callback);
+    request.withBody({
+        entry_ids: entryIDs,
+        status: status
+    });
+    request.withCallback((resp) => {
+        resp.json().then(count => {
+            if (callback) {
+                callback(resp);
+            }
+            updateUnreadCounterValue(() => count);
+        });
+    });
     request.execute();
-
-    if (status === "read") {
-        decrementUnreadCounter(1);
-    } else {
-        incrementUnreadCounter(1);
-    }
 }
 
 // Handle save entry from list view and entry view.
@@ -356,7 +369,7 @@ function toggleCache(element) {
     if (!link) {
         return;
     }
-    
+
     link.innerHTML = link.dataset.labelLoading;
 
     let request = new RequestBuilder(link.dataset.cacheUrl);
@@ -381,25 +394,17 @@ function toggleCache(element) {
 }
 
 function setEntryStatusRead(element) {
-    if (!element) return;
+    if (!element || !element.classList.contains("item-status-unread")) {
+        return;
+    }
     let link = element.querySelector("a[data-set-read]");
     let sendRequest = !link.dataset.noRequest;
-    if (sendRequest) {
-        let entryID = parseInt(element.dataset.id, 10);
-        updateEntriesStatus([entryID], "read");
+    if (!sendRequest) {
+        updateEntriesStatusUI(element, "read", false);
+        updateUnreadCounterValue(n => n - 1);
+        return;
     }
-
-    link = element.querySelector("a[data-toggle-status]");
-    if (link && link.dataset.value === "unread") {
-        link.innerHTML = link.dataset.labelUnread;
-        link.dataset.value = "read";
-    }
-
-    if (element && element.classList.contains("item-status-unread")) {
-        element.classList.remove("item-status-unread");
-        element.classList.add("item-status-read");
-        decrementUnreadCounter(1);
-    }
+    toggleEntryStatus(element, false);
 }
 
 function setEntriesAboveStatusRead(element) {
@@ -418,17 +423,8 @@ function setEntriesAboveStatusRead(element) {
         entryIds.push(parseInt(items[i].dataset.id, 10));
     }
     updateEntriesStatus(entryIds, "read", () => {
-        targetItems.map(item => {
-            let link = item.querySelector("a[data-toggle-status]");
-            if (link && link.dataset.value === "unread") {
-                link.innerHTML = link.dataset.labelUnread;
-                link.dataset.value = "read";
-            }
-            if (item && item.classList.contains("item-status-unread")) {
-                item.classList.remove("item-status-unread");
-                item.classList.add("item-status-read");
-                decrementUnreadCounter(1);
-            }
+        targetItems.map(element => {
+            updateEntriesStatusUI(element, "read", false);
         });
     });
 }
@@ -616,18 +612,6 @@ function scrollToCurrentItem() {
     }
 }
 
-function decrementUnreadCounter(n) {
-    updateUnreadCounterValue((current) => {
-        return current - n;
-    });
-}
-
-function incrementUnreadCounter(n) {
-    updateUnreadCounterValue((current) => {
-        return current + n;
-    });
-}
-
 function updateUnreadCounterValue(callback) {
     let counterElements = document.querySelectorAll("span.unread-counter");
     counterElements.forEach((element) => {
@@ -674,7 +658,7 @@ function handleConfirmationMessage(linkElement, callback) {
     }
 
     linkElement.style.display = "none";
-    
+
     let containerElement = linkElement.parentNode;
     let questionElement = document.createElement("span");
 

@@ -247,7 +247,7 @@ func (s *Storage) UpdateCategoryView(userID int64, categoryID int64, view string
 	return nil
 }
 
-// delete the given categories, replacing those categories with the user's first
+// RemoveAndReplaceCategoriesByName deletes the given categories, replacing those categories with the user's first
 // category on affected feeds
 func (s *Storage) RemoveAndReplaceCategoriesByName(userid int64, titles []string) error {
 	tx, err := s.db.Begin()

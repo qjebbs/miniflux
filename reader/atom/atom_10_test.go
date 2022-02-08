@@ -13,6 +13,7 @@ import (
 func TestParseAtomSample(t *testing.T) {
 	data := `<?xml version="1.0" encoding="utf-8"?>
 	<feed xmlns="http://www.w3.org/2005/Atom">
+
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
 	  <updated>2003-12-13T18:30:02Z</updated>
@@ -20,6 +21,7 @@ func TestParseAtomSample(t *testing.T) {
 		<name>John Doe</name>
 	  </author>
 	  <id>urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6</id>
+
 	  <entry>
 		<title>Atom-Powered Robots Run Amok</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -27,6 +29,7 @@ func TestParseAtomSample(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("http://example.org/feed.xml", bytes.NewBufferString(data))
@@ -100,6 +103,7 @@ func TestParseFeedWithoutTitle(t *testing.T) {
 func TestParseEntryWithoutTitle(t *testing.T) {
 	data := `<?xml version="1.0" encoding="utf-8"?>
 	<feed xmlns="http://www.w3.org/2005/Atom">
+
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
 	  <updated>2003-12-13T18:30:02Z</updated>
@@ -107,12 +111,14 @@ func TestParseEntryWithoutTitle(t *testing.T) {
 		<name>John Doe</name>
 	  </author>
 	  <id>urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6</id>
+
 	  <entry>
 		<link href="http://example.org/2003/12/13/atom03"/>
 		<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -154,6 +160,7 @@ func TestParseFeedWithRelativeURL(t *testing.T) {
 	  <title>Example Feed</title>
 	  <link href="/blog/atom.xml" rel="self" type="application/atom+xml"/>
 	  <link href="/blog"/>
+
 	  <entry>
 		<title>Test</title>
 		<link href="/blog/article.html"/>
@@ -162,6 +169,7 @@ func TestParseFeedWithRelativeURL(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -187,6 +195,7 @@ func TestParseEntryWithRelativeURL(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title>Test</title>
 		<link href="something.html"/>
@@ -194,6 +203,7 @@ func TestParseEntryWithRelativeURL(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.net/", bytes.NewBufferString(data))
@@ -211,6 +221,7 @@ func TestParseEntryTitleWithWhitespaces(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title>
 			Some Title
@@ -220,6 +231,7 @@ func TestParseEntryTitleWithWhitespaces(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -237,6 +249,7 @@ func TestParseEntryWithPlainTextTitle(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title type="text">AT&amp;T bought by SBC!</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -244,6 +257,7 @@ func TestParseEntryWithPlainTextTitle(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	  <entry>
 		<title>AT&amp;T bought by SBC!</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -251,6 +265,7 @@ func TestParseEntryWithPlainTextTitle(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -271,6 +286,7 @@ func TestParseEntryWithHTMLTitle(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title type="html">&lt;code&gt;Test&lt;/code&gt; Test</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -278,6 +294,7 @@ func TestParseEntryWithHTMLTitle(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	  <entry>
 		<title type="html"><![CDATA[Test &#8220;Test&#8221;]]></title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -321,6 +338,7 @@ func TestParseEntryWithXHTMLTitle(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title type="xhtml"><code>Test</code> Test</title>
 		<link href="http://example.org/a"/>
@@ -328,6 +346,7 @@ func TestParseEntryWithXHTMLTitle(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	  <entry>
 		<title type="xhtml">
 			<div xmlns="http://www.w3.org/1999/xhtml">
@@ -339,6 +358,7 @@ func TestParseEntryWithXHTMLTitle(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -360,6 +380,7 @@ func TestParseEntryWithNumericCharacterReferenceTitle(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title>&#931; &#xDF;</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -367,6 +388,7 @@ func TestParseEntryWithNumericCharacterReferenceTitle(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -384,6 +406,7 @@ func TestParseEntryWithDoubleEncodedEntitiesTitle(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title>&amp;#39;AT&amp;amp;T&amp;#39;</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -391,6 +414,7 @@ func TestParseEntryWithDoubleEncodedEntitiesTitle(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -408,6 +432,7 @@ func TestParseEntryWithXHTMLSummary(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title type="xhtml">Example</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -415,6 +440,7 @@ func TestParseEntryWithXHTMLSummary(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary type="xhtml"><p>Some text.</p></summary>
 	  </entry>
+
 	  <entry>
 		<title type="xhtml">Example</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -422,6 +448,7 @@ func TestParseEntryWithXHTMLSummary(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>Test: <code>std::unique_ptr&lt;S&gt;</code></p></div></summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -443,6 +470,7 @@ func TestParseEntryWithHTMLSummary(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/1"/>
@@ -450,6 +478,7 @@ func TestParseEntryWithHTMLSummary(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary type="html">&lt;code&gt;std::unique_ptr&amp;lt;S&amp;gt;&lt;/code&gt;</summary>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/2"/>
@@ -457,6 +486,7 @@ func TestParseEntryWithHTMLSummary(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary type="text/html">&lt;code&gt;std::unique_ptr&amp;lt;S&amp;gt;&lt;/code&gt;</summary>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/3"/>
@@ -464,6 +494,7 @@ func TestParseEntryWithHTMLSummary(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary type="html"><![CDATA[<code>std::unique_ptr&lt;S&gt;</code>]]></summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -484,6 +515,7 @@ func TestParseEntryWithTextSummary(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/a"/>
@@ -491,6 +523,7 @@ func TestParseEntryWithTextSummary(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>AT&amp;T &lt;S&gt;</summary>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/b"/>
@@ -498,6 +531,7 @@ func TestParseEntryWithTextSummary(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary type="text">AT&amp;T &lt;S&gt;</summary>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/c"/>
@@ -505,6 +539,7 @@ func TestParseEntryWithTextSummary(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary type="text/plain">AT&amp;T &lt;S&gt;</summary>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/d"/>
@@ -532,6 +567,7 @@ func TestParseEntryWithTextContent(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/a"/>
@@ -539,6 +575,7 @@ func TestParseEntryWithTextContent(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<content>AT&amp;T &lt;S&gt;</content>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/b"/>
@@ -546,6 +583,7 @@ func TestParseEntryWithTextContent(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<content type="text">AT&amp;T &lt;S&gt;</content>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/c"/>
@@ -553,6 +591,7 @@ func TestParseEntryWithTextContent(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<content type="text/plain">AT&amp;T &lt;S&gt;</content>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/d"/>
@@ -560,6 +599,7 @@ func TestParseEntryWithTextContent(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<content><![CDATA[AT&T <S>]]></content>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -580,6 +620,7 @@ func TestParseEntryWithHTMLContent(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/a"/>
@@ -587,6 +628,7 @@ func TestParseEntryWithHTMLContent(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<content type="html">AT&amp;amp;T bought &lt;b&gt;by SBC&lt;/b&gt;!</content>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/b"/>
@@ -594,6 +636,7 @@ func TestParseEntryWithHTMLContent(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<content type="text/html">AT&amp;amp;T bought &lt;b&gt;by SBC&lt;/b&gt;!</content>
 	  </entry>
+
 	  <entry>
 		<title type="html">Example</title>
 		<link href="http://example.org/c"/>
@@ -601,6 +644,7 @@ func TestParseEntryWithHTMLContent(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<content type="html"><![CDATA[AT&amp;T bought <b>by SBC</b>!]]></content>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -621,6 +665,7 @@ func TestParseEntryWithXHTMLContent(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<title>Example</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
@@ -630,6 +675,7 @@ func TestParseEntryWithXHTMLContent(t *testing.T) {
 			<div xmlns="http://www.w3.org/1999/xhtml">AT&amp;T bought <b>by SBC</b>!</div>
 		</content>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -647,6 +693,7 @@ func TestParseEntryWithAuthorName(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<link href="http://example.org/2003/12/13/atom03"/>
 		<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
@@ -657,6 +704,7 @@ func TestParseEntryWithAuthorName(t *testing.T) {
 			<email>me@localhost</email>
 		</author>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -674,6 +722,7 @@ func TestParseEntryWithoutAuthorName(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<link href="http://example.org/2003/12/13/atom03"/>
 		<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
@@ -684,6 +733,7 @@ func TestParseEntryWithoutAuthorName(t *testing.T) {
 			<email>me@localhost</email>
 		</author>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -934,12 +984,14 @@ func TestParseEntryWithPublished(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<link href="http://example.org/2003/12/13/atom03"/>
 		<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
 		<published>2003-12-13T18:30:02Z</published>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))
@@ -957,6 +1009,7 @@ func TestParseEntryWithPublishedAndUpdated(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
+
 	  <entry>
 		<link href="http://example.org/2003/12/13/atom03"/>
 		<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
@@ -964,6 +1017,7 @@ func TestParseEntryWithPublishedAndUpdated(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 	  </entry>
+
 	</feed>`
 
 	feed, err := Parse("https://example.org/", bytes.NewBufferString(data))

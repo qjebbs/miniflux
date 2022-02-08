@@ -1096,6 +1096,7 @@ article.feed-has-unread {
 .entry-content video,
 .entry-content img {
     max-width: 100%;
+    background-color: white;
 }
 
 .entry-content figure {

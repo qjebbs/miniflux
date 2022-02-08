@@ -113,12 +113,10 @@
                             data-label-uncached="{{ t "entry.cache.toggle.off" }}"
                             data-value="{{ if .entryCached }}cached{{ else }}uncached{{ end }}"
                             >
-                                {{ icon "cache" }}
-                                <span class="icon-label">
                                 {{ if .entryCached }}
-                                {{ t "entry.cache.toggle.off" }}
+                                {{ icon "uncache" }}<span class="icon-label">{{ t "entry.cache.toggle.off" }}</span>
                                 {{ else }}
-                                {{ t "entry.cache.toggle.on" }}
+                                {{ icon "cache" }}<span class="icon-label">{{ t "entry.cache.toggle.on" }}</span>
                                 {{ end }}
                                 </span>
                             </a>

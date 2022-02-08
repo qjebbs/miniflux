@@ -351,23 +351,31 @@ function handleCache(element) {
 }
 
 // Send the Ajax request and change the icon when caching an entry.
-function toggleCache(parentElement) {
-    let element = parentElement.querySelector("a[data-toggle-cache]");
-    if (!element) {
+function toggleCache(element) {
+    let link = element.querySelector("a[data-toggle-cache]");
+    if (!link) {
         return;
     }
+    
+    link.innerHTML = link.dataset.labelLoading;
 
-    element.innerHTML = element.dataset.labelLoading;
-
-    let request = new RequestBuilder(element.dataset.cacheUrl);
+    let request = new RequestBuilder(link.dataset.cacheUrl);
     request.withCallback(() => {
-        if (element.dataset.value === "cached") {
-            element.innerHTML = element.dataset.labelCached;
-            element.dataset.value = "uncached";
+        let currentStatus = link.dataset.value;
+        let newStatus = currentStatus === "cached" ? "uncached" : "cached";
+
+        let iconElement, label;
+
+        if (currentStatus === "cached") {
+            iconElement = document.querySelector("template#icon-cache");
+            label = link.dataset.labelCached;
         } else {
-            element.innerHTML = element.dataset.labelUncached;
-            element.dataset.value = "cached";
+            iconElement = document.querySelector("template#icon-uncache");
+            label = link.dataset.labelUncached;
         }
+
+        link.innerHTML = iconElement.innerHTML + '<span class="icon-label">' + label + '</span>';
+        link.dataset.value = newStatus;
     });
     request.execute();
 }
@@ -390,7 +398,6 @@ function setEntryStatusRead(element) {
     if (element && element.classList.contains("item-status-unread")) {
         element.classList.remove("item-status-unread");
         element.classList.add("item-status-read");
-        updateUnreadCounterValue
         decrementUnreadCounter(1);
     }
 }

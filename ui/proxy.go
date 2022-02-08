@@ -89,7 +89,8 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
-	req.Header.Add("User-Agent", config.Opts.HTTPClientUserAgent())
+
+	// Note: User-Agent HTTP header is omitted to avoid being blocked by bot protection mechanisms.
 	req.Header.Add("Connection", "close")
 
 	clt := &http.Client{
@@ -111,6 +112,7 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if resp.StatusCode != http.StatusOK {
+			logger.Error(`[Proxy] Status Code is %d for URL %q`, resp.StatusCode, imageURL)
 			html.NotFound(w, r)
 			return
 		}

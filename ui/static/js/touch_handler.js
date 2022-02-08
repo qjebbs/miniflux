@@ -89,8 +89,11 @@ class TouchHandler {
                 this.runListeners(this.listeners.end);
             }
 
-            this.touch.element.style.opacity = 1;
-            this.touch.element.style.transform = "none";
+            // If not on the unread page, undo transform of the dragged element.
+            if (document.URL.split("/").indexOf("unread") == -1 || distance <= 75) {
+                this.touch.element.style.opacity = 1;
+                this.touch.element.style.transform = "none";
+            }
         }
         this.reset();
     }

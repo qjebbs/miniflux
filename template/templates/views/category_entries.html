@@ -5,16 +5,16 @@
     <h1 dir="auto">{{ .category.Title }} ({{ .total }})</h1>
     <ul class="left">
         <li>
-            <a href="{{ route "categoryEntries" "categoryID" .category.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ t "menu.show_only_unread_entries" }}</a>
+            <a href="{{ route "categoryEntries" "categoryID" .category.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ icon "show-unread-entries" }}{{ t "menu.show_only_unread_entries" }}</a>
         </li>
         <li>
-            <a href="{{ route "categoryEntriesStarred" "categoryID" .category.ID }}" {{ if .showOnlyStarredEntries }}class="disabled"{{ end }}>{{ t "menu.show_only_starred_entries" }}</a>
+            <a href="{{ route "categoryEntriesStarred" "categoryID" .category.ID }}" {{ if .showOnlyStarredEntries }}class="disabled"{{ end }}>{{ icon "star" }}{{ t "menu.show_only_starred_entries" }}</a>
         </li>
         <li>
-            <a href="{{ route "categoryEntriesAll" "categoryID" .category.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ t "menu.show_all_entries" }}</a>
+            <a href="{{ route "categoryEntriesAll" "categoryID" .category.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ icon "show-all-entries" }}{{ t "menu.show_all_entries" }}</a>
         </li>
         <li>
-            <a href="{{ route "categoryFeeds" "categoryID" .category.ID }}">{{ t "menu.feeds" }}</a>
+            <a href="{{ route "categoryFeeds" "categoryID" .category.ID }}">{{ icon "feeds" }}{{ t "menu.feeds" }}</a>
         </li>
     </ul>
     <ul class="right">
@@ -24,10 +24,10 @@
                 data-url="{{ route "updateCategoryView" "categoryID" .category.ID }}"
                 {{ if ne .view "masonry" }}
                     data-value="masonry">
-                    ❒ {{ t "form.prefs.select.view_masonry" }}
+                    {{ icon "masonry" }}{{ t "form.prefs.select.view_masonry" }}
                 {{ else }}
                     data-value="list">
-                    ≡ {{ t "form.prefs.select.view_list" }}
+                    {{ icon "list" }}{{ t "form.prefs.select.view_list" }}
                 {{ end }}
             </a>
         </li>
@@ -43,6 +43,9 @@
     <p class="alert">{{ t "alert.no_category_entry" }}</p>
     {{ end }}
 {{ else }}
+    <div class="pagination-top">
+        {{ template "pagination" .pagination }}
+    </div>
     <section class="page-footer">
         <ul>
             <li>
@@ -52,7 +55,7 @@
                     data-label-yes="{{ t "confirm.yes" }}"
                     data-label-no="{{ t "confirm.no" }}"
                     data-label-loading="{{ t "confirm.loading" }}"
-                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ icon "mark-page-as-read" }}{{ t "menu.mark_page_as_read" }}</a>
             </li>
             <li>
                 <a href="#"
@@ -61,7 +64,7 @@
                     data-label-yes="{{ t "confirm.yes" }}"
                     data-label-no="{{ t "confirm.no" }}"
                     data-label-loading="{{ t "confirm.loading" }}"
-                    data-url="{{ route "markCategoryAsRead" "categoryID" .category.ID }}">{{ t "menu.mark_all_as_read" }}</a>
+                    data-url="{{ route "markCategoryAsRead" "categoryID" .category.ID }}">{{ icon "mark-all-as-read" }}{{ t "menu.mark_all_as_read" }}</a>
             </li>
         </ul>
     </section>
@@ -108,7 +111,7 @@
                     data-label-yes="{{ t "confirm.yes" }}"
                     data-label-no="{{ t "confirm.no" }}"
                     data-label-loading="{{ t "confirm.loading" }}"
-                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ t "menu.mark_page_as_read" }}</a>
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ icon "mark-page-as-read" }}{{ t "menu.mark_page_as_read" }}</a>
             </li>
             <li>
                 <a href="#"
@@ -117,11 +120,13 @@
                     data-label-yes="{{ t "confirm.yes" }}"
                     data-label-no="{{ t "confirm.no" }}"
                     data-label-loading="{{ t "confirm.loading" }}"
-                    data-url="{{ route "markCategoryAsRead" "categoryID" .category.ID }}">{{ t "menu.mark_all_as_read" }}</a>
+                    data-url="{{ route "markCategoryAsRead" "categoryID" .category.ID }}">{{ icon "mark-all-as-read" }}{{ t "menu.mark_all_as_read" }}</a>
             </li>
         </ul>
     </section>
-    {{ template "pagination" .pagination }}
+    <div class="pagination-bottom">
+        {{ template "pagination" .pagination }}
+    </div>
 {{ end }}
 
 {{ end }}

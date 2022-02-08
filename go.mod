@@ -11,17 +11,16 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.4
 	github.com/mitchellh/go-server-timing v1.0.2-0.20201108055052-feb680ab92c2
-	github.com/pquerna/cachecontrol v0.1.0 // indirect
-	github.com/prometheus/client_golang v1.11.0
+	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
+	github.com/prometheus/client_golang v1.12.1
 	github.com/rylans/getlang v0.0.0-20200505200108-4c3188ff8a2d
-	github.com/tdewolff/minify/v2 v2.9.26
+	github.com/stretchr/testify v1.6.1 // indirect
+	github.com/tdewolff/minify/v2 v2.10.0
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
-	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
-	golang.org/x/net v0.0.0-20211205041911-012df41ee64c
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.27.1 // indirect
-	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/net v0.0.0-20210916014120-12bc252f5db8
+	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
+	gopkg.in/square/go-jose.v2 v2.5.0 // indirect
 	mvdan.cc/xurls/v2 v2.3.0
 )
 

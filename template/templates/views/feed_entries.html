@@ -16,6 +16,43 @@
         <li>
             <a href="{{ route "feedEntriesAll" "feedID" .feed.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ icon "show-all-entries" }}{{ t "menu.show_all_entries" }}</a>
         </li>
+    </ul>
+    <ul class="right">
+        <li>
+            <a href="#"
+                data-action="setView"
+                data-url="{{ route "updateFeedView" "feedID" .feed.ID }}"
+                {{ if ne .view "masonry" }}
+                    data-value="masonry">
+                    {{ icon "masonry" }}{{ t "form.prefs.select.view_masonry" }}
+                {{ else }}
+                    data-value="list">
+                    {{ icon "list" }}{{ t "form.prefs.select.view_list" }}
+                {{ end }}
+            </a>
+        </li>
+    </ul>
+    <ul class="left full">
+        {{ if .entries }}
+        <li>
+            <a href="#"
+                data-action="markPageAsRead"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}"
+                data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ icon "mark-page-as-read" }}{{ t "menu.mark_page_as_read" }}</a>
+        </li>
+        <li>
+            <a href="#"
+                data-confirm="true"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}"
+                data-url="{{ route "markFeedAsRead" "feedID" .feed.ID }}">{{ icon "mark-all-as-read" }}{{ t "menu.mark_all_as_read" }}</a>
+        </li>
+        {{ end }}
         <li>
             <a href="{{ route "refreshFeed" "feedID" .feed.ID }}">{{ icon "refresh" }}{{ t "menu.refresh_feed" }}</a>
         </li>
@@ -32,21 +69,6 @@
                 data-label-loading="{{ t "confirm.loading" }}"
                 data-url="{{ route "removeFeed" "feedID" .feed.ID }}"
                 data-redirect-url="{{ route "feeds" }}">{{ icon "delete" }}{{ t "action.remove_feed" }}</a>
-        </li>
-    </ul>
-    <ul class="right">
-        <li>
-            <a href="#"
-                data-action="setView"
-                data-url="{{ route "updateFeedView" "feedID" .feed.ID }}"
-                {{ if ne .view "masonry" }}
-                    data-value="masonry">
-                    {{ icon "masonry" }}{{ t "form.prefs.select.view_masonry" }}
-                {{ else }}
-                    data-value="list">
-                    {{ icon "list" }}{{ t "form.prefs.select.view_list" }}
-                {{ end }}
-            </a>
         </li>
     </ul>
 </section>
@@ -69,28 +91,6 @@
     <div class="pagination-top">
         {{ template "pagination" .pagination }}
     </div>
-    <section class="page-footer">
-        <ul>  
-            <li>
-                <a href="#"
-                    data-action="markPageAsRead"
-                    data-label-question="{{ t "confirm.question" }}"
-                    data-label-yes="{{ t "confirm.yes" }}"
-                    data-label-no="{{ t "confirm.no" }}"
-                    data-label-loading="{{ t "confirm.loading" }}"
-                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ icon "mark-page-as-read" }}{{ t "menu.mark_page_as_read" }}</a>
-            </li>
-            <li>
-                <a href="#"
-                    data-confirm="true"
-                    data-label-question="{{ t "confirm.question" }}"
-                    data-label-yes="{{ t "confirm.yes" }}"
-                    data-label-no="{{ t "confirm.no" }}"
-                    data-label-loading="{{ t "confirm.loading" }}"
-                    data-url="{{ route "markFeedAsRead" "feedID" .feed.ID }}">{{ icon "mark-all-as-read" }}{{ t "menu.mark_all_as_read" }}</a>
-            </li>
-        </ul>
-    </section>
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}

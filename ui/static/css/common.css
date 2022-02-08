@@ -331,6 +331,10 @@ a:hover {
     .page-header ul.left {
         float: left;
     }
+
+    .page-header ul.left.full {
+        width: 100%;
+    }
     
     .page-header ul.right {
         float: right;
@@ -666,11 +670,11 @@ template {
     margin: 0;
 }
 
-.left {
+.modal.left {
     left: -360px;
 }
 
-.right {
+.modal.right {
     right: -360px;
 }
 

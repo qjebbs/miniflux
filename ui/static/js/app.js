@@ -737,7 +737,7 @@ function initMasonryLayout() {
                     return;
                 }
                 if (img) {
-                    img.src = addProxyParam(img.src);
+                    img.src = cachedImage(img.src);
                     img = undefined;
                 } else {
                     e.target.parentNode.removeChild(e.target);
@@ -752,7 +752,7 @@ function initMasonryLayout() {
     imgs.forEach(img => {
         img.addEventListener("error", (e) => {
             if (img) {
-                img.src = addProxyParam(img.src);
+                img.src = cachedImage(img.src);
                 img = undefined;
             }
         })
@@ -761,19 +761,11 @@ function initMasonryLayout() {
 
 function forceProxyImages() {
     let imgs = document.querySelectorAll(".entry-content img");
-    imgs.forEach(img => img.src = addProxyParam(img.src));
+    imgs.forEach(img => img.src = cachedImage(img.src));
 }
 
-function addProxyParam(url) {
-    let parts = url.split('?');
-    let params = parts[1] ? parts[1].split('&') : [];
-    for (let i = 0; i < params.length; i++) {
-        if (params[i].toLowerCase().startsWith("proxy=")) {
-            params.splice(i, 1);
-        }
-    }
-    params.push("proxy=force");
-    return parts[0] + '?' + params.join('&');
+function cachedImage(url) {
+    return `/caches/${btoa(url)}`;
 }
 
 function showToast(label, iconElement) {

@@ -8,9 +8,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
-	"miniflux.app/config"
+	"miniflux.app/filesystem"
+
 	"miniflux.app/crypto"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response"
@@ -18,7 +20,7 @@ import (
 	"miniflux.app/logger"
 )
 
-func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
+func (h *handler) cachedMedia(w http.ResponseWriter, r *http.Request) {
 	// If we receive a "If-None-Match" header, we assume the image is already stored in browser cache.
 	if r.Header.Get("If-None-Match") != "" {
 		w.WriteHeader(http.StatusNotModified)
@@ -36,42 +38,44 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		html.BadRequest(w, r, errors.New("Unable to decode this URL"))
 		return
 	}
-
 	imageURL := string(decodedURL)
-	logger.Debug(`[Proxy] Fetching %q`, imageURL)
 
-	req, err := http.NewRequest("GET", imageURL, nil)
+	userID := request.UserID(r)
+	etag := crypto.HashFromBytes(decodedURL)
+	media, err := h.store.UserMediaByURL(imageURL, userID)
 	if err != nil {
-		html.ServerError(w, r, err)
+		html.ServerError(w, r, errors.New("Unable to query media cache"))
 		return
 	}
 
-	// Note: User-Agent HTTP header is omitted to avoid being blocked by bot protection mechanisms.
-	req.Header.Add("Connection", "close")
-
-	clt := &http.Client{
-		Timeout: time.Duration(config.Opts.HTTPClientTimeout()) * time.Second,
-	}
-
-	resp, err := clt.Do(req)
-	if err != nil {
-		html.ServerError(w, r, err)
+	if media.Content != nil {
+		logger.Debug(`[Proxy] From database cache, for %q`, imageURL)
+		response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+			b.WithHeader("Content-Type", media.MimeType)
+			b.WithBody(media.Content)
+			b.WithoutCompression()
+			b.Write()
+		})
 		return
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		logger.Error(`[Proxy] Status Code is %d for URL %q`, resp.StatusCode, imageURL)
+	if !media.Cached {
 		html.NotFound(w, r)
 		return
 	}
 
-	etag := crypto.HashFromBytes(decodedURL)
-
+	// cache is located in file system
+	var file *os.File
+	file, err = filesystem.MediaFileByHash(media.URLHash)
+	if err != nil {
+		html.ServerError(w, r, errors.New("Unable to fetch media"))
+		return
+	}
+	defer file.Close()
+	logger.Debug(`[Proxy] From filesystem cache, for %q`, imageURL)
 	response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
-		b.WithHeader("Content-Security-Policy", `default-src 'self'`)
-		b.WithHeader("Content-Type", resp.Header.Get("Content-Type"))
-		b.WithBody(resp.Body)
+		b.WithHeader("Content-Type", media.MimeType)
+		b.WithBody(file)
 		b.WithoutCompression()
 		b.Write()
 	})

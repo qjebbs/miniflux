@@ -140,8 +140,12 @@ a:hover {
 
 .page-header li,
 .page-footer li {
-    list-style-type: circle;
+    list-style-type: none;
     line-height: 1.8em;
+}
+
+.page-header ul a .icon {
+    padding-bottom: 2px;
 }
 
 /* Logo */
@@ -557,10 +561,13 @@ a.button {
     color: var(--button-primary-color);
 }
 
+a.button-primary:hover,
+a.button-primary:focus,
 .button-primary:hover,
 .button-primary:focus {
     border-color: var(--button-primary-focus-border-color);
     background: var(--button-primary-focus-background);
+    color: var(--button-primary-color);
 }
 
 .button-danger {

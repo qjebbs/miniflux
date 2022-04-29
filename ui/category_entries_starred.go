@@ -41,7 +41,7 @@ func (h *handler) showCategoryEntriesStarredPage(w http.ResponseWriter, r *http.
 	builder.WithCategoryID(category.ID)
 	builder.WithOrder(model.DefaultSortingOrder)
 	builder.WithDirection(user.EntryDirection)
-	builder.WithStarred()
+	builder.WithStarred(true)
 	builder.WithOffset(offset)
 	builder.WithLimit(user.EntriesPerPage)
 	if nsfw {

@@ -38,7 +38,7 @@ func (h *handler) showStatPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	builder = h.store.NewEntryQueryBuilder(user.ID)
-	builder.WithStarred()
+	builder.WithStarred(true)
 	if nsfw {
 		builder.WithoutNSFW()
 	}

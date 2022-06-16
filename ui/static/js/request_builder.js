@@ -50,7 +50,7 @@ class RequestBuilder {
     }
 
     getCsrfToken() {
-        let element = document.querySelector("body[data-csrf-token");
+        let element = document.querySelector("body[data-csrf-token]");
         if (element !== null) {
             return element.dataset.csrfToken;
         }

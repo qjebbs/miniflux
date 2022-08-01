@@ -121,11 +121,13 @@ func (s *Storage) CategoriesWithFeedCount(userID int64, nsfw bool) (model.Catego
 			(SELECT count(*)
 			   FROM feeds
 			     JOIN entries ON (feeds.id = entries.feed_id)
-			   WHERE feeds.category_id = c.id AND entries.status = 'unread' %s)
+			   WHERE feeds.category_id = c.id AND entries.status = 'unread' %s) AS count_unread
 		FROM categories c
 		WHERE
 			user_id=$1
-		ORDER BY c.title ASC
+		ORDER BY
+			count_unread DESC,
+			c.title ASC
 	`
 	nsfwCond := ""
 	if nsfw {

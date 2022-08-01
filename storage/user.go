@@ -86,7 +86,10 @@ func (s *Storage) CreateUser(userCreationRequest *model.UserCreationRequest) (*m
 			google_id,
 			openid_connect_id,
 			display_mode,
-			entry_order
+			entry_order,
+		    default_reading_speed,
+		    cjk_reading_speed,
+		    default_home_page
 	`
 
 	tx, err := s.db.Begin()
@@ -120,6 +123,9 @@ func (s *Storage) CreateUser(userCreationRequest *model.UserCreationRequest) (*m
 		&user.OpenIDConnectID,
 		&user.DisplayMode,
 		&user.EntryOrder,
+		&user.DefaultReadingSpeed,
+		&user.CJKReadingSpeed,
+		&user.DefaultHomePage,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -171,9 +177,12 @@ func (s *Storage) UpdateUser(user *model.User) error {
 				openid_connect_id=$14,
 				view=$15,
 				display_mode=$16,
-				entry_order=$17
+				entry_order=$17,
+				default_reading_speed=$18,
+				cjk_reading_speed=$19,
+				default_home_page=$20
 			WHERE
-				id=$18
+				id=$21
 		`
 
 		_, err = s.db.Exec(
@@ -195,6 +204,9 @@ func (s *Storage) UpdateUser(user *model.User) error {
 			user.View,
 			user.DisplayMode,
 			user.EntryOrder,
+			user.DefaultReadingSpeed,
+			user.CJKReadingSpeed,
+			user.DefaultHomePage,
 			user.ID,
 		)
 		if err != nil {
@@ -218,9 +230,12 @@ func (s *Storage) UpdateUser(user *model.User) error {
 				openid_connect_id=$13,
 				view=$14,
 				display_mode=$15,
-				entry_order=$16
+				entry_order=$16,
+				default_reading_speed=$17,
+				cjk_reading_speed=$18,
+				default_home_page=$19
 			WHERE
-				id=$17
+				id=$20
 		`
 
 		_, err := s.db.Exec(
@@ -241,6 +256,9 @@ func (s *Storage) UpdateUser(user *model.User) error {
 			user.View,
 			user.DisplayMode,
 			user.EntryOrder,
+			user.DefaultReadingSpeed,
+			user.CJKReadingSpeed,
+			user.DefaultHomePage,
 			user.ID,
 		)
 
@@ -283,7 +301,10 @@ func (s *Storage) UserByID(userID int64) (*model.User, error) {
 			google_id,
 			openid_connect_id,
 			display_mode,
-			entry_order
+			entry_order,
+			default_reading_speed,
+			cjk_reading_speed,
+			default_home_page
 		FROM
 			users
 		WHERE
@@ -313,7 +334,10 @@ func (s *Storage) UserByUsername(username string) (*model.User, error) {
 			google_id,
 			openid_connect_id,
 			display_mode,
-			entry_order
+			entry_order,
+			default_reading_speed,
+			cjk_reading_speed,
+			default_home_page
 		FROM
 			users
 		WHERE
@@ -343,7 +367,10 @@ func (s *Storage) UserByField(field, value string) (*model.User, error) {
 			google_id,
 			openid_connect_id,
 			display_mode,
-			entry_order
+			entry_order,
+			default_reading_speed,
+			cjk_reading_speed,
+			default_home_page
 		FROM
 			users
 		WHERE
@@ -379,7 +406,10 @@ func (s *Storage) UserByAPIKey(token string) (*model.User, error) {
 			u.google_id,
 			u.openid_connect_id,
 			u.display_mode,
-			u.entry_order
+			u.entry_order,
+			u.default_reading_speed,
+			u.cjk_reading_speed,
+			u.default_home_page
 		FROM
 			users u
 		LEFT JOIN
@@ -411,6 +441,9 @@ func (s *Storage) fetchUser(query string, args ...interface{}) (*model.User, err
 		&user.OpenIDConnectID,
 		&user.DisplayMode,
 		&user.EntryOrder,
+		&user.DefaultReadingSpeed,
+		&user.CJKReadingSpeed,
+		&user.DefaultHomePage,
 	)
 
 	if err == sql.ErrNoRows {
@@ -503,7 +536,10 @@ func (s *Storage) Users() (model.Users, error) {
 			google_id,
 			openid_connect_id,
 			display_mode,
-			entry_order
+			entry_order,
+			default_reading_speed,
+			cjk_reading_speed,
+			default_home_page
 		FROM
 			users
 		ORDER BY username ASC
@@ -536,6 +572,9 @@ func (s *Storage) Users() (model.Users, error) {
 			&user.OpenIDConnectID,
 			&user.DisplayMode,
 			&user.EntryOrder,
+			&user.DefaultReadingSpeed,
+			&user.CJKReadingSpeed,
+			&user.DefaultHomePage,
 		)
 
 		if err != nil {

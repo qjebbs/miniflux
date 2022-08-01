@@ -56,11 +56,11 @@
     <header class="header">
         <nav>
             <div class="logo">
-                <a href="{{ route "stat" }}">Mini<span>flux{{ if .nsfw }}∙{{ end }}</span></a>
+                <a href="{{ route .user.DefaultHomePage }}">Mini<span>flux{{ if .nsfw }}∙{{ end }}</span></a>
             </div>
             <ul>
                 <li class="mobile-only" {{ if eq .menu "home" }}class="active"{{ end }}>
-                    <a href="{{ route "stat" }}" data-page="home">{{ t "menu.home" }}</a>
+                    <a href="{{ route .user.DefaultHomePage }}" data-page="{{ .user.DefaultHomePage }}">{{ t "menu.home" }}</a>
                 </li>
                 <li {{ if eq .menu "unread" }}class="active"{{ end }} title="{{ t "tooltip.keyboard_shortcuts" "g u" }}">
                     <a href="{{ route "unread" }}" data-page="unread">{{ t "menu.unread" }}

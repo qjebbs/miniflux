@@ -25,7 +25,7 @@ See all other variables [here](https://miniflux.app/docs/configuration.html).
 
 ### About the NSFW Mode
 
-The NSFW is designed to hide some content when you show `Miniflux` to others. 
+The NSFW is designed to hide and skip some articles temporary in some cases, like, at work.
 
 In the second demo below, a small dot near the `Miniflux` indicates that the NSFW mode is enabled.  
 

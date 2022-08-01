@@ -50,6 +50,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		RewriteRules:                feed.RewriteRules,
 		BlocklistRules:              feed.BlocklistRules,
 		KeeplistRules:               feed.KeeplistRules,
+		UrlRewriteRules:             feed.UrlRewriteRules,
 		Crawler:                     feed.Crawler,
 		CacheMedia:                  feed.CacheMedia,
 		UserAgent:                   feed.UserAgent,

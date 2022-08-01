@@ -16,7 +16,10 @@ import (
 
 // ProxifyURL generates an URL for a proxified resource.
 func ProxifyURL(router *mux.Router, link string) string {
-	return route.Path(router, "proxy", "encodedURL", base64.URLEncoding.EncodeToString([]byte(link)))
+	if link != "" {
+		return route.Path(router, "proxy", "encodedURL", base64.URLEncoding.EncodeToString([]byte(link)))
+	}
+	return ""
 }
 
 // ShouldProxify tells if a link should prxified.

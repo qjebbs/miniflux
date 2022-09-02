@@ -34,7 +34,7 @@
     <div class="pagination-top">
         {{ template "pagination" .pagination }}
     </div>
-    <div class='{{ if eq .view "masonry" }}items masonry{{ else }}items hide-read-items{{ end }}'>
+    <div class='{{ if eq .view "masonry" }}items masonry{{ else }}items{{ end }}'>
         <div class="item-sizer"></div>
         {{ range .entries }}
         <article role="article" class="item {{ if $.user.EntrySwipe }}touch-item{{ end }} item-status-{{ .Status }}{{ if .Starred }} item-starred{{ end }}" data-id="{{ .ID }}">

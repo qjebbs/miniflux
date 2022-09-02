@@ -1,15 +1,11 @@
-miniflux-*
-miniflux
-*.rpm
-*.deb
-__debug_bin
-
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
-
-# Created by https://www.toptal.com/developers/gitignore/api/go,macos,windows
-# Edit at https://www.toptal.com/developers/gitignore?templates=go,macos,windows
+# Created by https://www.toptal.com/developers/gitignore/api/windows,macos,go,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,go,visualstudiocode
 
 ### Go ###
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -25,6 +21,9 @@ __debug_bin
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Go workspace file
+go.work
 
 ### Go Patch ###
 /vendor/
@@ -59,6 +58,35 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+### macOS Patch ###
+# iCloud generated files
+*.icloud
+
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
+
+# Support for Project snippet scope
+.vscode/*.code-snippets
+
+# Ignore code-workspaces
+*.code-workspace
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -85,7 +113,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/go,macos,windows
+# End of https://www.toptal.com/developers/gitignore/api/windows,macos,go,visualstudiocode
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 

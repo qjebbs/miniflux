@@ -85,6 +85,7 @@
     "entry.comments.title": "查看评论",
     "entry.actions.label": "更多",
     "entry.actions.title": "显示适用于此文章的全部操作",
+    "entry.more_images": "共 %d 张图片...",
     "page.stat.title": "Miniflux 阅读器",
     "page.stat.articles": "文章",
     "page.stat.articles.unread": "未读文章",

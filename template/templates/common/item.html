@@ -20,10 +20,13 @@
         {{ end }}
     </div>
     {{ template "item_meta" . }}
-    {{ if and (eq .view "masonry") (ne .entry.Thumbnail "") }}
+    {{ if and (eq .view "masonry") (ne .entry.CoverImage "") }}
     <div class="thumbnail">
-        <a target="_blank" data-set-read="true" data-no-request="true" href="{{ route "readEntry" "entryID" .entry.ID }}">
-            <img class="lazy" src="" data-src="{{ proxyURL .entry.Thumbnail }}">
+        <a target="_blank" data-set-read="true" data-no-request="true" href="{{ .href }}">
+            <img class="lazy" src="" data-src="{{ proxyURL .entry.CoverImage }}">
+            {{ if gt .entry.ImageCount 1 }}
+            <p class="badge">{{ t "entry.more_images" .entry.ImageCount }}</p>
+            {{ end }}
         </a>
     </div>
     {{ end }}

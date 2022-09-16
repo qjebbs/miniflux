@@ -26,6 +26,7 @@ func (s *Storage) CreateMediasRunOnce() {
 	if err != nil {
 		return
 	}
+	defer tx.Rollback()
 	for {
 		entries, err := getEntriesForCreateMediasRunOnce(s.db, startID)
 		if err != nil {
@@ -41,11 +42,7 @@ func (s *Storage) CreateMediasRunOnce() {
 		}
 		startID = entries[len(entries)-1].ID
 	}
-	if err != nil {
-		tx.Rollback()
-	} else {
-		tx.Commit()
-	}
+	tx.Commit()
 }
 
 // hasMediaRecord returns if entry_medias has at least one record.

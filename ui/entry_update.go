@@ -128,7 +128,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 	entry.Starred = true
 	entry.Status = model.EntryStatusUnread
 
-	err = h.store.UpdateEntryByID(entryForm.Merge(entry))
+	err = h.store.UpdateEntry(entryForm.Merge(entry))
 	if err != nil {
 		logger.Error("[UI:UpdateEntry] %v", err)
 		view.Set("errorMessage", err.Error())

@@ -85,6 +85,7 @@
     "entry.comments.title": "Показать комментарии",
     "entry.actions.label": "All Actions",
     "entry.actions.title": "Show all actions available to this entry",
+    "entry.more_images": "%d images in total...",
     "entry.share.label": "Поделиться",
     "entry.share.title": "Поделиться этой статьёй",
     "entry.unshare.label": "Удалить из общедоступных",

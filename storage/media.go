@@ -132,8 +132,8 @@ func (s *Storage) CreateMedia(media *model.Media) error {
 	return nil
 }
 
-// CreateEntryMedia creates media for a single entry, and it won't replace existed media or media references
-func (s *Storage) CreateEntryMedia(entry *model.Entry) ([]int64, error) {
+// createEntryMedia creates media for a single entry, and it won't replace existed media or media references
+func (s *Storage) createEntryMedia(tx *sql.Tx, entry *model.Entry) ([]int64, error) {
 	cap := 15
 	medias := make(map[string]string, cap)
 	var mediaIDs []int64
@@ -149,9 +149,11 @@ func (s *Storage) CreateEntryMedia(entry *model.Entry) ([]int64, error) {
 		}
 	}
 
-	if len(medias) == 0 {
+	entry.ImageCount = len(medias)
+	if entry.ImageCount == 0 {
 		return nil, nil
 	}
+	entry.CoverImage = urls[0]
 	// insert medias records
 	var buf bytes.Buffer
 	for _, em := range medias {
@@ -165,11 +167,11 @@ func (s *Storage) CreateEntryMedia(entry *model.Entry) ([]int64, error) {
 			SET created_at=current_timestamp
 		RETURNING id, url_hash
 	`, vals)
-	rows, err := s.db.Query(sql)
-	defer rows.Close()
+	rows, err := tx.Query(sql)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var m model.Media
 		err = rows.Scan(&m.ID, &m.URLHash)
@@ -189,7 +191,7 @@ func (s *Storage) CreateEntryMedia(entry *model.Entry) ([]int64, error) {
 		INSERT INTO entry_medias (entry_id, media_id) 
 		VALUES %s
 		ON CONFLICT DO NOTHING`, vals)
-	_, err = s.db.Exec(sql)
+	_, err = tx.Exec(sql)
 	return mediaIDs, err
 }
 
@@ -361,11 +363,11 @@ func (s *Storage) Medias(userID int64) (model.Medias, error) {
 	return medias, nil
 }
 
-// UpdateEntryMedia updates media records for given entries
-func (s *Storage) UpdateEntryMedia(entry *model.Entry) error {
+// updateEntryMedia updates media records for given entries
+func (s *Storage) updateEntryMedia(tx *sql.Tx, entry *model.Entry) error {
 	defer timer.ExecutionTime(time.Now(), "[Storage:UpdateEntryMedias]")
 	if entry.Status == "" {
-		err := s.db.QueryRow(`SELECT status FROM entries WHERE id=$1`, entry.ID).Scan(&entry.Status)
+		err := tx.QueryRow(`SELECT status FROM entries WHERE id=$1`, entry.ID).Scan(&entry.Status)
 		if err != nil {
 			return fmt.Errorf("[Storage:UpdateEntryMedias] unable to fetch entry status #%d: %v", entry.ID, err)
 		}
@@ -373,13 +375,13 @@ func (s *Storage) UpdateEntryMedia(entry *model.Entry) error {
 	if entry.Status == model.EntryStatusRemoved {
 		return nil
 	}
-	mediaIDs, err := s.CreateEntryMedia(entry)
+	mediaIDs, err := s.createEntryMedia(tx, entry)
 	if err != nil {
-		return fmt.Errorf("[Storage:UpdateEntryMedias] unable to create media for entry #%d: %v", entry.ID, err)
+		return fmt.Errorf("[Storage:updateEntryMedias] unable to create media for entry #%d: %v", entry.ID, err)
 	}
 	if len(mediaIDs) == 0 {
 		// no media for update entry, remove all its references
-		_, err = s.db.Exec(`DELETE FROM entry_medias WHERE entry_id = $1`, entry.ID)
+		_, err = tx.Exec(`DELETE FROM entry_medias WHERE entry_id = $1`, entry.ID)
 	} else {
 		// remove references of removed media
 		var buf bytes.Buffer
@@ -388,7 +390,7 @@ func (s *Storage) UpdateEntryMedia(entry *model.Entry) error {
 		}
 		vals := buf.String()[:buf.Len()-1]
 		query := fmt.Sprintf(`DELETE FROM entry_medias WHERE entry_id = %d AND media_id not in (%s)`, entry.ID, vals)
-		_, err = s.db.Exec(query)
+		_, err = tx.Exec(query)
 	}
 	if err != nil {
 		return fmt.Errorf("unable to clean media for entry #%d: %v", entry.ID, err)

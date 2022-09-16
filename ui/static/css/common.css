@@ -948,9 +948,25 @@ template {
     display: none;
 }
 
+.masonry .thumbnail{
+    display: inherit;
+}
+
+.masonry .thumbnail a {
+    text-decoration: none;
+}
+
 .masonry .thumbnail img {
     width: 100%;
     background-color: white;
+}
+
+.masonry .thumbnail .badge {
+    font-size: 0.75em;
+    color: var(--counter-color);
+    background: var(--modal-background);
+    text-align: right;
+    padding: 0.2em 0.5em;
 }
 
 .masonry .item-status-read:not(.item-starred) .thumbnail{
@@ -978,10 +994,6 @@ template {
     .masonry.col-4 .item-sizer, .masonry.col-4 .item {
         width: calc((100% - 30px)/4);
     }
-}
-
-.masonry .thumbnail{
-    display: inherit;
 }
 
 /* Feeds list */

@@ -11,18 +11,18 @@ func patch(tx *sql.Tx) error {
 			id bigserial not null,
 			url text not null,
 			url_hash text not null unique,
-			mime_type text default '',
-			content bytea default null,
-			size int8 default 0,
-			cached bool default 'f',
-			error_count int default 0,
-			created_at timestamp with time zone default current_timestamp,
+			mime_type text not null default '',
+			content bytea not null default null,
+			size int8 not null default 0,
+			cached bool not null default 'f',
+			error_count int not null default 0,
+			created_at timestamp with time zone not null default current_timestamp,
 			primary key (id)
 		);
 		CREATE TABLE IF NOT EXISTS entry_medias (
 			entry_id int8 NOT NULL,
 			media_id int8 NOT NULL,
-			use_cache bool default 'f',
+			use_cache bool not null default 'f',
 			PRIMARY KEY (entry_id, media_id),
 			foreign key (entry_id) references entries(id) on delete cascade,
 			foreign key (media_id) references medias(id) on delete cascade
@@ -31,37 +31,49 @@ func patch(tx *sql.Tx) error {
 		return err
 	}
 	if !columnExists(tx, "feeds", "cache_media") {
-		_, err = tx.Exec("alter table feeds add column cache_media bool default 'f';")
+		_, err = tx.Exec("alter table feeds add column cache_media bool not null default 'f';")
 		if err != nil {
 			return err
 		}
 	}
 	if !columnExists(tx, "users", "view") {
-		_, err = tx.Exec("alter table users add column view text default 'default';")
+		_, err = tx.Exec("alter table users add column view text not null default 'default';")
 		if err != nil {
 			return err
 		}
 	}
 	if !columnExists(tx, "categories", "view") {
-		_, err = tx.Exec("alter table categories add column view text default 'default';")
+		_, err = tx.Exec("alter table categories add column view text not null default 'default';")
 		if err != nil {
 			return err
 		}
 	}
 	if !columnExists(tx, "feeds", "view") {
-		_, err = tx.Exec("alter table feeds add column view text default 'default';")
+		_, err = tx.Exec("alter table feeds add column view text not null default 'default';")
 		if err != nil {
 			return err
 		}
 	}
 	if !columnExists(tx, "feeds", "nsfw") {
-		_, err = tx.Exec("alter table feeds add column nsfw bool default 'f';")
+		_, err = tx.Exec("alter table feeds add column nsfw bool not null default 'f';")
 		if err != nil {
 			return err
 		}
 	}
 	if !columnExists(tx, "medias", "error_count") {
-		_, err = tx.Exec("alter table medias add column error_count int default 0;")
+		_, err = tx.Exec("alter table medias add column error_count int not null default 0;")
+		if err != nil {
+			return err
+		}
+	}
+	if !columnExists(tx, "entries", "cover_image") {
+		_, err = tx.Exec("alter table entries add column cover_image text not null default '';")
+		if err != nil {
+			return err
+		}
+	}
+	if !columnExists(tx, "entries", "image_count") {
+		_, err = tx.Exec("alter table entries add column image_count int not null default 0;")
 		if err != nil {
 			return err
 		}

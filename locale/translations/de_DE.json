@@ -85,6 +85,7 @@
     "entry.comments.title": "Kommentare anzeigen",
     "entry.actions.label": "All Actions",
     "entry.actions.title": "Show all actions available to this entry",
+    "entry.more_images": "%d images in total...",
     "page.stat.title": "Miniflux Reader",
     "page.stat.articles": "Artikel",
     "page.stat.articles.unread": "Ungelesene Artikel",

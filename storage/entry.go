@@ -79,21 +79,26 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 		return err
 	}
 
-	query := `
-		UPDATE
-			entries
-		SET
-			content=$1, reading_time=$2
-		WHERE
-			id=$3 AND user_id=$4
-	`
-	_, err = tx.Exec(query, entry.Content, entry.ReadingTime, entry.ID, entry.UserID)
+	err = s.updateEntryMedia(tx, entry)
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
 	}
 
-	err = s.UpdateEntryMedia(entry)
+	query := `
+		UPDATE
+			entries
+		SET
+			content=$1, reading_time=$2,
+			cover_image=$3, image_count=$4
+		WHERE
+			id=$5 AND user_id=$6
+	`
+	_, err = tx.Exec(
+		query, entry.Content, entry.ReadingTime,
+		entry.CoverImage, entry.ImageCount,
+		entry.ID, entry.UserID,
+	)
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
@@ -169,8 +174,7 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 	if err != nil {
 		return fmt.Errorf(`store: unable to create entry %q (feed #%d): %v`, entry.URL, entry.FeedID, err)
 	}
-
-	err = s.CreateEntriesMedia(tx, model.Entries{entry})
+	err = s.updateEntryMedia(tx, entry)
 	if err != nil {
 		return fmt.Errorf("unable to create entry medias records %q (feed #%d): %v", entry.URL, entry.FeedID, err)
 	}
@@ -183,14 +187,31 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 			return err
 		}
 	}
-
-	return nil
+	query = `
+		UPDATE
+			entries
+		SET
+			cover_image=$1, image_count=$2
+		WHERE
+			id=$3 AND user_id=$4
+	`
+	_, err = tx.Exec(
+		query,
+		entry.CoverImage, entry.ImageCount,
+		entry.ID, entry.UserID,
+	)
+	return err
 }
 
 // updateEntry updates an entry when a feed is refreshed.
 // Note: we do not update the published date because some feeds do not contains any date,
 // it default to time.Now() which could change the order of items on the history page.
 func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
+	err := s.updateEntryMedia(tx, entry)
+	if err != nil {
+		return fmt.Errorf(`unable to update entry medias %q: %v`, entry.URL, err)
+	}
+
 	query := `
 		UPDATE
 			entries
@@ -201,13 +222,15 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 			content=$4,
 			author=$5,
 			reading_time=$6,
+			cover_image=$7, 
+			image_count=$8,
 			document_vectors = setweight(to_tsvector(left(coalesce($1, ''), 500000)), 'A') || setweight(to_tsvector(left(coalesce($4, ''), 500000)), 'B')
 		WHERE
-			user_id=$7 AND feed_id=$8 AND hash=$9
+			user_id=$9 AND feed_id=$10 AND hash=$11
 		RETURNING
 			id
 	`
-	err := tx.QueryRow(
+	err = tx.QueryRow(
 		query,
 		entry.Title,
 		entry.URL,
@@ -215,6 +238,8 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.Content,
 		entry.Author,
 		entry.ReadingTime,
+		entry.CoverImage,
+		entry.ImageCount,
 		entry.UserID,
 		entry.FeedID,
 		entry.Hash,
@@ -229,44 +254,21 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		enclosure.EntryID = entry.ID
 	}
 
-	err = s.UpdateEntryMedia(entry)
-	if err != nil {
-		return fmt.Errorf(`unable to update entry medias %q: %v`, entry.URL, err)
-	}
 	return s.updateEnclosures(tx, entry.UserID, entry.ID, entry.Enclosures)
 }
 
-// UpdateEntryByID updates an entry when an entry is edited.
-func (s *Storage) UpdateEntryByID(entry *model.Entry) error {
-	query := `
-		UPDATE entries SET
-		title=$1, url=$2, comments_url=$3, content=$4, author=$5, status=$6, starred=$7, feed_id=$8,
-		document_vectors = setweight(to_tsvector(substring(coalesce($1, '') for 1000000)), 'A') || setweight(to_tsvector(substring(coalesce($4, '') for 1000000)), 'B')
-		WHERE user_id=$9 AND id=$10
-	`
-	_, err := s.db.Exec(
-		query,
-		entry.Title,
-		entry.URL,
-		entry.CommentsURL,
-		entry.Content,
-		entry.Author,
-		entry.Status,
-		entry.Starred,
-		entry.FeedID,
-		entry.UserID,
-		entry.ID,
-	)
-
+// UpdateEntry updates an entry when a feed is edited.
+func (s *Storage) UpdateEntry(entry *model.Entry) error {
+	tx, err := s.db.Begin()
 	if err != nil {
-		return fmt.Errorf(`unable to update entry %d: %v`, entry.ID, err)
+		return err
 	}
-
-	err = s.UpdateEntryMedia(entry)
+	defer tx.Rollback()
+	err = s.updateEntry(tx, entry)
 	if err != nil {
-		return fmt.Errorf(`unable to update entry medias %d: %v`, entry.ID, err)
+		return err
 	}
-	return nil
+	return tx.Commit()
 }
 
 // EntryExists checks if an entry already exists based on its hash when refreshing a feed.

@@ -749,6 +749,10 @@ function forceProxyImages() {
 }
 
 function cachedImage(url) {
+    let u = new URL(url);
+    if ((u.host === "" || u.host == location.host) && u.pathname.startsWith("/proxy/")) {
+        return `/caches/${u.pathname.substring(7)}`;
+    }
     return `/caches/${btoa(url)}`;
 }
 

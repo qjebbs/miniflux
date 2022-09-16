@@ -34,6 +34,7 @@ const (
 	flagCleanCacheHelp      = "Remove unused caches from disk and database"
 	flagArchiveReadHelp     = "Archive read articles"
 	flagHealthCheckHelp     = `Perform a health check on the given endpoint (the value "auto" try to guess the health check endpoint).`
+	flagFixCoverImagesHelp  = "Fix cover images display for old articles for a user"
 )
 
 // Parse parses command line arguments.
@@ -55,6 +56,7 @@ func Parse() {
 		flagCache           bool
 		flagArchiveRead     bool
 		flagHealthCheck     string
+		flagFixCoverImages  int64
 	)
 
 	flag.BoolVar(&flagInfo, "info", false, flagInfoHelp)
@@ -75,6 +77,7 @@ func Parse() {
 	flag.BoolVar(&flagCleanCache, "cache-clean", false, flagCleanCacheHelp)
 	flag.BoolVar(&flagArchiveRead, "archive-read", false, flagArchiveReadHelp)
 	flag.StringVar(&flagHealthCheck, "healthcheck", "", flagHealthCheckHelp)
+	flag.Int64Var(&flagFixCoverImages, "fix-cover", 0, flagFixCoverImagesHelp)
 	flag.Parse()
 
 	cfg := config.NewParser()
@@ -204,6 +207,13 @@ func Parse() {
 			logger.Error("%v", err)
 		}
 		if err = store.CacheMedias(); err != nil {
+			logger.Error("%v", err)
+		}
+		return
+	}
+
+	if flagFixCoverImages > 0 {
+		if err = fixCovers(store, flagFixCoverImages); err != nil {
 			logger.Error("%v", err)
 		}
 		return

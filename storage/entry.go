@@ -207,8 +207,7 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 // Note: we do not update the published date because some feeds do not contains any date,
 // it default to time.Now() which could change the order of items on the history page.
 func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
-	err := s.updateEntryMedia(tx, entry)
-	if err != nil {
+	if err := s.updateEntryMedia(tx, entry); err != nil {
 		return fmt.Errorf(`unable to update entry medias %q: %v`, entry.URL, err)
 	}
 
@@ -230,7 +229,7 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		RETURNING
 			id
 	`
-	err = tx.QueryRow(
+	err := tx.QueryRow(
 		query,
 		entry.Title,
 		entry.URL,
@@ -257,13 +256,33 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 	return s.updateEnclosures(tx, entry.UserID, entry.ID, entry.Enclosures)
 }
 
-// UpdateEntry updates an entry when a feed is edited.
-func (s *Storage) UpdateEntry(entry *model.Entry) error {
+// EditEntry updates an entry when a feed is edited.
+// it does anything updateEntry does, but also updates the feed_id.
+func (s *Storage) EditEntry(entry *model.Entry) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
+	// updateEntry() does not deal with the feed_id,
+	// so we need to update it here.
+	query := `
+		UPDATE
+			entries
+		SET
+			feed_id=$1
+		WHERE
+			user_id=$2 AND id=$3
+	`
+	_, err = tx.Exec(
+		query,
+		entry.FeedID,
+		entry.UserID,
+		entry.ID,
+	)
+	if err != nil {
+		return err
+	}
 	err = s.updateEntry(tx, entry)
 	if err != nil {
 		return err

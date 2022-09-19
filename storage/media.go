@@ -365,11 +365,17 @@ func (s *Storage) Medias(userID int64) (model.Medias, error) {
 
 // updateEntryMedia updates media records for given entries
 func (s *Storage) updateEntryMedia(tx *sql.Tx, entry *model.Entry) error {
-	defer timer.ExecutionTime(time.Now(), "[Storage:UpdateEntryMedias]")
-	if entry.Status == "" {
-		err := tx.QueryRow(`SELECT status FROM entries WHERE id=$1`, entry.ID).Scan(&entry.Status)
+	defer timer.ExecutionTime(time.Now(), "[Storage:updateEntryMedia]")
+	if entry.ID == 0 || entry.Status == "" {
+		err := tx.QueryRow(
+			`SELECT id, status FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`,
+			entry.UserID, entry.FeedID, entry.Hash,
+		).Scan(
+			&entry.ID,
+			&entry.Status,
+		)
 		if err != nil {
-			return fmt.Errorf("[Storage:UpdateEntryMedias] unable to fetch entry status #%d: %v", entry.ID, err)
+			return fmt.Errorf("[Storage:updateEntryMedia] unable to fetch entry id or status #%d: %v", entry.ID, err)
 		}
 	}
 	if entry.Status == model.EntryStatusRemoved {

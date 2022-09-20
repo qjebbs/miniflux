@@ -306,11 +306,15 @@ func (s *Storage) EntryExists(entry *model.Entry) bool {
 func (s *Storage) entryExists(tx *sql.Tx, entry *model.Entry) bool {
 	var result bool
 	tx.QueryRow(
-		`SELECT true FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`,
+		`SELECT true, id, status FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`,
 		entry.UserID,
 		entry.FeedID,
 		entry.Hash,
-	).Scan(&result)
+	).Scan(
+		&result,
+		&entry.ID,
+		&entry.Status,
+	)
 	return result
 }
 

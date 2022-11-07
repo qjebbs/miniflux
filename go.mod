@@ -12,7 +12,7 @@ require (
 	github.com/lib/pq v1.10.6
 	github.com/mitchellh/go-server-timing v1.0.2-0.20201108055052-feb680ab92c2
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
-	github.com/prometheus/client_golang v1.13.0
+	github.com/prometheus/client_golang v1.13.1
 	github.com/rylans/getlang v0.0.0-20200505200108-4c3188ff8a2d
 	github.com/tdewolff/minify/v2 v2.12.0
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect

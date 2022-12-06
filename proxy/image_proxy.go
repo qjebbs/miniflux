@@ -14,8 +14,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type urlProxyRewriter func(router *mux.Router, url string) string
+
 // ImageProxyRewriter replaces image URLs with internal proxy URLs.
 func ImageProxyRewriter(router *mux.Router, data string) string {
+	return genericImageProxyRewriter(router, ProxifyURL, data)
+}
+
+// AbsoluteImageProxyRewriter do the same as ImageProxyRewriter except it uses absolute URLs.
+func AbsoluteImageProxyRewriter(router *mux.Router, host, data string) string {
+	proxifyFunction := func(router *mux.Router, url string) string {
+		return AbsoluteProxifyURL(router, host, url)
+	}
+	return genericImageProxyRewriter(router, proxifyFunction, data)
+}
+
+func genericImageProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, data string) string {
 	proxyImages := config.Opts.ProxyImages()
 	if proxyImages == "none" {
 		return data
@@ -29,13 +43,13 @@ func ImageProxyRewriter(router *mux.Router, data string) string {
 	doc.Find("img").Each(func(i int, img *goquery.Selection) {
 		if srcAttr, ok := img.Attr("src"); ok {
 			if ShouldProxify(srcAttr) {
-				img.SetAttr("src", ProxifyURL(router, srcAttr))
+				img.SetAttr("src", proxifyFunction(router, srcAttr))
 			}
 		}
 
 		if srcsetAttr, ok := img.Attr("srcset"); ok {
 			if ShouldProxify(srcsetAttr) {
-				proxifySourceSet(img, router, srcsetAttr)
+				proxifySourceSet(img, router, proxifyFunction, srcsetAttr)
 			}
 		}
 	})
@@ -43,7 +57,7 @@ func ImageProxyRewriter(router *mux.Router, data string) string {
 	doc.Find("picture source").Each(func(i int, sourceElement *goquery.Selection) {
 		if srcsetAttr, ok := sourceElement.Attr("srcset"); ok {
 			if ShouldProxify(srcsetAttr) {
-				proxifySourceSet(sourceElement, router, srcsetAttr)
+				proxifySourceSet(sourceElement, router, proxifyFunction, srcsetAttr)
 			}
 		}
 	})
@@ -56,12 +70,12 @@ func ImageProxyRewriter(router *mux.Router, data string) string {
 	return output
 }
 
-func proxifySourceSet(element *goquery.Selection, router *mux.Router, srcsetAttrValue string) {
+func proxifySourceSet(element *goquery.Selection, router *mux.Router, proxifyFunction urlProxyRewriter, srcsetAttrValue string) {
 	imageCandidates := sanitizer.ParseSrcSetAttribute(srcsetAttrValue)
 
 	for _, imageCandidate := range imageCandidates {
 		if ShouldProxify(imageCandidate.ImageURL) {
-			imageCandidate.ImageURL = ProxifyURL(router, imageCandidate.ImageURL)
+			imageCandidate.ImageURL = proxifyFunction(router, imageCandidate.ImageURL)
 		}
 	}
 

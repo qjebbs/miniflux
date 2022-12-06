@@ -54,8 +54,8 @@ func fetchURL(websiteURL, rules, userAgent string, cookie string, allowSelfSigne
 		return "", err
 	}
 
-	sameSite := url.Domain(websiteURL) == url.Domain(response.EffectiveURL)
 	// The entry URL could redirect somewhere else.
+	sameSite := url.Domain(websiteURL) == url.Domain(response.EffectiveURL)
 	websiteURL = response.EffectiveURL
 
 	if rules == "" {

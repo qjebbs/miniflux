@@ -118,7 +118,11 @@ func followTheOnlyLink(websiteURL, content string, rules, userAgent string, cook
 	if err != nil {
 		return "", err
 	}
-	body := document.Find("body").Nodes[0]
+	bodies := document.Find("body")
+	if len(bodies.Nodes) == 0 {
+		return content, nil
+	}
+	body := bodies.Nodes[0]
 	if body.FirstChild.NextSibling != nil ||
 		body.FirstChild.Data != "a" {
 		return content, nil

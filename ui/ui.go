@@ -84,7 +84,7 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/feed/{feedID}/entries/starred", handler.showFeedEntriesStarredPage).Name("feedEntriesStarred").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/{feedID}/entry/{entryID}", handler.showFeedEntryPage).Name("feedEntry").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/icon/{iconID}", handler.showIcon).Name("icon").Methods(http.MethodGet)
-	uiRouter.HandleFunc("/feed/{feedID}/caches/remove", handler.removeFeedCaches).Name("removeFeedCache").Methods(http.MethodPost)
+	uiRouter.HandleFunc("/feed/{feedID}/media/cache/remove", handler.removeFeedMediaCache).Name("removeFeedCache").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/feed/{feedID}/view", handler.updateFeedView).Name("updateFeedView").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/feed/{feedID}/mark-all-as-read", handler.markFeedAsRead).Name("markFeedAsRead").Methods(http.MethodPost)
 
@@ -108,9 +108,9 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/entry/save/{entryID}", handler.saveEntry).Name("saveEntry").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/entry/download/{entryID}", handler.fetchContent).Name("fetchContent").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/proxy/{encodedDigest}/{encodedURL}", handler.imageProxy).Name("proxy").Methods(http.MethodGet)
-	uiRouter.HandleFunc("/caches/{encodedURL}", handler.cachedMedia).Name("cache").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/media/{encodedURL}", handler.getMedia).Name("media").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/entry/bookmark/{entryID}", handler.toggleBookmark).Name("toggleBookmark").Methods(http.MethodPost)
-	uiRouter.HandleFunc("/entry/cache/{entryID}", handler.toggleCache).Name("toggleCache").Methods(http.MethodPost)
+	uiRouter.HandleFunc("/entry/media/cache/{entryID}", handler.toggleEntryMediaCache).Name("toggleCache").Methods(http.MethodPost)
 
 	// Share pages.
 	uiRouter.HandleFunc("/entry/share/{entryID}", handler.createSharedEntry).Name("shareEntry").Methods(http.MethodGet)

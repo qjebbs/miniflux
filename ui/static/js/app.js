@@ -721,7 +721,7 @@ function initMasonryLayout() {
                     return;
                 }
                 if (img) {
-                    img.src = cachedImage(img.src);
+                    img.src = mediaURL(img.src);
                     img = undefined;
                 } else {
                     e.target.parentNode.removeChild(e.target);
@@ -736,24 +736,19 @@ function initMasonryLayout() {
     imgs.forEach(img => {
         img.addEventListener("error", (e) => {
             if (img) {
-                img.src = cachedImage(img.src);
+                img.src = mediaURL(img.src);
                 img = undefined;
             }
         })
     });
 }
 
-function forceProxyImages() {
-    let imgs = document.querySelectorAll(".entry-content img");
-    imgs.forEach(img => img.src = cachedImage(img.src));
-}
-
-function cachedImage(url) {
+function mediaURL(url) {
     let u = new URL(url);
-    if ((u.host === "" || u.host == location.host) && u.pathname.startsWith("/proxy/")) {
-        return `/caches/${u.pathname.substring(7)}`;
+    if (u.host === "" || u.host == location.host) {
+        return url;
     }
-    return `/caches/${btoa(url)}`;
+    return `/media/${btoa(url)}`;
 }
 
 function showToast(label, iconElement) {

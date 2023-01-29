@@ -715,40 +715,11 @@ function initMasonryLayout() {
         LazyloadHandler.add(".item", 'progress', layoutCallback);
         imgs.forEach(img => {
             img.addEventListener("error", (e) => {
-                if (img && img.src == location.href) {
-                    // should ignore no src error
-                    // console.log("no src error");
-                    return;
-                }
-                if (img) {
-                    img.src = mediaURL(img.src);
-                    img = undefined;
-                } else {
-                    e.target.parentNode.removeChild(e.target);
-                    layoutCallback();
-                }
+                if (layoutCallback) layoutCallback();
             })
         });
         return;
     }
-    // try force proxy when failed, for entry imgages.
-    imgs = document.querySelectorAll(".entry-content img");
-    imgs.forEach(img => {
-        img.addEventListener("error", (e) => {
-            if (img) {
-                img.src = mediaURL(img.src);
-                img = undefined;
-            }
-        })
-    });
-}
-
-function mediaURL(url) {
-    let u = new URL(url);
-    if (u.host === "" || u.host == location.host) {
-        return url;
-    }
-    return `/media/${btoa(url)}`;
 }
 
 function showToast(label, iconElement) {

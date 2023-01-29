@@ -348,9 +348,10 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			ignore_http_cache=$24,
 			allow_self_signed_certificates=$25,
 			fetch_via_proxy=$26,
-			url_rewrite_rules=$27
+			url_rewrite_rules=$27,
+			proxify_images=$28
 		WHERE
-			id=$28 AND user_id=$29
+			id=$29 AND user_id=$30
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -380,6 +381,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
 		feed.UrlRewriteRules,
+		feed.ProxifyImages,
 		feed.ID,
 		feed.UserID,
 	)

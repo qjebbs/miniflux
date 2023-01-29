@@ -10,14 +10,17 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"miniflux.app/config"
 	"miniflux.app/crypto"
+	"miniflux.app/filesystem"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response"
 	"miniflux.app/http/response/html"
 	"miniflux.app/logger"
+	"miniflux.app/reader/media"
 )
 
 func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
@@ -56,22 +59,45 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	imageURL := string(decodedURL)
-	logger.Debug(`[Proxy] Fetching %q`, imageURL)
+	etag := crypto.HashFromBytes(decodedURL)
 
-	req, err := http.NewRequest("GET", imageURL, nil)
+	m, err := h.store.MediaByURL(imageURL)
 	if err != nil {
-		html.ServerError(w, r, err)
+		goto FETCH
+	}
+	if m.Content != nil {
+		logger.Debug(`[Proxy] From database cache, for %q`, imageURL)
+		response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+			b.WithHeader("Content-Type", m.MimeType)
+			b.WithBody(m.Content)
+			b.WithoutCompression()
+			b.Write()
+		})
 		return
 	}
 
-	// Note: User-Agent HTTP header is omitted to avoid being blocked by bot protection mechanisms.
-	req.Header.Add("Connection", "close")
-
-	clt := &http.Client{
-		Timeout: time.Duration(config.Opts.HTTPClientTimeout()) * time.Second,
+	if m.Cached {
+		// cache is located in file system
+		var file *os.File
+		file, err = filesystem.MediaFileByHash(m.URLHash)
+		if err != nil {
+			logger.Debug("Unable to fetch media from file system: %s", err)
+			goto FETCH
+		}
+		defer file.Close()
+		logger.Debug(`[Proxy] From filesystem cache, for %q`, imageURL)
+		response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+			b.WithHeader("Content-Type", m.MimeType)
+			b.WithBody(file)
+			b.WithoutCompression()
+			b.Write()
+		})
+		return
 	}
 
-	resp, err := clt.Do(req)
+FETCH:
+	logger.Debug(`[Proxy] Fetching %q`, imageURL)
+	resp, err := media.FetchMedia(m)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
@@ -83,8 +109,6 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		html.NotFound(w, r)
 		return
 	}
-
-	etag := crypto.HashFromBytes(decodedURL)
 
 	response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
 		b.WithHeader("Content-Security-Policy", `default-src 'self'`)

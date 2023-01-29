@@ -60,6 +60,12 @@ func patch(tx *sql.Tx) error {
 			return err
 		}
 	}
+	if !columnExists(tx, "feeds", "proxify_images") {
+		_, err = tx.Exec("alter table feeds add column proxify_images bool not null default 'f';")
+		if err != nil {
+			return err
+		}
+	}
 	if !columnExists(tx, "medias", "error_count") {
 		_, err = tx.Exec("alter table medias add column error_count int not null default 0;")
 		if err != nil {

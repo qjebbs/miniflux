@@ -60,11 +60,11 @@ func (f *funcMap) Map() template.FuncMap {
 		"noescape": func(str string) template.HTML {
 			return template.HTML(str)
 		},
-		"proxyFilter": func(data string) string {
-			return proxy.ImageProxyRewriter(f.router, data)
+		"proxyFilter": func(feedProxifyImages bool, data string) string {
+			return proxy.ImageProxyRewriter(f.router, feedProxifyImages, data)
 		},
-		"proxyURL": func(link string) string {
-			if proxy.ShouldProxify(link) {
+		"proxyURL": func(feedProxifyImages bool, link string) string {
+			if feedProxifyImages || proxy.ShouldProxify(link) {
 				return proxy.ProxifyURL(f.router, link)
 			}
 			return link

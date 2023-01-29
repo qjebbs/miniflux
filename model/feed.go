@@ -55,6 +55,7 @@ type Feed struct {
 	Icon                        *FeedIcon `json:"icon"`
 	View                        string    `json:"view"`
 	NSFW                        bool      `json:"nsfw"`
+	ProxifyImages               bool      `json:"-"`
 	UnreadCount                 int       `json:"-"`
 	ReadCount                   int       `json:"-"`
 }
@@ -168,6 +169,7 @@ type FeedModificationRequest struct {
 	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
 	View                        *string `json:"view"`
 	NSFW                        *bool   `json:"nsfw"`
+	ProxifyImages               *bool   `json:"proxify_images"`
 	CacheMedia                  *bool   `json:"cache_media"`
 }
 
@@ -255,6 +257,10 @@ func (f *FeedModificationRequest) Patch(feed *Feed) {
 
 	if f.CacheMedia != nil {
 		feed.CacheMedia = *f.CacheMedia
+	}
+
+	if f.ProxifyImages != nil {
+		feed.ProxifyImages = *f.ProxifyImages
 	}
 }
 

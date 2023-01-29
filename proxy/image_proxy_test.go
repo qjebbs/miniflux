@@ -29,7 +29,7 @@ func TestProxyFilterWithHttpDefault(t *testing.T) {
 	r.HandleFunc("/proxy/{encodedURL}", func(w http.ResponseWriter, r *http.Request) {}).Name("proxy")
 
 	input := `<p><img src="http://website/folder/image.png" alt="Test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 	expected := `<p><img src="/proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlLnBuZw==" alt="Test"/></p>`
 
 	if expected != output {
@@ -53,7 +53,7 @@ func TestProxyFilterWithHttpsDefault(t *testing.T) {
 	r.HandleFunc("/proxy/{encodedURL}", func(w http.ResponseWriter, r *http.Request) {}).Name("proxy")
 
 	input := `<p><img src="https://website/folder/image.png" alt="Test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 	expected := `<p><img src="https://website/folder/image.png" alt="Test"/></p>`
 
 	if expected != output {
@@ -77,7 +77,7 @@ func TestProxyFilterWithHttpNever(t *testing.T) {
 	r.HandleFunc("/proxy/{encodedURL}", func(w http.ResponseWriter, r *http.Request) {}).Name("proxy")
 
 	input := `<p><img src="http://website/folder/image.png" alt="Test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 	expected := input
 
 	if expected != output {
@@ -101,7 +101,7 @@ func TestProxyFilterWithHttpsNever(t *testing.T) {
 	r.HandleFunc("/proxy/{encodedURL}", func(w http.ResponseWriter, r *http.Request) {}).Name("proxy")
 
 	input := `<p><img src="https://website/folder/image.png" alt="Test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 	expected := input
 
 	if expected != output {
@@ -125,7 +125,7 @@ func TestProxyFilterWithHttpAlways(t *testing.T) {
 	r.HandleFunc("/proxy/{encodedURL}", func(w http.ResponseWriter, r *http.Request) {}).Name("proxy")
 
 	input := `<p><img src="http://website/folder/image.png" alt="Test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 	expected := `<p><img src="/proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlLnBuZw==" alt="Test"/></p>`
 
 	if expected != output {
@@ -149,7 +149,7 @@ func TestProxyFilterWithHttpsAlways(t *testing.T) {
 	r.HandleFunc("/proxy/{encodedURL}", func(w http.ResponseWriter, r *http.Request) {}).Name("proxy")
 
 	input := `<p><img src="https://website/folder/image.png" alt="Test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 	expected := `<p><img src="/proxy/aHR0cHM6Ly93ZWJzaXRlL2ZvbGRlci9pbWFnZS5wbmc=" alt="Test"/></p>`
 
 	if expected != output {
@@ -173,7 +173,7 @@ func TestProxyFilterWithHttpsAlwaysAndCustomProxyServer(t *testing.T) {
 	r.HandleFunc("/proxy/{encodedURL}", func(w http.ResponseWriter, r *http.Request) {}).Name("proxy")
 
 	input := `<p><img src="https://website/folder/image.png" alt="Test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 	expected := `<p><img src="https://proxy-example/proxy/aHR0cHM6Ly93ZWJzaXRlL2ZvbGRlci9pbWFnZS5wbmc=" alt="Test"/></p>`
 
 	if expected != output {
@@ -197,7 +197,7 @@ func TestProxyFilterWithHttpInvalid(t *testing.T) {
 	r.HandleFunc("/proxy/{encodedURL}", func(w http.ResponseWriter, r *http.Request) {}).Name("proxy")
 
 	input := `<p><img src="http://website/folder/image.png" alt="Test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 	expected := `<p><img src="/proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlLnBuZw==" alt="Test"/></p>`
 
 	if expected != output {
@@ -221,7 +221,7 @@ func TestProxyFilterWithHttpsInvalid(t *testing.T) {
 	r.HandleFunc("/proxy/{encodedURL}", func(w http.ResponseWriter, r *http.Request) {}).Name("proxy")
 
 	input := `<p><img src="https://website/folder/image.png" alt="Test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 	expected := `<p><img src="https://website/folder/image.png" alt="Test"/></p>`
 
 	if expected != output {
@@ -246,7 +246,7 @@ func TestProxyFilterWithSrcset(t *testing.T) {
 
 	input := `<p><img src="http://website/folder/image.png" srcset="http://website/folder/image2.png 656w, http://website/folder/image3.png 360w" alt="test"></p>`
 	expected := `<p><img src="/proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlLnBuZw==" srcset="/proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlMi5wbmc= 656w, /proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlMy5wbmc= 360w" alt="test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 
 	if expected != output {
 		t.Errorf(`Not expected output: got %s`, output)
@@ -269,7 +269,7 @@ func TestProxyFilterWithEmptySrcset(t *testing.T) {
 
 	input := `<p><img src="http://website/folder/image.png" srcset="" alt="test"></p>`
 	expected := `<p><img src="/proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlLnBuZw==" srcset="" alt="test"/></p>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 
 	if expected != output {
 		t.Errorf(`Not expected output: got %s`, output)
@@ -293,7 +293,7 @@ func TestProxyFilterWithPictureSource(t *testing.T) {
 
 	input := `<picture><source srcset="http://website/folder/image2.png 656w,   http://website/folder/image3.png 360w, https://website/some,image.png 2x"></picture>`
 	expected := `<picture><source srcset="/proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlMi5wbmc= 656w, /proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlMy5wbmc= 360w, /proxy/aHR0cHM6Ly93ZWJzaXRlL3NvbWUsaW1hZ2UucG5n 2x"/></picture>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 
 	if expected != output {
 		t.Errorf(`Not expected output: got %s`, output)
@@ -316,7 +316,7 @@ func TestProxyFilterOnlyNonHTTPWithPictureSource(t *testing.T) {
 
 	input := `<picture><source srcset="http://website/folder/image2.png 656w, https://website/some,image.png 2x"></picture>`
 	expected := `<picture><source srcset="/proxy/aHR0cDovL3dlYnNpdGUvZm9sZGVyL2ltYWdlMi5wbmc= 656w, https://website/some,image.png 2x"/></picture>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 
 	if expected != output {
 		t.Errorf(`Not expected output: got %s`, output)
@@ -339,7 +339,7 @@ func TestImageProxyWithImageDataURL(t *testing.T) {
 
 	input := `<img src="data:image/gif;base64,test">`
 	expected := `<img src="data:image/gif;base64,test"/>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 
 	if expected != output {
 		t.Errorf(`Not expected output: got %s`, output)
@@ -362,7 +362,7 @@ func TestImageProxyWithImageSourceDataURL(t *testing.T) {
 
 	input := `<picture><source srcset="data:image/gif;base64,test"/></picture>`
 	expected := `<picture><source srcset="data:image/gif;base64,test"/></picture>`
-	output := ImageProxyRewriter(r, input)
+	output := ImageProxyRewriter(r, false, input)
 
 	if expected != output {
 		t.Errorf(`Not expected output: got %s`, output)

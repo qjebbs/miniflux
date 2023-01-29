@@ -64,6 +64,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		FetchViaProxy:               feed.FetchViaProxy,
 		Disabled:                    feed.Disabled,
 		NSFW:                        feed.NSFW,
+		ProxifyImages:               feed.ProxifyImages,
 	}
 
 	all, count, size, err := h.store.MediaStatisticsByFeed(feedID)

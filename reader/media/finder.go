@@ -3,14 +3,15 @@ package media // import "miniflux.app/reader/media"
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strings"
 	"time"
 
+	"miniflux.app/config"
 	"miniflux.app/url"
 
 	"github.com/PuerkitoBio/goquery"
 	"miniflux.app/crypto"
-	"miniflux.app/http/client"
 	"miniflux.app/logger"
 	"miniflux.app/model"
 )
@@ -31,29 +32,16 @@ func FindMedia(media *model.Media) error {
 	}
 
 	logger.Debug("[FindMedia] Fetching media => %s", media.URL)
-	return downloadMedia(media)
-}
-
-func downloadMedia(media *model.Media) error {
-	clt := client.New(media.URL)
-	response, err := clt.Get()
+	resp, err := FetchMedia(media)
 	if err != nil {
-		return fmt.Errorf("unable to download mediaURL: %v", err)
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unable to fetch media: %s", resp.Status)
 	}
 
-	if response.HasServerFailure() && media.Referrer != "" {
-		clt.WithReferrer(media.Referrer)
-		response, err = clt.Get()
-		if err != nil {
-			return fmt.Errorf("unable to download mediaURL: %v", err)
-		}
-	}
-
-	if response.HasServerFailure() {
-		return fmt.Errorf("unable to download media: status=%d", response.StatusCode)
-	}
-
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("unable to read downloaded media: %v", err)
 	}
@@ -63,12 +51,43 @@ func downloadMedia(media *model.Media) error {
 	}
 
 	media.URLHash = URLHash(media.URL)
-	media.MimeType = response.ContentType
+	media.MimeType = resp.Header.Get("Content-Type")
 	media.Content = body
 	media.Size = len(body)
 	media.CreatedAt = time.Now()
 
 	return nil
+}
+
+// FetchMedia fetches the media from the URL.
+func FetchMedia(media *model.Media) (*http.Response, error) {
+	clt := &http.Client{
+		Timeout: time.Duration(config.Opts.HTTPClientTimeout()) * time.Second,
+	}
+	req, err := http.NewRequest("GET", media.URL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Connection", "close")
+	resp, err := clt.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		if media.Referrer != "" {
+			req.Header.Add("Referer", media.Referrer)
+		}
+		resp, err := clt.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		if resp.StatusCode == http.StatusOK {
+			return resp, nil
+		}
+	}
+
+	return resp, nil
 }
 
 // ParseDocument parse the entry content and returns media urls of it

@@ -322,6 +322,7 @@
     "form.feed.label.scraper_rules": "Regole di estrazione del contenuto",
     "form.feed.label.rewrite_rules": "Regole di impaginazione del contenuto",
     "form.feed.label.nsfw": "Not Safe For Work(NSFW)",
+    "form.feed.label.proxify_images": "Proxify images of articles (to deal with anti-leech, etc.)",
     "form.entry.label.title": "Title",
     "form.entry.label.author": "Author",
     "form.entry.label.url": "URL",

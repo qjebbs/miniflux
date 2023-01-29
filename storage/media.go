@@ -16,8 +16,7 @@ import (
 )
 
 // MediaByURL returns an Media by the url.
-// Notice the media fetched could be an unsucessfully cached one.
-// Remember to check Media.Cached.
+// it returns a cached media first if any, remember to check Media.Cached.
 func (s *Storage) MediaByURL(URL string) (*model.Media, error) {
 	defer timer.ExecutionTime(time.Now(), "[Storage:MediaByURL]")
 
@@ -27,13 +26,19 @@ func (s *Storage) MediaByURL(URL string) (*model.Media, error) {
 }
 
 // MediaByHash returns an Media by the url hash (checksum).
-// Notice the media fetched could be an unsucessfully cached one.
-// Remember to check Media.Cached.
+// it returns a cached media first if any, remember to check Media.Cached.
 func (s *Storage) MediaByHash(media *model.Media) error {
 	defer timer.ExecutionTime(time.Now(), "[Storage:MediaByHash]")
 
-	err := s.db.QueryRow(
-		`SELECT id, url, mime_type, content, cached FROM medias WHERE url_hash=$1`,
+	useCache := false
+	err := s.db.QueryRow(`
+	SELECT m.id, m.url, m.mime_type, m.content, m.cached, e.url, em.use_cache
+	FROM medias m
+		INNER JOIN entry_medias em ON m.id=em.media_id
+		INNER JOIN entries e ON e.id=em.entry_id
+		INNER JOIN feeds f on f.id=e.feed_id
+	WHERE m.url_hash=$1
+	ORDER BY use_cache DESC`,
 		media.URLHash,
 	).Scan(
 		&media.ID,
@@ -41,7 +46,11 @@ func (s *Storage) MediaByHash(media *model.Media) error {
 		&media.MimeType,
 		&media.Content,
 		&media.Cached,
+		&media.Referrer,
+		&useCache,
 	)
+	// If not useCache, the the media cache could be created by other users.
+	media.Cached = media.Cached && useCache
 	if err == sql.ErrNoRows {
 		return nil
 	} else if err != nil {

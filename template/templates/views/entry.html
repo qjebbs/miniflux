@@ -174,7 +174,7 @@
     {{ end }}
     <article role="article" class="entry-content" dir="auto">
         {{ if .user }}
-            {{ noescape (proxyFilter .entry.Content) }}
+            {{ noescape (proxyFilter (or .entry.Feed.ProxifyImages .entry.Feed.CacheMedia) .entry.Content) }}
         {{ else }}
             {{ noescape .entry.Content }}
         {{ end }}
@@ -200,7 +200,7 @@
                 {{ else if hasPrefix .MimeType "image/" }}
                     <div class="enclosure-image">
                         {{ if $.user }}
-                            <img src="{{ proxyURL .URL }}" title="{{ .URL }} ({{ .MimeType }})" loading="lazy" alt="{{ .URL }} ({{ .MimeType }})">
+                            <img src="{{ proxyURL (or $.entry.Feed.ProxifyImages $.entry.Feed.CacheMedia) .URL }}" title="{{ .URL }} ({{ .MimeType }})" loading="lazy" alt="{{ .URL }} ({{ .MimeType }})">
                         {{ else }}
                             <img src="{{ .URL | safeURL }}" title="{{ .URL }} ({{ .MimeType }})" loading="lazy" alt="{{ .URL }} ({{ .MimeType }})">
                         {{ end }}

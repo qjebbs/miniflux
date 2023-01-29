@@ -64,5 +64,5 @@ func (h *handler) fetchContent(w http.ResponseWriter, r *http.Request) {
 		json.ServerError(w, r, err)
 	}
 
-	json.OK(w, r, map[string]string{"content": proxy.ImageProxyRewriter(h.router, entry.Content)})
+	json.OK(w, r, map[string]string{"content": proxy.ImageProxyRewriter(h.router, entry.Feed.ProxifyImages || entry.Feed.CacheMedia, entry.Content)})
 }

@@ -132,11 +132,12 @@
         <label><input type="checkbox" name="crawler" value="1" {{ if .form.Crawler }}checked{{ end }}> {{ t "form.feed.label.crawler" }}</label>
         <label><input type="checkbox" name="ignore_http_cache" value="1" {{ if .form.IgnoreHTTPCache }}checked{{ end }}> {{ t "form.feed.label.ignore_http_cache" }}</label>
         <label><input type="checkbox" name="allow_self_signed_certificates" value="1" {{ if .form.AllowSelfSignedCertificates }}checked{{ end }}> {{ t "form.feed.label.allow_self_signed_certificates" }}</label>
+        <label><input type="checkbox" name="proxify_images" value="1" {{ if .form.ProxifyImages }}checked{{ end }}> {{ t "form.feed.label.proxify_images" }}</label>
+        <label><input type="checkbox" name="cache_media" value="1" {{ if .form.CacheMedia }}checked{{ end }}> {{ t "form.feed.label.cache_media" }}</label>
         {{ if .hasProxyConfigured }}
         <label><input type="checkbox" name="fetch_via_proxy" value="1" {{ if .form.FetchViaProxy }}checked{{ end }}> {{ t "form.feed.label.fetch_via_proxy" }}</label>
         {{ end }}
         <label><input type="checkbox" name="disabled" value="1" {{ if .form.Disabled }}checked{{ end }}> {{ t "form.feed.label.disabled" }}</label>
-        <label><input type="checkbox" name="cache_media" value="1" {{ if .form.CacheMedia }}checked{{ end }}> {{ t "form.feed.label.cache_media" }}</label>
 
         <div class="buttons">
             <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="{{ route "feeds" }}">{{ t "action.cancel" }}</a>

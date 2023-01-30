@@ -89,7 +89,7 @@ func (h *handler) handleGroups(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	feeds, err := h.store.Feeds(userID)
+	feeds, err := h.store.Feeds(userID, false)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -133,7 +133,7 @@ func (h *handler) handleFeeds(w http.ResponseWriter, r *http.Request) {
 	userID := request.UserID(r)
 	logger.Debug("[Fever] Fetching feeds for userID=%d", userID)
 
-	feeds, err := h.store.Feeds(userID)
+	feeds, err := h.store.Feeds(userID, false)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -310,7 +310,7 @@ func (h *handler) handleItems(w http.ResponseWriter, r *http.Request) {
 			FeedID:    entry.FeedID,
 			Title:     entry.Title,
 			Author:    entry.Author,
-			HTML:      proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entry.Content),
+			HTML:      proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entry),
 			URL:       entry.URL,
 			IsSaved:   isSaved,
 			IsRead:    isRead,

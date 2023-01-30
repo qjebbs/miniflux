@@ -14,6 +14,7 @@ import (
 )
 
 func (h *handler) showUsersPage(w http.ResponseWriter, r *http.Request) {
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 
@@ -39,8 +40,8 @@ func (h *handler) showUsersPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("users", users)
 	view.Set("menu", "settings")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("users"))
 }

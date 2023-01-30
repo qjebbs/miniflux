@@ -17,6 +17,11 @@ import (
 	"github.com/lib/pq"
 )
 
+// Begin starts a transaction.
+func (s Storage) Begin() (*sql.Tx, error) {
+	return s.db.Begin()
+}
+
 // CountAllEntries returns the number of entries for each status in the database.
 func (s *Storage) CountAllEntries() map[string]int64 {
 	rows, err := s.db.Query(`SELECT status, count(*) FROM entries GROUP BY status`)
@@ -46,11 +51,13 @@ func (s *Storage) CountAllEntries() map[string]int64 {
 }
 
 // CountUnreadEntries returns the number of unread entries.
-func (s *Storage) CountUnreadEntries(userID int64) int {
+// If nsfw is enabled, it doesn't take nsfw entries into count
+func (s *Storage) CountUnreadEntries(userID int64, nsfw bool) int {
 	builder := s.NewEntryQueryBuilder(userID)
 	builder.WithStatus(model.EntryStatusUnread)
-	builder.WithGloballyVisible()
-
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	n, err := builder.CountEntries()
 	if err != nil {
 		logger.Error(`store: unable to count unread entries for user #%d: %v`, userID, err)
@@ -72,15 +79,26 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 		return err
 	}
 
+	err = s.updateEntryMedia(tx, entry)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
+	}
+
 	query := `
 		UPDATE
 			entries
 		SET
-			content=$1, reading_time=$2
+			content=$1, reading_time=$2,
+			cover_image=$3, image_count=$4
 		WHERE
-			id=$3 AND user_id=$4
+			id=$5 AND user_id=$6
 	`
-	_, err = tx.Exec(query, entry.Content, entry.ReadingTime, entry.ID, entry.UserID)
+	_, err = tx.Exec(
+		query, entry.Content, entry.ReadingTime,
+		entry.CoverImage, entry.ImageCount,
+		entry.ID, entry.UserID,
+	)
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
@@ -103,8 +121,8 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 	return tx.Commit()
 }
 
-// createEntry add a new entry.
-func (s *Storage) createEntry(tx *sql.Tx, entry *model.Entry) error {
+// CreateEntry add a new entry.
+func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 	query := `
 		INSERT INTO entries
 			(
@@ -156,6 +174,10 @@ func (s *Storage) createEntry(tx *sql.Tx, entry *model.Entry) error {
 	if err != nil {
 		return fmt.Errorf(`store: unable to create entry %q (feed #%d): %v`, entry.URL, entry.FeedID, err)
 	}
+	err = s.updateEntryMedia(tx, entry)
+	if err != nil {
+		return fmt.Errorf("unable to create entry medias records %q (feed #%d): %v", entry.URL, entry.FeedID, err)
+	}
 
 	for i := 0; i < len(entry.Enclosures); i++ {
 		entry.Enclosures[i].EntryID = entry.ID
@@ -165,14 +187,30 @@ func (s *Storage) createEntry(tx *sql.Tx, entry *model.Entry) error {
 			return err
 		}
 	}
-
-	return nil
+	query = `
+		UPDATE
+			entries
+		SET
+			cover_image=$1, image_count=$2
+		WHERE
+			id=$3 AND user_id=$4
+	`
+	_, err = tx.Exec(
+		query,
+		entry.CoverImage, entry.ImageCount,
+		entry.ID, entry.UserID,
+	)
+	return err
 }
 
 // updateEntry updates an entry when a feed is refreshed.
 // Note: we do not update the published date because some feeds do not contains any date,
 // it default to time.Now() which could change the order of items on the history page.
 func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
+	if err := s.updateEntryMedia(tx, entry); err != nil {
+		return fmt.Errorf(`unable to update entry medias %q: %v`, entry.URL, err)
+	}
+
 	query := `
 		UPDATE
 			entries
@@ -183,9 +221,11 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 			content=$4,
 			author=$5,
 			reading_time=$6,
+			cover_image=$7, 
+			image_count=$8,
 			document_vectors = setweight(to_tsvector(left(coalesce($1, ''), 500000)), 'A') || setweight(to_tsvector(left(coalesce($4, ''), 500000)), 'B')
 		WHERE
-			user_id=$7 AND feed_id=$8 AND hash=$9
+			user_id=$9 AND feed_id=$10 AND hash=$11
 		RETURNING
 			id
 	`
@@ -197,6 +237,8 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.Content,
 		entry.Author,
 		entry.ReadingTime,
+		entry.CoverImage,
+		entry.ImageCount,
 		entry.UserID,
 		entry.FeedID,
 		entry.Hash,
@@ -214,15 +256,65 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 	return s.updateEnclosures(tx, entry.UserID, entry.ID, entry.Enclosures)
 }
 
-// entryExists checks if an entry already exists based on its hash when refreshing a feed.
-func (s *Storage) entryExists(tx *sql.Tx, entry *model.Entry) bool {
+// EditEntry updates an entry when a feed is edited.
+// it does anything updateEntry does, but also updates the feed_id.
+func (s *Storage) EditEntry(entry *model.Entry) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	// updateEntry() does not deal with the feed_id,
+	// so we need to update it here.
+	query := `
+		UPDATE
+			entries
+		SET
+			feed_id=$1
+		WHERE
+			user_id=$2 AND id=$3
+	`
+	_, err = tx.Exec(
+		query,
+		entry.FeedID,
+		entry.UserID,
+		entry.ID,
+	)
+	if err != nil {
+		return err
+	}
+	err = s.updateEntry(tx, entry)
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// EntryExists checks if an entry already exists based on its hash when refreshing a feed.
+func (s *Storage) EntryExists(entry *model.Entry) bool {
 	var result bool
-	tx.QueryRow(
+	s.db.QueryRow(
 		`SELECT true FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`,
 		entry.UserID,
 		entry.FeedID,
 		entry.Hash,
 	).Scan(&result)
+	return result
+}
+
+// entryExists checks if an entry already exists based on its hash when refreshing a feed.
+func (s *Storage) entryExists(tx *sql.Tx, entry *model.Entry) bool {
+	var result bool
+	tx.QueryRow(
+		`SELECT true, id, status FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`,
+		entry.UserID,
+		entry.FeedID,
+		entry.Hash,
+	).Scan(
+		&result,
+		&entry.ID,
+		&entry.Status,
+	)
 	return result
 }
 
@@ -275,7 +367,7 @@ func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries
 				err = s.updateEntry(tx, entry)
 			}
 		} else {
-			err = s.createEntry(tx, entry)
+			err = s.CreateEntry(tx, entry)
 		}
 
 		if err != nil {
@@ -324,6 +416,11 @@ func (s *Storage) ArchiveEntries(status string, days, limit int) (int64, error) 
 		return 0, fmt.Errorf(`store: unable to get the number of rows affected: %v`, err)
 	}
 
+	err = s.cleanMediaReferences()
+	if err != nil {
+		return 0, fmt.Errorf(`store: unable to clean media when archive %s entries: %v`, status, err)
+	}
+
 	return count, nil
 }
 
@@ -347,31 +444,7 @@ func (s *Storage) SetEntriesStatus(userID int64, entryIDs []int64, status string
 	return nil
 }
 
-func (s *Storage) SetEntriesStatusCount(userID int64, entryIDs []int64, status string) (int, error) {
-	if err := s.SetEntriesStatus(userID, entryIDs, status); err != nil {
-		return 0, err
-	}
-
-	query := `
-		SELECT count(*)
-		FROM entries e
-		    JOIN feeds f ON (f.id = e.feed_id)
-		    JOIN categories c ON (c.id = f.category_id)
-		WHERE e.user_id = $1
-			AND e.id = ANY($2)
-			AND NOT f.hide_globally
-			AND NOT c.hide_globally
-	`
-	row := s.db.QueryRow(query, userID, pq.Array(entryIDs))
-	visible := 0
-	if err := row.Scan(&visible); err != nil {
-		return 0, fmt.Errorf(`store: unable to query entries visibility %v: %v`, entryIDs, err)
-	}
-
-	return visible, nil
-}
-
-// SetEntriesBookmarked update the bookmarked state for the given list of entries.
+// SetEntriesBookmarkedState update the bookmarked state for the given list of entries.
 func (s *Storage) SetEntriesBookmarkedState(userID int64, entryIDs []int64, starred bool) error {
 	query := `UPDATE entries SET starred=$1, changed_at=now() WHERE user_id=$2 AND id=ANY($3)`
 	result, err := s.db.Exec(query, starred, userID, pq.Array(entryIDs))
@@ -433,6 +506,29 @@ func (s *Storage) FlushHistory(userID int64) error {
 // MarkAllAsRead updates all user entries to the read status.
 func (s *Storage) MarkAllAsRead(userID int64) error {
 	query := `UPDATE entries SET status=$1, changed_at=now() WHERE user_id=$2 AND status=$3`
+	result, err := s.db.Exec(query, model.EntryStatusRead, userID, model.EntryStatusUnread)
+	if err != nil {
+		return fmt.Errorf(`store: unable to mark all entries as read: %v`, err)
+	}
+
+	count, _ := result.RowsAffected()
+	logger.Debug("[Storage:MarkAllAsRead] %d items marked as read", count)
+
+	return nil
+}
+
+// MarkAllAsReadExceptNSFW updates all user entries except nsfw ones to the read status
+func (s *Storage) MarkAllAsReadExceptNSFW(userID int64) error {
+	query := `
+		UPDATE entries 
+		SET status=$1
+		WHERE id in (
+			SELECT e.id 
+			FROM feeds f
+			INNER JOIN entries e ON f.id = e.feed_id
+			WHERE e.user_id=$2 AND e.status=$3 AND f.nsfw = 'f'
+		)
+	`
 	result, err := s.db.Exec(query, model.EntryStatusRead, userID, model.EntryStatusUnread)
 	if err != nil {
 		return fmt.Errorf(`store: unable to mark all entries as read: %v`, err)

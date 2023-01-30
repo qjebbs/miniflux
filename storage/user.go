@@ -75,6 +75,7 @@ func (s *Storage) CreateUser(userCreationRequest *model.UserCreationRequest) (*m
 			is_admin,
 			language,
 			theme,
+			view,
 			timezone,
 			entry_direction,
 			entries_per_page,
@@ -112,6 +113,7 @@ func (s *Storage) CreateUser(userCreationRequest *model.UserCreationRequest) (*m
 		&user.IsAdmin,
 		&user.Language,
 		&user.Theme,
+		&user.View,
 		&user.Timezone,
 		&user.EntryDirection,
 		&user.EntriesPerPage,
@@ -183,9 +185,10 @@ func (s *Storage) UpdateUser(user *model.User) error {
 				default_reading_speed=$18,
 				cjk_reading_speed=$19,
 				default_home_page=$20,
-				categories_sorting_order=$21
+				categories_sorting_order=$21,
+				view=$22
 			WHERE
-				id=$22
+				id=$23
 		`
 
 		_, err = s.db.Exec(
@@ -211,6 +214,7 @@ func (s *Storage) UpdateUser(user *model.User) error {
 			user.CJKReadingSpeed,
 			user.DefaultHomePage,
 			user.CategoriesSortingOrder,
+			user.View,
 			user.ID,
 		)
 		if err != nil {
@@ -238,9 +242,10 @@ func (s *Storage) UpdateUser(user *model.User) error {
 				default_reading_speed=$17,
 				cjk_reading_speed=$18,
 				default_home_page=$19,
-				categories_sorting_order=$20
+				categories_sorting_order=$20,
+				view=$21
 			WHERE
-				id=$21
+				id=$22
 		`
 
 		_, err := s.db.Exec(
@@ -265,6 +270,7 @@ func (s *Storage) UpdateUser(user *model.User) error {
 			user.CJKReadingSpeed,
 			user.DefaultHomePage,
 			user.CategoriesSortingOrder,
+			user.View,
 			user.ID,
 		)
 
@@ -294,6 +300,7 @@ func (s *Storage) UserByID(userID int64) (*model.User, error) {
 			username,
 			is_admin,
 			theme,
+			view,
 			language,
 			timezone,
 			entry_direction,
@@ -328,6 +335,7 @@ func (s *Storage) UserByUsername(username string) (*model.User, error) {
 			username,
 			is_admin,
 			theme,
+			view,
 			language,
 			timezone,
 			entry_direction,
@@ -362,6 +370,7 @@ func (s *Storage) UserByField(field, value string) (*model.User, error) {
 			username,
 			is_admin,
 			theme,
+			view,
 			language,
 			timezone,
 			entry_direction,
@@ -438,6 +447,7 @@ func (s *Storage) fetchUser(query string, args ...interface{}) (*model.User, err
 		&user.Username,
 		&user.IsAdmin,
 		&user.Theme,
+		&user.View,
 		&user.Language,
 		&user.Timezone,
 		&user.EntryDirection,
@@ -535,6 +545,7 @@ func (s *Storage) Users() (model.Users, error) {
 			username,
 			is_admin,
 			theme,
+			view,
 			language,
 			timezone,
 			entry_direction,
@@ -571,6 +582,7 @@ func (s *Storage) Users() (model.Users, error) {
 			&user.Username,
 			&user.IsAdmin,
 			&user.Theme,
+			&user.View,
 			&user.Language,
 			&user.Timezone,
 			&user.EntryDirection,

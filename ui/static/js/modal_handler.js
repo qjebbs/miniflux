@@ -2,12 +2,9 @@ class ModalHandler {
     static exists() {
         return document.getElementById("modal-container") !== null;
     }
-
+    
     static open(fragment) {
-        if (ModalHandler.exists()) {
-            return;
-        }
-
+        ModalHandler.close();
         let container = document.createElement("div");
         container.id = "modal-container";
         container.appendChild(document.importNode(fragment, true));
@@ -20,6 +17,7 @@ class ModalHandler {
                 ModalHandler.close();
             };
         }
+        return container;
     }
 
     static close() {

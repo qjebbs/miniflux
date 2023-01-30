@@ -6,18 +6,24 @@ package form // import "miniflux.app/ui/form"
 
 import (
 	"net/http"
+
+	"miniflux.app/model"
 )
 
 // CategoryForm represents a feed form in the UI
 type CategoryForm struct {
-	Title        string
-	HideGlobally string
+	Title string
+	View  string
 }
 
 // NewCategoryForm returns a new CategoryForm.
 func NewCategoryForm(r *http.Request) *CategoryForm {
+	view := r.FormValue("view")
+	if _, ok := model.Views()[view]; !ok {
+		view = model.ViewDefault
+	}
 	return &CategoryForm{
-		Title:        r.FormValue("title"),
-		HideGlobally: r.FormValue("hide_globally"),
+		Title: r.FormValue("title"),
+		View:  view,
 	}
 }

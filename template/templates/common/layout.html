@@ -56,9 +56,12 @@
     <header class="header">
         <nav>
             <div class="logo">
-                <a href="{{ route .user.DefaultHomePage }}">Mini<span>flux</span></a>
+                <a href="{{ route .user.DefaultHomePage }}">Mini<span>flux{{ if .nsfw }}∙{{ end }}</span></a>
             </div>
             <ul>
+                <li class="mobile-only" {{ if eq .menu "home" }}class="active"{{ end }}>
+                    <a href="{{ route .user.DefaultHomePage }}" data-page="{{ .user.DefaultHomePage }}">{{ t "menu.home" }}</a>
+                </li>
                 <li {{ if eq .menu "unread" }}class="active"{{ end }} title="{{ t "tooltip.keyboard_shortcuts" "g u" }}">
                     <a href="{{ route "unread" }}" data-page="unread">{{ t "menu.unread" }}
                       {{ if gt .countUnread 0 }}
@@ -93,6 +96,9 @@
                         <a href="{{ route "logout" }}" title="{{ t "tooltip.logged_user" .user.Username }}">{{ t "menu.logout" }}</a>
                     </li>
                 {{ end }}
+                <li class="mobile-only" title="{{ t "tooltip.keyboard_shortcuts" "N" }}">
+                    <a href="#" data-action="nsfw" data-url="{{ route "nsfw" }}">{{ t "menu.nsfw" }}</a>
+                </li>
             </ul>
             <div class="search">
                 <div class="search-toggle-switch {{ if $.searchQuery }}has-search-query{{ end }}">
@@ -115,7 +121,7 @@
         {{template "content" .}}
     </main>
     <template id="keyboard-shortcuts">
-        <div id="modal-left">
+        <div class="modal left">
             <a href="#" class="btn-close-modal">x</a>
             <h3>{{ t "page.keyboard_shortcuts.title" }}</h3>
 
@@ -162,17 +168,33 @@
                     <li>{{ t "page.keyboard_shortcuts.refresh_all_feeds" }} = <strong>R</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.remove_feed" }} = <strong>#</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.go_to_search" }} = <strong>/</strong></li>
+                    <li>{{ t "page.keyboard_shortcuts.toggle_nsfw" }} = <strong>N</strong></li>
                     <li>{{ t "page.keyboard_shortcuts.close_modal" }} = <strong>Esc</strong></li>
                 </ul>
             </div>
         </div>
     </template>
+    <template id="action-menus">
+        <div class="modal right">
+            <a href="#" class="btn-close-modal">x</a>
+            <div class="action-menus">
+                <ul id="element-links">
+                </ul>
+                <ul>
+                    <li data-for="entries" id="menu-mark-above-read">{{t "action.mark_above_read"}}</li>
+                    <li id="menu-action-cancel">{{t "action.cancel"}}</li>
+                </ul>
 
+            </div>
+        </div>
+    </template>
     <template id="icon-read">{{ icon "read" }}</template>
     <template id="icon-unread">{{ icon "unread" }}</template>
     <template id="icon-star">{{ icon "star" }}</template>
     <template id="icon-unstar">{{ icon "unstar" }}</template>
     <template id="icon-save">{{ icon "save" }}</template>
+    <template id="icon-cache">{{ icon "cache" }}</template>
+    <template id="icon-uncache">{{ icon "uncache" }}</template>
 
     <div id="toast-wrapper" role="alert" aria-live="assertive" aria-atomic="true">
         <span id="toast-msg"></span>

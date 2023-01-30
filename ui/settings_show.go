@@ -17,6 +17,7 @@ import (
 )
 
 func (h *handler) showSettingsPage(w http.ResponseWriter, r *http.Request) {
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 
@@ -29,6 +30,7 @@ func (h *handler) showSettingsPage(w http.ResponseWriter, r *http.Request) {
 	settingsForm := form.SettingsForm{
 		Username:               user.Username,
 		Theme:                  user.Theme,
+		View:                   user.View,
 		Language:               user.Language,
 		Timezone:               user.Timezone,
 		EntryDirection:         user.EntryDirection,
@@ -54,12 +56,13 @@ func (h *handler) showSettingsPage(w http.ResponseWriter, r *http.Request) {
 
 	view.Set("form", settingsForm)
 	view.Set("themes", model.Themes())
+	view.Set("views", model.Views())
 	view.Set("languages", locale.AvailableLanguages())
 	view.Set("timezones", timezones)
 	view.Set("menu", "settings")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("default_home_pages", model.HomePages())
 	view.Set("categories_sorting_options", model.CategoriesSortingOptions())
 

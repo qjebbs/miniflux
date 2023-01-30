@@ -18,6 +18,7 @@ type SettingsForm struct {
 	Password               string
 	Confirmation           string
 	Theme                  string
+	View                   string
 	Language               string
 	Timezone               string
 	EntryDirection         string
@@ -39,6 +40,7 @@ type SettingsForm struct {
 func (s *SettingsForm) Merge(user *model.User) *model.User {
 	user.Username = s.Username
 	user.Theme = s.Theme
+	user.View = s.View
 	user.Language = s.Language
 	user.Timezone = s.Timezone
 	user.EntryDirection = s.EntryDirection
@@ -64,7 +66,7 @@ func (s *SettingsForm) Merge(user *model.User) *model.User {
 
 // Validate makes sure the form values are valid.
 func (s *SettingsForm) Validate() error {
-	if s.Username == "" || s.Theme == "" || s.Language == "" || s.Timezone == "" || s.EntryDirection == "" || s.DisplayMode == "" || s.DefaultHomePage == "" {
+	if s.Username == "" || s.Theme == "" || s.View == "" || s.Language == "" || s.Timezone == "" || s.EntryDirection == "" || s.DisplayMode == "" || s.DefaultHomePage == "" {
 		return errors.NewLocalizedError("error.settings_mandatory_fields")
 	}
 
@@ -105,6 +107,7 @@ func NewSettingsForm(r *http.Request) *SettingsForm {
 		Password:               r.FormValue("password"),
 		Confirmation:           r.FormValue("confirmation"),
 		Theme:                  r.FormValue("theme"),
+		View:                   r.FormValue("view"),
 		Language:               r.FormValue("language"),
 		Timezone:               r.FormValue("timezone"),
 		EntryDirection:         r.FormValue("entry_direction"),

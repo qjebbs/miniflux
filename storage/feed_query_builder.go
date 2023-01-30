@@ -90,6 +90,12 @@ func (f *FeedQueryBuilder) WithOffset(offset int) *FeedQueryBuilder {
 	return f
 }
 
+// WithoutNSFW excludes NSFW contents.
+func (f *FeedQueryBuilder) WithoutNSFW() *FeedQueryBuilder {
+	f.conditions = append(f.conditions, "f.nsfw='f'")
+	return f
+}
+
 func (f *FeedQueryBuilder) buildCondition() string {
 	return strings.Join(f.conditions, " AND ")
 }
@@ -167,10 +173,12 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			f.allow_self_signed_certificates,
 			f.fetch_via_proxy,
 			f.disabled,
-			f.hide_globally,
+			f.view,
+			f.nsfw,
+			f.proxify_images,
+			f.cache_media,
 			f.category_id,
 			c.title as category_title,
-			c.hide_globally as category_hidden,
 			fi.icon_id,
 			u.timezone
 		FROM
@@ -230,10 +238,12 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			&feed.AllowSelfSignedCertificates,
 			&feed.FetchViaProxy,
 			&feed.Disabled,
-			&feed.HideGlobally,
+			&feed.View,
+			&feed.NSFW,
+			&feed.ProxifyImages,
+			&feed.CacheMedia,
 			&feed.Category.ID,
 			&feed.Category.Title,
-			&feed.Category.HideGlobally,
 			&iconID,
 			&tz,
 		)

@@ -1,0 +1,50 @@
+{{ define "title"}}{{ t "page.add_entry.title" }}{{ end }}
+
+{{ define "content"}}
+<section class="page-header">
+    <h1>{{ t "page.add_entry.title" }}</h1>
+</section>
+
+{{ if not .feeds }}
+    <p class="alert alert-error">{{ t "page.categories.no_feeds" }}</p>
+{{ else }}
+    <form action="{{ route "addEntry" }}" method="post" autocomplete="off">
+        <input type="hidden" name="csrf" value="{{ .csrf }}">
+
+        {{ if .errorMessage }}
+            <div class="alert alert-error">{{ t .errorMessage }}</div>
+        {{ end }}
+
+        <label for="form-url">{{ t "page.add_entry.label.url" }}</label>
+        <input type="url" name="url" id="form-url" placeholder="https://domain.tld/" value="{{ .form.URL }}" required autofocus>
+
+        <label for="form-feed">{{ t "form.entry.label.feed" }}</label>
+        <select id="form-category" name="category_id">
+            <option value="" selected="selected">{{ t "form.entry.label.all_feeds" }}</option>
+        {{ range .categories }}
+            <option value="{{ .ID }}">{{ .Title }}</option>
+        {{ end }}
+        </select>
+        <select id="form-feed" name="feed_id">
+        {{ range .feeds }}
+            <option value="{{ .ID }}" data-category="{{ .Category.ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
+        {{ end }}
+        </select>
+
+        <details>
+            <summary>{{ t "page.add_feed.legend.advanced_options" }}</summary>
+            <div class="details-content">
+                <label for="form-user-agent">{{ t "form.feed.label.user_agent" }}</label>
+                <input type="text" name="user_agent" id="form-user-agent" placeholder="{{ .defaultUserAgent }}" value="{{ .form.UserAgent }}" autocomplete="off">
+                <label for="form-cookies">{{ t "form.entry.label.cookies" }}</label>
+                <textarea class="small" name="cookies" id="form-cookies" placeholder="{{ t "form.entry.label.cookies_placeholder" }}" autocomplete="off">{{ .form.Cookies }}</textarea>
+            </div>
+        </details>
+
+        <div class="buttons">
+            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.loading" }}">{{ t "page.add_entry.submit" }}</button> {{ t "action.or" }} <a href="#" data-action="historyGoBack">{{ t "action.cancel" }}</a>
+        </div>
+    </form>
+{{ end }}
+
+{{ end }}

@@ -34,6 +34,8 @@ func (h *handler) showCategoryEntriesAllPage(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
+
 	offset := request.QueryIntParam(r, "offset", 0)
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithCategoryID(category.ID)
@@ -42,6 +44,9 @@ func (h *handler) showCategoryEntriesAllPage(w http.ResponseWriter, r *http.Requ
 	builder.WithoutStatus(model.EntryStatusRemoved)
 	builder.WithOffset(offset)
 	builder.WithLimit(user.EntriesPerPage)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 
 	entries, err := builder.GetEntries()
 	if err != nil {
@@ -63,10 +68,14 @@ func (h *handler) showCategoryEntriesAllPage(w http.ResponseWriter, r *http.Requ
 	view.Set("pagination", getPagination(route.Path(h.router, "categoryEntriesAll", "categoryID", category.ID), count, offset, user.EntriesPerPage))
 	view.Set("menu", "categories")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("showOnlyUnreadEntries", false)
+	view.Set("pageEntriesType", "all")
+	if category.View != model.ViewDefault {
+		view.Set("view", category.View)
+	}
 
 	html.OK(w, r, view.Render("category_entries"))
 }

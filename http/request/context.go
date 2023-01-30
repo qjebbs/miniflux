@@ -18,6 +18,7 @@ const (
 	UserSessionTokenContextKey
 	UserLanguageContextKey
 	UserThemeContextKey
+	UserViewContextKey
 	SessionIDContextKey
 	CSRFContextKey
 	OAuth2StateContextKey
@@ -25,6 +26,7 @@ const (
 	FlashErrorMessageContextKey
 	PocketRequestTokenContextKey
 	ClientIPContextKey
+	NSFWContextKey
 	GoogleReaderToken
 )
 
@@ -73,6 +75,20 @@ func UserTheme(r *http.Request) string {
 		theme = "system_serif"
 	}
 	return theme
+}
+
+// UserView get the view used by the current logged user.
+func UserView(r *http.Request) string {
+	view := getContextStringValue(r, UserViewContextKey)
+	if view == "" {
+		view = "list"
+	}
+	return view
+}
+
+// IsNSFWEnabled returns the current NSFW setting.
+func IsNSFWEnabled(r *http.Request) bool {
+	return getContextStringValue(r, NSFWContextKey) == "hide"
 }
 
 // CSRF returns the current CSRF token.

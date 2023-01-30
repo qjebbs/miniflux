@@ -22,6 +22,8 @@ func (h *handler) showHistoryPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
+
 	offset := request.QueryIntParam(r, "offset", 0)
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithStatus(model.EntryStatusRead)
@@ -29,6 +31,9 @@ func (h *handler) showHistoryPage(w http.ResponseWriter, r *http.Request) {
 	builder.WithDirection("desc")
 	builder.WithOffset(offset)
 	builder.WithLimit(user.EntriesPerPage)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 
 	entries, err := builder.GetEntries()
 	if err != nil {
@@ -49,9 +54,10 @@ func (h *handler) showHistoryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("pagination", getPagination(route.Path(h.router, "history"), count, offset, user.EntriesPerPage))
 	view.Set("menu", "history")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
+	view.Set("pageEntriesType", "all")
 
 	html.OK(w, r, view.Render("history_entries"))
 }

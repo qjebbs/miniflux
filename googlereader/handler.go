@@ -25,7 +25,6 @@ import (
 	mff "miniflux.app/reader/handler"
 	mfs "miniflux.app/reader/subscription"
 	"miniflux.app/storage"
-	"miniflux.app/url"
 	"miniflux.app/validator"
 )
 
@@ -841,11 +840,10 @@ func (h *handler) streamItemContents(w http.ResponseWriter, r *http.Request) {
 			categories = append(categories, userStarred)
 		}
 
-		entry.Content = proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entry.Content)
-		proxyImage := config.Opts.ProxyImages()
+		entry.Content = proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entry)
 
 		for i := range entry.Enclosures {
-			if strings.HasPrefix(entry.Enclosures[i].MimeType, "image/") && (proxyImage == "all" || proxyImage != "none" && !url.IsHTTPS(entry.Enclosures[i].URL)) {
+			if strings.HasPrefix(entry.Enclosures[i].MimeType, "image/") && (entry.Feed.ProxifyImages || proxy.ShouldProxify(entry.Enclosures[i].URL)) {
 				entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
 			}
 		}
@@ -1033,7 +1031,7 @@ func (h *handler) subscriptionList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var result subscriptionsResponse
-	feeds, err := h.store.Feeds(userID)
+	feeds, err := h.store.Feeds(userID, false)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return

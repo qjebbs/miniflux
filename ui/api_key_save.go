@@ -25,14 +25,15 @@ func (h *handler) saveAPIKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	apiKeyForm := form.NewAPIKeyForm(r)
+	nsfw := request.IsNSFWEnabled(r)
 
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("form", apiKeyForm)
 	view.Set("menu", "settings")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	if err := apiKeyForm.Validate(); err != nil {
 		view.Set("errorMessage", err.Error())

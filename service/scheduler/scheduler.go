@@ -19,6 +19,7 @@ import (
 func Serve(store *storage.Storage, pool *worker.Pool) {
 	logger.Info(`Starting scheduler...`)
 
+	go store.CreateMediasRunOnce()
 	go feedScheduler(
 		store,
 		pool,
@@ -34,6 +35,9 @@ func Serve(store *storage.Storage, pool *worker.Pool) {
 		config.Opts.CleanupArchiveBatchSize(),
 		config.Opts.CleanupRemoveSessionsDays(),
 	)
+	if config.Opts.HasCacheService() {
+		go cacheScheduler(store, config.Opts.CacheFrequency())
+	}
 }
 
 func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency, batchSize int) {
@@ -74,6 +78,22 @@ func cleanupScheduler(store *storage.Storage, frequency, archiveReadDays, archiv
 			if config.Opts.HasMetricsCollector() {
 				metric.ArchiveEntriesDuration.WithLabelValues(model.EntryStatusUnread).Observe(time.Since(startTime).Seconds())
 			}
+		}
+
+		if err := store.CleanMediaCaches(); err != nil {
+			logger.Error("[Scheduler:Cleanup:MediaCaches] %v", err)
+		}
+	}
+}
+
+func cacheScheduler(store *storage.Storage, frequency int) {
+	c := time.Tick(time.Duration(frequency) * time.Hour)
+	for range c {
+		if err := store.ValidateCaches(); err != nil {
+			logger.Error("[Scheduler:ValidateCaches] %v", err)
+		}
+		if err := store.CacheMedias(); err != nil {
+			logger.Error("[Scheduler:CacheMedias] %v", err)
 		}
 	}
 }

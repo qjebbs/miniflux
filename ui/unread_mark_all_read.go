@@ -12,10 +12,16 @@ import (
 )
 
 func (h *handler) markAllAsRead(w http.ResponseWriter, r *http.Request) {
-	if err := h.store.MarkAllAsRead(request.UserID(r)); err != nil {
+	var err error
+	if request.IsNSFWEnabled(r) {
+		err = h.store.MarkAllAsReadExceptNSFW(request.UserID(r))
+	} else {
+		err = h.store.MarkAllAsRead(request.UserID(r))
+	}
+
+	if err != nil {
 		json.ServerError(w, r, err)
 		return
 	}
-
 	json.OK(w, r, "OK")
 }

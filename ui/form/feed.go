@@ -31,8 +31,11 @@ type FeedForm struct {
 	AllowSelfSignedCertificates bool
 	FetchViaProxy               bool
 	Disabled                    bool
-	HideGlobally                bool
-	CategoryHidden              bool // Category has "hide_globally"
+
+	NSFW          bool
+	CacheMedia    bool
+	View          string
+	ProxifyImages bool
 }
 
 // Merge updates the fields of the given feed.
@@ -57,7 +60,10 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.AllowSelfSignedCertificates = f.AllowSelfSignedCertificates
 	feed.FetchViaProxy = f.FetchViaProxy
 	feed.Disabled = f.Disabled
-	feed.HideGlobally = f.HideGlobally
+	feed.NSFW = f.NSFW
+	feed.CacheMedia = f.CacheMedia
+	feed.View = f.View
+	feed.ProxifyImages = f.ProxifyImages
 	return feed
 }
 
@@ -66,6 +72,10 @@ func NewFeedForm(r *http.Request) *FeedForm {
 	categoryID, err := strconv.Atoi(r.FormValue("category_id"))
 	if err != nil {
 		categoryID = 0
+	}
+	view := r.FormValue("view")
+	if _, ok := model.Views()[view]; !ok {
+		view = model.ViewDefault
 	}
 	return &FeedForm{
 		FeedURL:                     r.FormValue("feed_url"),
@@ -86,6 +96,9 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		AllowSelfSignedCertificates: r.FormValue("allow_self_signed_certificates") == "1",
 		FetchViaProxy:               r.FormValue("fetch_via_proxy") == "1",
 		Disabled:                    r.FormValue("disabled") == "1",
-		HideGlobally:                r.FormValue("hide_globally") == "1",
+		NSFW:                        r.FormValue("nsfw") == "1",
+		CacheMedia:                  r.FormValue("cache_media") == "1",
+		View:                        view,
+		ProxifyImages:               r.FormValue("proxify_images") == "1",
 	}
 }

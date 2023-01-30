@@ -12,6 +12,7 @@ import (
 	"miniflux.app/database"
 	"miniflux.app/locale"
 	"miniflux.app/logger"
+	"miniflux.app/model"
 	"miniflux.app/storage"
 	"miniflux.app/ui/static"
 	"miniflux.app/version"
@@ -29,6 +30,11 @@ const (
 	flagConfigFileHelp      = "Load configuration file"
 	flagConfigDumpHelp      = "Print parsed configuration values"
 	flagHealthCheckHelp     = `Perform a health check on the given endpoint (the value "auto" try to guess the health check endpoint).`
+	flagCacheHelp           = "Do the media cache job"
+	flagCacheToDiskHelp     = "Move media caches from database to disk"
+	flagCleanCacheHelp      = "Remove unused caches from disk and database"
+	flagArchiveReadHelp     = "Archive read articles"
+	flagFixCoverImagesHelp  = "Fix cover images display for old articles for a user"
 )
 
 // Parse parses command line arguments.
@@ -46,6 +52,11 @@ func Parse() {
 		flagConfigFile      string
 		flagConfigDump      bool
 		flagHealthCheck     string
+		flagCacheToDisk     bool
+		flagCleanCache      bool
+		flagCache           bool
+		flagArchiveRead     bool
+		flagFixCoverImages  int64
 	)
 
 	flag.BoolVar(&flagInfo, "info", false, flagInfoHelp)
@@ -62,6 +73,11 @@ func Parse() {
 	flag.StringVar(&flagConfigFile, "c", "", flagConfigFileHelp)
 	flag.BoolVar(&flagConfigDump, "config-dump", false, flagConfigDumpHelp)
 	flag.StringVar(&flagHealthCheck, "healthcheck", "", flagHealthCheckHelp)
+	flag.BoolVar(&flagCache, "cache", false, flagCacheHelp)
+	flag.BoolVar(&flagCacheToDisk, "cache-to-disk", false, flagCacheToDiskHelp)
+	flag.BoolVar(&flagCleanCache, "cache-clean", false, flagCleanCacheHelp)
+	flag.BoolVar(&flagArchiveRead, "archive-read", false, flagArchiveReadHelp)
+	flag.Int64Var(&flagFixCoverImages, "fix-cover", 0, flagFixCoverImagesHelp)
 	flag.Parse()
 
 	cfg := config.NewParser()
@@ -169,6 +185,51 @@ func Parse() {
 
 	if flagResetPassword {
 		resetPassword(store)
+		return
+	}
+
+	if flagCacheToDisk {
+		if err = store.MoveCacheToDisk(); err != nil {
+			logger.Error("%v", err)
+		}
+		return
+	}
+
+	if flagCleanCache {
+		if err = store.CleanMediaCaches(); err != nil {
+			logger.Error("%v", err)
+		}
+		return
+	}
+
+	if flagCache {
+		if err = store.ValidateCaches(); err != nil {
+			logger.Error("%v", err)
+		}
+		if err = store.CacheMedias(); err != nil {
+			logger.Error("%v", err)
+		}
+		return
+	}
+
+	if flagFixCoverImages > 0 {
+		if err = fixCovers(store, flagFixCoverImages); err != nil {
+			logger.Error("%v", err)
+		}
+		return
+	}
+
+	if flagArchiveRead {
+		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveReadDays(), config.Opts.CleanupArchiveBatchSize()); err != nil {
+			logger.Error("%v", err)
+		} else {
+			logger.Info("[ArchiveEntries] %d entries changed", rowsAffected)
+		}
+		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveUnreadDays(), config.Opts.CleanupArchiveBatchSize()); err != nil {
+			logger.Error("%v", err)
+		} else {
+			logger.Info("[ArchiveEntries] %d entries changed", rowsAffected)
+		}
 		return
 	}
 

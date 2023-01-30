@@ -10,6 +10,7 @@ func TestValid(t *testing.T) {
 		Password:            "hunter2",
 		Confirmation:        "hunter2",
 		Theme:               "default",
+		View:                "list",
 		Language:            "en_US",
 		Timezone:            "UTC",
 		EntryDirection:      "asc",
@@ -17,7 +18,7 @@ func TestValid(t *testing.T) {
 		DisplayMode:         "standalone",
 		DefaultReadingSpeed: 35,
 		CJKReadingSpeed:     25,
-		DefaultHomePage:     "unread",
+		DefaultHomePage:     "stat",
 	}
 
 	err := settings.Validate()
@@ -32,6 +33,7 @@ func TestConfirmationEmpty(t *testing.T) {
 		Password:            "hunter2",
 		Confirmation:        "",
 		Theme:               "default",
+		View:                "list",
 		Language:            "en_US",
 		Timezone:            "UTC",
 		EntryDirection:      "asc",
@@ -39,7 +41,7 @@ func TestConfirmationEmpty(t *testing.T) {
 		DisplayMode:         "standalone",
 		DefaultReadingSpeed: 35,
 		CJKReadingSpeed:     25,
-		DefaultHomePage:     "unread",
+		DefaultHomePage:     "stat",
 	}
 
 	err := settings.Validate()

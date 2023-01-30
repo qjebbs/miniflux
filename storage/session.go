@@ -24,6 +24,7 @@ func (s *Storage) CreateAppSessionWithUserPrefs(userID int64) (*model.Session, e
 		Data: &model.SessionData{
 			CSRF:     crypto.GenerateRandomString(64),
 			Theme:    user.Theme,
+			View:     user.View,
 			Language: user.Language,
 		},
 	}

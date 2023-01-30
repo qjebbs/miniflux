@@ -24,11 +24,13 @@ func (h *handler) showCreateAPIKeyPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
+
 	view.Set("form", &form.APIKeyForm{})
 	view.Set("menu", "settings")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("create_api_key"))
 }

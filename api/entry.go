@@ -12,14 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"miniflux.app/config"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/json"
 	"miniflux.app/model"
 	"miniflux.app/proxy"
 	"miniflux.app/reader/processor"
 	"miniflux.app/storage"
-	"miniflux.app/url"
 	"miniflux.app/validator"
 )
 
@@ -35,11 +33,10 @@ func (h *handler) getEntryFromBuilder(w http.ResponseWriter, r *http.Request, b 
 		return
 	}
 
-	entry.Content = proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entry.Content)
-	proxyImage := config.Opts.ProxyImages()
+	entry.Content = proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entry)
 
 	for i := range entry.Enclosures {
-		if strings.HasPrefix(entry.Enclosures[i].MimeType, "image/") && (proxyImage == "all" || proxyImage != "none" && !url.IsHTTPS(entry.Enclosures[i].URL)) {
+		if strings.HasPrefix(entry.Enclosures[i].MimeType, "image/") && (proxy.ShouldProxify(entry.Enclosures[i].URL) || entry.Feed.ProxifyImages) {
 			entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
 		}
 	}
@@ -155,7 +152,7 @@ func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int
 	}
 
 	for i := range entries {
-		entries[i].Content = proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entries[i].Content)
+		entries[i].Content = proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entries[i])
 	}
 
 	json.OK(w, r, &entriesResponse{Total: count, Entries: entries})

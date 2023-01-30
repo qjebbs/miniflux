@@ -30,11 +30,14 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	beginSqlCountUnreadEntries := time.Now()
 	offset := request.QueryIntParam(r, "offset", 0)
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithStatus(model.EntryStatusUnread)
-	builder.WithGloballyVisible()
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	countUnread, err := builder.CountEntries()
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -53,7 +56,10 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 	builder.WithDirection(user.EntryDirection)
 	builder.WithOffset(offset)
 	builder.WithLimit(user.EntriesPerPage)
-	builder.WithGloballyVisible()
+	if nsfw {
+		builder.WithoutNSFW()
+	}
+
 	entries, err := builder.GetEntries()
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -66,8 +72,9 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("menu", "unread")
 	view.Set("user", user)
 	view.Set("countUnread", countUnread)
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
+	view.Set("pageEntriesType", "unread")
 
 	finishPreProcessing := time.Now()
 

@@ -7,6 +7,8 @@ package ui // import "miniflux.app/ui"
 import (
 	"net/http"
 
+	"miniflux.app/config"
+
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/html"
 	"miniflux.app/http/route"
@@ -50,7 +52,6 @@ func (h *handler) showUnreadEntryPage(w http.ResponseWriter, r *http.Request) {
 
 	entryPaginationBuilder := storage.NewEntryPaginationBuilder(h.store, user.ID, entry.ID, user.EntryOrder, user.EntryDirection)
 	entryPaginationBuilder.WithStatus(model.EntryStatusUnread)
-	entryPaginationBuilder.WithGloballyVisible()
 	prevEntry, nextEntry, err := entryPaginationBuilder.Entries()
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -75,6 +76,7 @@ func (h *handler) showUnreadEntryPage(w http.ResponseWriter, r *http.Request) {
 	}
 	entry.Status = model.EntryStatusRead
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("entry", entry)
@@ -85,10 +87,23 @@ func (h *handler) showUnreadEntryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("menu", "unread")
 	view.Set("user", user)
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
+
+	if config.Opts.HasCacheService() {
+		countMedias, countCached, _, err := h.store.MediaStatisticsByEntry(entryID)
+		if err != nil {
+			html.ServerError(w, r, err)
+			return
+		}
+		view.Set("hasCacheService", countMedias > 0)
+		view.Set("entryCached", countCached > 0)
+	} else {
+		view.Set("hasCacheService", false)
+		view.Set("entryCached", false)
+	}
 
 	// Fetching the counter here avoid to be off by one.
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("entry"))
 }

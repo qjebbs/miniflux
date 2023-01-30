@@ -11,11 +11,11 @@ import (
 	"net/url"
 	"path"
 
+	"miniflux.app/config"
 	"miniflux.app/http/route"
+	murl "miniflux.app/url"
 
 	"github.com/gorilla/mux"
-
-	"miniflux.app/config"
 )
 
 // ProxifyURL generates a relative URL for a proxified resource.
@@ -58,13 +58,25 @@ func AbsoluteProxifyURL(router *mux.Router, host, link string) string {
 			}
 		}
 
-		proxyUrl, err := url.Parse(proxyImageUrl)
+		proxyURL, err := url.Parse(proxyImageUrl)
 		if err != nil {
 			return ""
 		}
 
-		proxyUrl.Path = path.Join(proxyUrl.Path, base64.URLEncoding.EncodeToString([]byte(link)))
-		return proxyUrl.String()
+		proxyURL.Path = path.Join(proxyURL.Path, base64.URLEncoding.EncodeToString([]byte(link)))
+		return proxyURL.String()
 	}
 	return ""
+}
+
+// ShouldProxify tells if a link should prxified.
+func ShouldProxify(link string) bool {
+	if link == "" {
+		return false
+	}
+	proxyImages := config.Opts.ProxyImages()
+	if isDataURL(link) {
+		return false
+	}
+	return proxyImages == "all" || (proxyImages != "none" && !murl.IsHTTPS(link))
 }

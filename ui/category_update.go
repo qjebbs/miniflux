@@ -39,18 +39,19 @@ func (h *handler) updateCategory(w http.ResponseWriter, r *http.Request) {
 
 	categoryForm := form.NewCategoryForm(r)
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("form", categoryForm)
 	view.Set("category", category)
 	view.Set("menu", "categories")
 	view.Set("user", loggedUser)
-	view.Set("countUnread", h.store.CountUnreadEntries(loggedUser.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(loggedUser.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID, nsfw))
 
 	categoryRequest := &model.CategoryRequest{
-		Title:        categoryForm.Title,
-		HideGlobally: categoryForm.HideGlobally,
+		Title: categoryForm.Title,
+		View:  categoryForm.View,
 	}
 
 	if validationErr := validator.ValidateCategoryModification(h.store, loggedUser.ID, category.ID, categoryRequest); validationErr != nil {

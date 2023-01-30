@@ -19,6 +19,7 @@ import (
 )
 
 func (h *handler) showChooseSubscriptionPage(w http.ResponseWriter, r *http.Request) {
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 
@@ -37,8 +38,8 @@ func (h *handler) showChooseSubscriptionPage(w http.ResponseWriter, r *http.Requ
 	view.Set("categories", categories)
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("defaultUserAgent", config.Opts.HTTPClientUserAgent())
 
 	subscriptionForm := form.NewSubscriptionForm(r)

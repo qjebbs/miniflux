@@ -25,6 +25,8 @@ type Entry struct {
 	Status      string        `json:"status"`
 	Hash        string        `json:"hash"`
 	Title       string        `json:"title"`
+	CoverImage  string        `json:"cover_image"`
+	ImageCount  int           `json:"image_count"`
 	URL         string        `json:"url"`
 	CommentsURL string        `json:"comments_url"`
 	Date        time.Time     `json:"published_at"`

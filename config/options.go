@@ -64,6 +64,10 @@ const (
 	defaultHTTPClientProxy                    = ""
 	defaultAuthProxyHeader                    = ""
 	defaultAuthProxyUserCreation              = false
+	defaultCacheService                       = true
+	defaultCacheLocation                      = "disk"
+	defaultCacheFrequency                     = 24
+	defaultDiskStorageRoot                    = "./"
 	defaultMaintenanceMode                    = false
 	defaultMaintenanceMessage                 = "Miniflux is currently under maintenance"
 	defaultMetricsCollector                   = false
@@ -133,6 +137,10 @@ type Options struct {
 	httpClientUserAgent                string
 	authProxyHeader                    string
 	authProxyUserCreation              bool
+	cacheService                       bool
+	cacheLocation                      string
+	diskStorageRoot                    string
+	cacheFrequency                     int
 	maintenanceMode                    bool
 	maintenanceMessage                 string
 	metricsCollector                   bool
@@ -197,6 +205,10 @@ func NewOptions() *Options {
 		httpClientUserAgent:                defaultHTTPClientUserAgent,
 		authProxyHeader:                    defaultAuthProxyHeader,
 		authProxyUserCreation:              defaultAuthProxyUserCreation,
+		cacheService:                       defaultCacheService,
+		cacheLocation:                      defaultCacheLocation,
+		diskStorageRoot:                    defaultDiskStorageRoot,
+		cacheFrequency:                     defaultCacheFrequency,
 		maintenanceMode:                    defaultMaintenanceMode,
 		maintenanceMessage:                 defaultMaintenanceMessage,
 		metricsCollector:                   defaultMetricsCollector,
@@ -246,6 +258,11 @@ func (o *Options) RootURL() string {
 // BasePath returns the application base path according to the base URL.
 func (o *Options) BasePath() string {
 	return o.basePath
+}
+
+// DiskStorageRoot returns the root path of file system storage.
+func (o *Options) DiskStorageRoot() string {
+	return o.diskStorageRoot
 }
 
 // IsDefaultDatabaseURL returns true if the default database URL is used.
@@ -316,6 +333,11 @@ func (o *Options) CleanupArchiveBatchSize() int {
 // CleanupRemoveSessionsDays returns the number of days after which to remove sessions.
 func (o *Options) CleanupRemoveSessionsDays() int {
 	return o.cleanupRemoveSessionsDays
+}
+
+// CacheFrequency returns the interval for cache jobs.
+func (o *Options) CacheFrequency() int {
+	return o.cacheFrequency
 }
 
 // WorkerPoolSize returns the number of background worker.
@@ -434,6 +456,16 @@ func (o *Options) HasSchedulerService() bool {
 	return o.schedulerService
 }
 
+// HasCacheService returns true if the cache service is enabled.
+func (o *Options) HasCacheService() bool {
+	return o.cacheService && o.httpService
+}
+
+// CacheLocation returns where to save caches.
+func (o *Options) CacheLocation() string {
+	return o.cacheLocation
+}
+
 // PocketConsumerKey returns the Pocket Consumer Key if configured.
 func (o *Options) PocketConsumerKey(defaultValue string) string {
 	if o.pocketConsumerKey != "" {
@@ -519,6 +551,9 @@ func (o *Options) SortedOptions(redactSecret bool) []*Option {
 		"BASE_PATH":                              o.basePath,
 		"BASE_URL":                               o.baseURL,
 		"BATCH_SIZE":                             o.batchSize,
+		"CACHE_SERVICE":                          o.cacheService,
+		"CACHE_LOCATION":                         o.cacheLocation,
+		"CACHE_FREQUENCY":                        o.cacheFrequency,
 		"CERT_DOMAIN":                            o.certDomain,
 		"CERT_FILE":                              o.certFile,
 		"CLEANUP_ARCHIVE_READ_DAYS":              o.cleanupArchiveReadDays,
@@ -535,6 +570,7 @@ func (o *Options) SortedOptions(redactSecret bool) []*Option {
 		"DISABLE_HSTS":                           !o.hsts,
 		"DISABLE_SCHEDULER_SERVICE":              !o.schedulerService,
 		"DISABLE_HTTP_SERVICE":                   !o.httpService,
+		"DISK_STORAGE_ROOT":                      o.diskStorageRoot,
 		"FETCH_YOUTUBE_WATCH_TIME":               o.fetchYouTubeWatchTime,
 		"HTTPS":                                  o.HTTPS,
 		"HTTP_CLIENT_MAX_BODY_SIZE":              o.httpClientMaxBodySize,

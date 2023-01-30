@@ -48,6 +48,7 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/mark-all-as-read", handler.markAllAsRead).Name("markAllAsRead").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/unread", handler.showUnreadPage).Name("unread").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/unread/entry/{entryID}", handler.showUnreadEntryPage).Name("unreadEntry").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/stat", handler.showStatPage).Name("stat").Methods(http.MethodGet)
 
 	// History pages.
 	uiRouter.HandleFunc("/history", handler.showHistoryPage).Name("history").Methods(http.MethodGet)
@@ -62,6 +63,13 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/search", handler.showSearchEntriesPage).Name("searchEntries").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/search/entry/{entryID}", handler.showSearchEntryPage).Name("searchEntry").Methods(http.MethodGet)
 
+	// Entry editing pages.
+	uiRouter.HandleFunc("/entry/create", handler.showAddEntryPage).Name("addEntry").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/entry/create", handler.submitEntry).Name("submitEntry").Methods(http.MethodPost)
+	uiRouter.HandleFunc("/entry/{entryID}/edit", handler.showEditEntryPage).Name("editEntry").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/entry/update", handler.updateEntry).Name("updateEntry").Methods(http.MethodPost)
+	uiRouter.HandleFunc("/entry/bookmarklet", handler.bookmarkletEntry).Name("bookmarkletEntry").Methods(http.MethodGet)
+
 	// Feed listing pages.
 	uiRouter.HandleFunc("/feeds", handler.showFeedsPage).Name("feeds").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feeds/refresh", handler.refreshAllFeeds).Name("refreshAllFeeds").Methods(http.MethodGet)
@@ -73,8 +81,11 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/feed/{feedID}/update", handler.updateFeed).Name("updateFeed").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/feed/{feedID}/entries", handler.showFeedEntriesPage).Name("feedEntries").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/{feedID}/entries/all", handler.showFeedEntriesAllPage).Name("feedEntriesAll").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/feed/{feedID}/entries/starred", handler.showFeedEntriesStarredPage).Name("feedEntriesStarred").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/{feedID}/entry/{entryID}", handler.showFeedEntryPage).Name("feedEntry").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/icon/{iconID}", handler.showIcon).Name("icon").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/feed/{feedID}/media/cache/remove", handler.removeFeedMediaCache).Name("removeFeedCache").Methods(http.MethodPost)
+	uiRouter.HandleFunc("/feed/{feedID}/view", handler.updateFeedView).Name("updateFeedView").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/feed/{feedID}/mark-all-as-read", handler.markFeedAsRead).Name("markFeedAsRead").Methods(http.MethodPost)
 
 	// Category pages.
@@ -87,9 +98,11 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/category/{categoryID}/entries", handler.showCategoryEntriesPage).Name("categoryEntries").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/category/{categoryID}/entries/refresh", handler.refreshCategoryEntriesPage).Name("refreshCategoryEntriesPage").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/category/{categoryID}/entries/all", handler.showCategoryEntriesAllPage).Name("categoryEntriesAll").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/category/{categoryID}/entries/starred", handler.showCategoryEntriesStarredPage).Name("categoryEntriesStarred").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/category/{categoryID}/edit", handler.showEditCategoryPage).Name("editCategory").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/category/{categoryID}/update", handler.updateCategory).Name("updateCategory").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/category/{categoryID}/remove", handler.removeCategory).Name("removeCategory").Methods(http.MethodPost)
+	uiRouter.HandleFunc("/category/{categoryID}/view", handler.updateCategoryView).Name("updateCategoryView").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/category/{categoryID}/mark-all-as-read", handler.markCategoryAsRead).Name("markCategoryAsRead").Methods(http.MethodPost)
 
 	// Entry pages.
@@ -98,6 +111,13 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/entry/download/{entryID}", handler.fetchContent).Name("fetchContent").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/proxy/{encodedDigest}/{encodedURL}", handler.imageProxy).Name("proxy").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/entry/bookmark/{entryID}", handler.toggleBookmark).Name("toggleBookmark").Methods(http.MethodPost)
+	uiRouter.HandleFunc("/entry/media/cache/{entryID}", handler.toggleEntryMediaCache).Name("toggleCache").Methods(http.MethodPost)
+
+	// Share pages.
+	uiRouter.HandleFunc("/entry/share/{entryID}", handler.createSharedEntry).Name("shareEntry").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/entry/unshare/{entryID}", handler.unshareEntry).Name("unshareEntry").Methods(http.MethodPost)
+	uiRouter.HandleFunc("/share/{shareCode}", handler.sharedEntry).Name("sharedEntry").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/shares", handler.sharedEntries).Name("sharedEntries").Methods(http.MethodGet)
 
 	// Share pages.
 	uiRouter.HandleFunc("/entry/share/{entryID}", handler.createSharedEntry).Name("shareEntry").Methods(http.MethodGet)
@@ -150,6 +170,9 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/login", handler.checkLogin).Name("checkLogin").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/logout", handler.logout).Name("logout").Methods(http.MethodGet)
 	uiRouter.Handle("/", middleware.handleAuthProxy(http.HandlerFunc(handler.showLoginPage))).Name("login").Methods(http.MethodGet)
+
+	// Miscellaneous
+	uiRouter.HandleFunc("/nsfw", handler.toggleNSFW).Name("nsfw").Methods(http.MethodPost)
 
 	router.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")

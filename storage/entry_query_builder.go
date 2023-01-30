@@ -99,6 +99,15 @@ func (e *EntryQueryBuilder) WithEntryID(entryID int64) *EntryQueryBuilder {
 	return e
 }
 
+// WithEntryHash set the entryHash.
+func (e *EntryQueryBuilder) WithEntryHash(hash string) *EntryQueryBuilder {
+	if hash != "" {
+		e.conditions = append(e.conditions, fmt.Sprintf("e.hash = $%d", len(e.args)+1))
+		e.args = append(e.args, hash)
+	}
+	return e
+}
+
 // WithFeedID filter by feed ID.
 func (e *EntryQueryBuilder) WithFeedID(feedID int64) *EntryQueryBuilder {
 	if feedID > 0 {
@@ -144,6 +153,12 @@ func (e *EntryQueryBuilder) WithoutStatus(status string) *EntryQueryBuilder {
 	return e
 }
 
+// WithoutNSFW excludes entries whose feed marked as Not Safe For Work.
+func (e *EntryQueryBuilder) WithoutNSFW() *EntryQueryBuilder {
+	e.conditions = append(e.conditions, "f.nsfw = 'f'")
+	return e
+}
+
 // WithShareCode set the entry share code.
 func (e *EntryQueryBuilder) WithShareCode(shareCode string) *EntryQueryBuilder {
 	e.conditions = append(e.conditions, fmt.Sprintf("e.share_code = $%d", len(e.args)+1))
@@ -185,21 +200,9 @@ func (e *EntryQueryBuilder) WithOffset(offset int) *EntryQueryBuilder {
 	return e
 }
 
-func (e *EntryQueryBuilder) WithGloballyVisible() *EntryQueryBuilder {
-	e.conditions = append(e.conditions, "not c.hide_globally")
-	e.conditions = append(e.conditions, "not f.hide_globally")
-	return e
-}
-
 // CountEntries count the number of entries that match the condition.
 func (e *EntryQueryBuilder) CountEntries() (count int, err error) {
-	query := `
-		SELECT count(*)
-		FROM entries e
-			JOIN feeds f ON f.id = e.feed_id
-			JOIN categories c ON c.id = f.category_id
-		WHERE %s
-	`
+	query := `SELECT count(*) FROM entries e LEFT JOIN feeds f ON f.id=e.feed_id WHERE %s`
 	condition := e.buildCondition()
 
 	err = e.store.db.QueryRow(fmt.Sprintf(query, condition), e.args...).Scan(&count)
@@ -248,18 +251,23 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			e.status,
 			e.starred,
 			e.reading_time,
+			e.cover_image,
+			e.image_count,
 			e.created_at,
 			e.changed_at,
 			f.title as feed_title,
 			f.feed_url,
 			f.site_url,
 			f.checked_at,
-			f.category_id, c.title as category_title,
+			f.category_id,
+			c.title as category_title,
 			f.scraper_rules,
 			f.rewrite_rules,
 			f.crawler,
 			f.user_agent,
 			f.cookie,
+			f.proxify_images,
+			f.cache_media,
 			fi.icon_id,
 			u.timezone
 		FROM
@@ -310,6 +318,8 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.Status,
 			&entry.Starred,
 			&entry.ReadingTime,
+			&entry.CoverImage,
+			&entry.ImageCount,
 			&entry.CreatedAt,
 			&entry.ChangedAt,
 			&entry.Feed.Title,
@@ -323,6 +333,8 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.Feed.Crawler,
 			&entry.Feed.UserAgent,
 			&entry.Feed.Cookie,
+			&entry.Feed.ProxifyImages,
+			&entry.Feed.CacheMedia,
 			&iconID,
 			&tz,
 		)

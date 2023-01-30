@@ -20,6 +20,7 @@ import (
 )
 
 func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 
@@ -39,12 +40,13 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 
 	view.Set("form", settingsForm)
 	view.Set("themes", model.Themes())
+	view.Set("views", model.Views())
 	view.Set("languages", locale.AvailableLanguages())
 	view.Set("timezones", timezones)
 	view.Set("menu", "settings")
 	view.Set("user", loggedUser)
-	view.Set("countUnread", h.store.CountUnreadEntries(loggedUser.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(loggedUser.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID, nsfw))
 
 	if err := settingsForm.Validate(); err != nil {
 		view.Set("errorMessage", err.Error())
@@ -82,6 +84,7 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 
 	sess.SetLanguage(loggedUser.Language)
 	sess.SetTheme(loggedUser.Theme)
+	sess.SetView(loggedUser.View)
 	sess.NewFlashMessage(locale.NewPrinter(request.UserLanguage(r)).Printf("alert.prefs_saved"))
 	html.Redirect(w, r, route.Path(h.router, "settings"))
 }

@@ -515,6 +515,56 @@ func TestCleanupRemoveSessionsDays(t *testing.T) {
 	}
 }
 
+func TestCacheFrequency(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("CACHE_FREQUENCY", "42")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+	expected := 42
+	result := opts.CacheFrequency()
+
+	if result != expected {
+		t.Fatalf(`Unexpected CACHE_FREQUENCY value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestDefaultCacheLocation(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+	expected := "disk"
+	result := opts.CacheLocation()
+
+	if result != expected {
+		t.Fatalf(`Unexpected CACHE_LOCATION value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestCacheLocation(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("CACHE_LOCATION", "database")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+	expected := "database"
+	result := opts.CacheLocation()
+
+	if result != expected {
+		t.Fatalf(`Unexpected CACHE_LOCATION value, got %v instead of %v`, result, expected)
+	}
+}
+
 func TestDefaultWorkerPoolSizeValue(t *testing.T) {
 	os.Clearenv()
 
@@ -1023,6 +1073,56 @@ func TestDisableHTTPService(t *testing.T) {
 	}
 }
 
+func TestEnableCacheServiceWhenUnset(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+	expected := true
+	result := opts.HasCacheService()
+
+	if result != expected {
+		t.Fatalf(`Unexpected HasCacheService() value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestDisableCacheService(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("DISABLE_CACHE_SERVICE", "1")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+	expected := false
+	result := opts.HasCacheService()
+
+	if result != expected {
+		t.Fatalf(`Unexpected HasCacheService() value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestDisableCacheServiceWhenHTTPServiceDisabled(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("DISABLE_HTTP_SERVICE", "1")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+	expected := false
+	result := opts.HasCacheService()
+
+	if result != expected {
+		t.Fatalf(`Unexpected HasCacheService() value, got %v instead of %v`, result, expected)
+	}
+}
+
 func TestDisableSchedulerServiceWhenUnset(t *testing.T) {
 	os.Clearenv()
 
@@ -1294,6 +1394,40 @@ func TestDefaultHTTPClientMaxBodySizeValue(t *testing.T) {
 
 	if result != expected {
 		t.Fatalf(`Unexpected HTTP_CLIENT_MAX_BODY_SIZE value, got %d instead of %d`, result, expected)
+	}
+}
+func TestDefaultDiskStorageRoot(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := defaultDiskStorageRoot
+	result := opts.DiskStorageRoot()
+
+	if result != expected {
+		t.Fatalf(`Unexpected FILE_SYSTEM_STORAGE_ROOT value, got %s instead of %s`, result, expected)
+	}
+}
+
+func TestDiskStorageRoot(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("DISK_STORAGE_ROOT", "/some/path")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := "/some/path"
+	result := opts.DiskStorageRoot()
+
+	if result != expected {
+		t.Fatalf(`Unexpected FILE_SYSTEM_STORAGE_ROOT value, got %s instead of %s`, result, expected)
 	}
 }
 

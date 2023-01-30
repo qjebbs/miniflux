@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     handleSubmitButtons();
+    initMasonryLayout();
+    initTouchHandlers();
+    category_feeds_cascader();
 
     if (!document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {
         let keyboardHandler = new KeyboardHandler();
@@ -36,18 +39,27 @@ document.addEventListener("DOMContentLoaded", function () {
         keyboardHandler.on("#", () => unsubscribeFromFeed());
         keyboardHandler.on("/", (e) => setFocusToSearchInput(e));
         keyboardHandler.on("Escape", () => ModalHandler.close());
+        keyboardHandler.on("N", () => handleNSFW());
         keyboardHandler.listen();
     }
-
-    let touchHandler = new TouchHandler();
-    touchHandler.listen();
 
     onClick("a[data-save-entry]", (event) => handleSaveEntry(event.target));
     onClick("a[data-toggle-bookmark]", (event) => handleBookmark(event.target));
     onClick("a[data-fetch-content-entry]", () => handleFetchOriginalContent());
     onClick("a[data-action=search]", (event) => setFocusToSearchInput(event));
+    onClick("a[data-action=setView]", (event) => handleSetView(event.target));
     onClick("a[data-action=markPageAsRead]", (event) => handleConfirmationMessage(event.target, () => markPageAsRead()));
     onClick("a[data-toggle-status]", (event) => handleEntryStatus("next", event.target));
+    onClick("a[data-action=nsfw]", () => handleNSFW());
+    onClick("a[data-action=historyGoBack]", () => history.back());
+
+    let tabHandler = new TabHandler();
+    tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);
+
+    onClick("a[data-toggle-cache]", (event) => handleCache(event.target));
+    onClick("a[data-set-read]", (event) => setEntryStatusRead(findEntry(event.target)), true);
+    onClick("a[data-action=showActionMenu]", (event) => ActionMenu.switch(event.target));
+    onClick("button[data-action=submitEntry]", (event) => EntryEditorHandler.submitHandler(event));
 
     onClick("a[data-confirm]", (event) => handleConfirmationMessage(event.target, (url, redirectURL) => {
         let request = new RequestBuilder(url);
@@ -75,6 +87,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (document.documentElement.clientWidth < 600) {
         onClick(".logo", () => toggleMainMenu());
         onClick(".header nav li", (event) => onClickMainMenuListItem(event));
+    }
+
+    if (document.querySelector('.no-back-forward-cache')) {
+        window.onpageshow = function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
     }
 
     if ("serviceWorker" in navigator) {

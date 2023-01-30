@@ -7,12 +7,12 @@ package model // import "miniflux.app/model"
 // Themes returns the list of available themes.
 func Themes() map[string]string {
 	return map[string]string{
-		"light_serif":       "Light - Serif",
-		"light_sans_serif":  "Light - Sans Serif",
-		"dark_serif":        "Dark - Serif",
-		"dark_sans_serif":   "Dark - Sans Serif",
-		"system_serif":      "System - Serif",
-		"system_sans_serif": "System - Sans Serif",
+		"light_serif":       "form.prefs.select.theme_light_serif",
+		"light_sans_serif":  "form.prefs.select.theme_light_sans_serif",
+		"dark_serif":        "form.prefs.select.theme_dark_serif",
+		"dark_sans_serif":   "form.prefs.select.theme_dark_sans_serif",
+		"system_serif":      "form.prefs.select.theme_system_serif",
+		"system_sans_serif": "form.prefs.select.theme_system_sans_serif",
 	}
 }
 

@@ -535,18 +535,6 @@ var migrations = []func(tx *sql.Tx) error{
 		return err
 	},
 	func(tx *sql.Tx) (err error) {
-		_, err = tx.Exec(`
-			ALTER TABLE categories ADD COLUMN hide_globally boolean not null default false
-		`)
-		return err
-	},
-	func(tx *sql.Tx) (err error) {
-		_, err = tx.Exec(`
-			ALTER TABLE feeds ADD COLUMN hide_globally boolean not null default false
-		`)
-		return err
-	},
-	func(tx *sql.Tx) (err error) {
 		sql := `
 			ALTER TABLE integrations ADD COLUMN telegram_bot_enabled bool default 'f';
 			ALTER TABLE integrations ADD COLUMN telegram_bot_token text default '';
@@ -606,7 +594,7 @@ var migrations = []func(tx *sql.Tx) error{
 	},
 	func(tx *sql.Tx) (err error) {
 		_, err = tx.Exec(`
-			ALTER TABLE users ADD COLUMN default_home_page text default 'unread';
+			ALTER TABLE users ADD COLUMN default_home_page text default 'stat';
 		`)
 		return
 	},

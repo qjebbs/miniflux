@@ -62,6 +62,7 @@ type UserModificationRequest struct {
 	Password               *string `json:"password"`
 	IsAdmin                *bool   `json:"is_admin"`
 	Theme                  *string `json:"theme"`
+	View                   *string `json:"view"`
 	Language               *string `json:"language"`
 	Timezone               *string `json:"timezone"`
 	EntryDirection         *string `json:"entry_sorting_direction"`
@@ -138,7 +139,6 @@ type Feed struct {
 	Username                    string    `json:"username"`
 	Password                    string    `json:"password"`
 	Category                    *Category `json:"category,omitempty"`
-	HideGlobally                bool      `json:"hide_globally"`
 }
 
 // FeedCreationRequest represents the request to create a feed.
@@ -158,7 +158,6 @@ type FeedCreationRequest struct {
 	RewriteRules                string `json:"rewrite_rules"`
 	BlocklistRules              string `json:"blocklist_rules"`
 	KeeplistRules               string `json:"keeplist_rules"`
-	HideGlobally                bool   `json:"hide_globally"`
 }
 
 // FeedModificationRequest represents the request to update a feed.
@@ -180,7 +179,6 @@ type FeedModificationRequest struct {
 	IgnoreHTTPCache             *bool   `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates *bool   `json:"allow_self_signed_certificates"`
 	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
-	HideGlobally                *bool   `json:"hide_globally"`
 }
 
 // FeedIcon represents the feed icon.

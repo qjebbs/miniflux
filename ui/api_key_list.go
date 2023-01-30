@@ -29,11 +29,13 @@ func (h *handler) showAPIKeysPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
+
 	view.Set("apiKeys", apiKeys)
 	view.Set("menu", "settings")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("api_keys"))
 }

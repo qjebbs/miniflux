@@ -38,8 +38,7 @@ func (h *handler) showFeedEntriesStarredPage(w http.ResponseWriter, r *http.Requ
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithFeedID(feed.ID)
 	builder.WithStarred(true)
-	builder.WithOrder(model.DefaultSortingOrder)
-	builder.WithDirection(user.EntryDirection)
+	builder.WithSorting(model.DefaultSortingOrder, user.EntryDirection)
 	builder.WithOffset(offset)
 	builder.WithLimit(user.EntriesPerPage)
 

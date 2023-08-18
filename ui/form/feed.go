@@ -1,6 +1,5 @@
-// Copyright 2017 Frédéric Guillot. All rights reserved.
-// Use of this source code is governed by the Apache 2.0
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
 
 package form // import "miniflux.app/ui/form"
 
@@ -33,6 +32,7 @@ type FeedForm struct {
 	AllowSelfSignedCertificates bool
 	FetchViaProxy               bool
 	Disabled                    bool
+	NoMediaPlayer               bool
 	NSFW                        bool
 	ProxifyMedia                bool
 }
@@ -61,6 +61,7 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.AllowSelfSignedCertificates = f.AllowSelfSignedCertificates
 	feed.FetchViaProxy = f.FetchViaProxy
 	feed.Disabled = f.Disabled
+	feed.NoMediaPlayer = f.NoMediaPlayer
 	feed.NSFW = f.NSFW
 	feed.ProxifyMedia = f.ProxifyMedia
 	return feed
@@ -97,6 +98,7 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		AllowSelfSignedCertificates: r.FormValue("allow_self_signed_certificates") == "1",
 		FetchViaProxy:               r.FormValue("fetch_via_proxy") == "1",
 		Disabled:                    r.FormValue("disabled") == "1",
+		NoMediaPlayer:               r.FormValue("no_media_player") == "1",
 		NSFW:                        r.FormValue("nsfw") == "1",
 		ProxifyMedia:                r.FormValue("proxify_media") == "1",
 	}

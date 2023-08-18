@@ -1,6 +1,5 @@
-// Copyright 2017 Frédéric Guillot. All rights reserved.
-// Use of this source code is governed by the Apache 2.0
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
 
 package storage // import "miniflux.app/storage"
 
@@ -141,8 +140,7 @@ func (s *Storage) CountAllFeedsWithErrors() int {
 // Feeds returns all feeds that belongs to the given user.
 func (s *Storage) Feeds(userID int64, nsfw bool) (model.Feeds, error) {
 	builder := NewFeedQueryBuilder(s, userID)
-	builder.WithOrder(model.DefaultFeedSorting)
-	builder.WithDirection(model.DefaultFeedSortingDirection)
+	builder.WithSorting(model.DefaultFeedSorting, model.DefaultFeedSortingDirection)
 	if nsfw {
 		builder.WithoutNSFW()
 	}
@@ -162,8 +160,7 @@ func getFeedsSorted(builder *FeedQueryBuilder) (model.Feeds, error) {
 func (s *Storage) FeedsWithCounters(userID int64, nsfw bool) (model.Feeds, error) {
 	builder := NewFeedQueryBuilder(s, userID)
 	builder.WithCounters()
-	builder.WithOrder(model.DefaultFeedSorting)
-	builder.WithDirection(model.DefaultFeedSortingDirection)
+	builder.WithSorting(model.DefaultFeedSorting, model.DefaultFeedSortingDirection)
 	if nsfw {
 		builder.WithoutNSFW()
 	}
@@ -183,8 +180,7 @@ func (s *Storage) FeedsByCategoryWithCounters(userID, categoryID int64, nsfw boo
 	builder := NewFeedQueryBuilder(s, userID)
 	builder.WithCategoryID(categoryID)
 	builder.WithCounters()
-	builder.WithOrder(model.DefaultFeedSorting)
-	builder.WithDirection(model.DefaultFeedSortingDirection)
+	builder.WithSorting(model.DefaultFeedSorting, model.DefaultFeedSortingDirection)
 	if nsfw {
 		builder.WithoutNSFW()
 	}
@@ -257,10 +253,11 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			ignore_http_cache,
 			allow_self_signed_certificates,
 			fetch_via_proxy,
-			url_rewrite_rules
+			url_rewrite_rules,
+			no_media_player
 		)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
 		RETURNING
 			id
 	`
@@ -287,6 +284,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
 		feed.UrlRewriteRules,
+		feed.NoMediaPlayer,
 	).Scan(&feed.ID)
 	if err != nil {
 		return fmt.Errorf(`store: unable to create feed %q: %v`, feed.FeedURL, err)
@@ -340,18 +338,19 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			cookie=$16,
 			username=$17,
 			password=$18,
-			cache_media=$19,
-			view=$20,
-			disabled=$21,
-			nsfw=$22,
-			next_check_at=$23,
-			ignore_http_cache=$24,
-			allow_self_signed_certificates=$25,
-			fetch_via_proxy=$26,
-			url_rewrite_rules=$27,
-			proxify_media=$28
+			disabled=$19,
+			next_check_at=$20,
+			ignore_http_cache=$21,
+			allow_self_signed_certificates=$22,
+			fetch_via_proxy=$23,
+			nsfw=$24,
+			url_rewrite_rules=$25,
+			no_media_player=$26,
+			cache_media=$27,
+			view=$28,
+			proxify_media=$29,
 		WHERE
-			id=$29 AND user_id=$30
+			id=$30 AND user_id=$31
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -372,15 +371,16 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.Cookie,
 		feed.Username,
 		feed.Password,
-		feed.CacheMedia,
-		feed.View,
 		feed.Disabled,
-		feed.NSFW,
 		feed.NextCheckAt,
 		feed.IgnoreHTTPCache,
 		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
+		feed.NSFW,
 		feed.UrlRewriteRules,
+		feed.NoMediaPlayer,
+		feed.CacheMedia,
+		feed.View,
 		feed.ProxifyMedia,
 		feed.ID,
 		feed.UserID,

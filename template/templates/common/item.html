@@ -5,7 +5,7 @@
             {{ if ne .entry.Feed.Icon.IconID 0 }}
                 <img src="{{ route "icon" "iconID" .entry.Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .entry.Feed.Title }}">
             {{ end }}
-            <a target="_blank" data-set-read="true" data-no-request="true" href="{{ .href }}" title="{{ .Title }}">{{ .entry.Title }}</a>
+            <a target="_blank" data-set-read="true" data-no-request="true" href="{{ .href }}">{{ .entry.Title }}</a>
         </span>
         {{ if .pageEntriesType }}
             {{ if eq .pageEntriesType "all" }}

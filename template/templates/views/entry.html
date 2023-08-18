@@ -172,7 +172,7 @@
     </div>
     {{ end }}
     {{ end }}
-    <article role="article" class="entry-content {{ if $.user.DoubleTap }}double-tap{{ end }}" dir="auto">
+    <article role="article" class="entry-content gesture-nav-{{ $.user.GestureNav }}" dir="auto">
         {{ if .user }}
             {{ noescape (proxyFilter (or .entry.Feed.ProxifyMedia .entry.Feed.CacheMedia) .entry.Content) }}
         {{ else }}

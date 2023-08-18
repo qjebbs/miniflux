@@ -9,9 +9,9 @@ class TouchHandler {
         }
         this.reset();
         this.addEventListener("move", (e) => {
-            if (!this.touch.element) return;
-            this.touch.element.style.opacity = 1 - e.phase;
-            this.touch.element.style.transform = "translateX(" + e.offset + "px)";
+            if (!this.touch.target) return;
+            this.touch.target.style.opacity = 1 - e.phase;
+            this.touch.target.style.transform = "translateX(" + e.offset + "px)";
         });
     }
 
@@ -19,8 +19,9 @@ class TouchHandler {
         this.touch = {
             start: { x: -1, y: -1 },
             move: { x: -1, y: -1 },
-            element: null,
-            flagDrag: false
+            target: null,
+            flagDrag: false,
+            time: 0
         };
     }
 
@@ -36,7 +37,6 @@ class TouchHandler {
 
             if (horizontalDistance > 30 && verticalDistance < 70) {
                 this.touch.flagDrag = true;
-                this.runListeners(this.listeners.start);
             }
         }
     }
@@ -57,7 +57,9 @@ class TouchHandler {
         this.reset();
         this.touch.start.x = event.touches[0].clientX;
         this.touch.start.y = event.touches[0].clientY;
-        this.touch.element = this.findElement(event.touches[0].target);
+        this.touch.target = this.findElement(event.touches[0].target);
+        this.touch.time = Date.now();
+        this.runListeners(this.listeners.start);
     }
 
     onTouchMove(event) {
@@ -80,7 +82,7 @@ class TouchHandler {
             return;
         }
 
-        if (this.touch.element !== null) {
+        if (this.touch.target !== null) {
             let distance = this.calculateDistance();
 
             if (Math.abs(distance) > 75) {
@@ -91,8 +93,8 @@ class TouchHandler {
 
             // If not on the unread page, undo transform of the dragged element.
             if (document.URL.split("/").indexOf("unread") == -1 || distance <= 75) {
-                this.touch.element.style.opacity = 1;
-                this.touch.element.style.transform = "none";
+                this.touch.target.style.opacity = 1;
+                this.touch.target.style.transform = "none";
             }
         }
         this.reset();
@@ -111,17 +113,17 @@ class TouchHandler {
     }
     addEventListener(type, listener) {
         switch (type) {
-            case "active":
-                this.listeners.active.push(listener);
+            case "start":
+                this.listeners.start.push(listener);
                 break;
             case "move":
                 this.listeners.move.push(listener);
                 break;
-            case "start":
-                this.listeners.start.push(listener);
-                break;
             case "end":
                 this.listeners.end.push(listener);
+                break;
+            case "active":
+                this.listeners.active.push(listener);
                 break;
             default:
                 break;
@@ -137,7 +139,7 @@ class TouchHandler {
             }
             let direction = distance > 0 ? "right" : "left";
             fn({
-                target: this.touch.element,
+                touch: this.touch,
                 direction: direction,
                 offset: distance,
                 phase: Math.abs(distance) / 75,
@@ -157,7 +159,7 @@ function initTouchHandlers() {
             if (menu) {
                 menu.style.transform = "translateX(" + (1 - e.phase) * 100 + "%)";
             } else {
-                ActionMenu.initialize(e.target);
+                ActionMenu.initialize(e.touch.target);
             }
         } else {
             ActionMenu.close();
@@ -165,42 +167,54 @@ function initTouchHandlers() {
     });
     touchHandler.addEventListener("active", (e) => {
         if (e.direction == "right") {
-            toggleEntryStatus(e.target);
+            toggleEntryStatus(e.touch.target);
         }
     });
     touchHandler.addEventListener("end", (e) => ActionMenu.close());
     touchHandler.listen();
 
     let entryContentElement = document.querySelector(".entry-content");
-    if (entryContentElement && entryContentElement.classList.contains('double-tap')) {
-        let hasPassiveOption = DomHelper.hasPassiveEventListenerOption();
-        let doubleTapTimers = {
-            previous: null,
-            next: null
-        };
-
-        const detectDoubleTap = (doubleTapTimer, event) => {
-            const timer = doubleTapTimers[doubleTapTimer];
-            if (timer === null) {
-                doubleTapTimers[doubleTapTimer] = setTimeout(() => {
-                    doubleTapTimers[doubleTapTimer] = null;
-                }, 200);
-            } else {
-                event.preventDefault();
-                goToPage(doubleTapTimer);
-            }
-        };
-
-        entryContentElement.addEventListener("touchend", (e) => {
-            if (e.changedTouches[0].clientX >= (entryContentElement.offsetWidth / 2)) {
-                detectDoubleTap("next", e);
-            } else {
-                detectDoubleTap("previous", e);
-            }
-        }, hasPassiveOption ? { passive: false } : false);
-
-        entryContentElement.addEventListener("touchmove", (e) => {
-            Object.keys(doubleTapTimers).forEach(timer => doubleTapTimers[timer] = null);
-        });
+    if (entryContentElement) {
+        let touchHandler = new TouchHandler('entry-content');
+        if (!entryContentElement.classList.contains("gesture-nav-swipe")) {
+            // action menu available
+            touchHandler.addEventListener("move", (e) => {
+                if (e.direction == "left") {
+                    let menu = document.querySelector("#modal-container .modal");
+                    if (menu) {
+                        menu.style.transform = "translateX(" + (1 - e.phase) * 100 + "%)";
+                    } else {
+                        ActionMenu.initialize(e.touch.target);
+                    }
+                } else {
+                    ActionMenu.close();
+                }
+            });
+            touchHandler.addEventListener("end", (e) => ActionMenu.close());
+        }
+        if (entryContentElement.classList.contains("gesture-nav-tap")) {
+            let lastTime = 0;
+            touchHandler.addEventListener("start", (e) => {
+                let now = Date.now();
+                if (now - lastTime > 200) {
+                    lastTime = now;
+                    return;
+                }
+                if (e.touch.start.x >= entryContentElement.offsetWidth / 2){
+                    goToPage("next");
+                } else {
+                    goToPage("previous");
+                }
+            });
+        } else if (entryContentElement.classList.contains("gesture-nav-swipe")) {
+            touchHandler.addEventListener("active", (e) => {
+                if (e.direction == "left") {
+                    goToPage("next");
+                } else {
+                    goToPage("previous");
+                }
+            });
+        }
+        touchHandler.listen();
     }
 }

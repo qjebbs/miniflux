@@ -335,3 +335,49 @@ func parseMarkdown(entryContent string) string {
 
 	return sb.String()
 }
+
+func removeTables(entryContent string) string {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(entryContent))
+	if err != nil {
+		return entryContent
+	}
+
+	selectors := []string{"table", "tbody", "thead", "td", "th", "td"}
+
+	var loopElement *goquery.Selection
+
+	for _, selector := range selectors {
+		for {
+			loopElement = doc.Find(selector).First()
+
+			if loopElement.Length() == 0 {
+				break
+			}
+
+			innerHtml, err := loopElement.Html()
+			if err != nil {
+				break
+			}
+
+			loopElement.Parent().AppendHtml(innerHtml)
+			loopElement.Remove()
+		}
+	}
+
+	output, _ := doc.Find("body").First().Html()
+	return output
+}
+
+func removeClickbait(entryTitle string) string {
+	titleWords := []string{}
+	for _, word := range strings.Fields(entryTitle) {
+		runes := []rune(word)
+		if len(runes) > 1 {
+			// keep first rune as is to keep the first capital letter
+			titleWords = append(titleWords, string([]rune{runes[0]})+strings.ToLower(string(runes[1:])))
+		} else {
+			titleWords = append(titleWords, word)
+		}
+	}
+	return strings.Join(titleWords, " ")
+}

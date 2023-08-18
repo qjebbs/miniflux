@@ -34,7 +34,7 @@ type FeedForm struct {
 	FetchViaProxy               bool
 	Disabled                    bool
 	NSFW                        bool
-	ProxifyImages               bool
+	ProxifyMedia                bool
 }
 
 // Merge updates the fields of the given feed.
@@ -62,7 +62,7 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.FetchViaProxy = f.FetchViaProxy
 	feed.Disabled = f.Disabled
 	feed.NSFW = f.NSFW
-	feed.ProxifyImages = f.ProxifyImages
+	feed.ProxifyMedia = f.ProxifyMedia
 	return feed
 }
 
@@ -98,6 +98,6 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		FetchViaProxy:               r.FormValue("fetch_via_proxy") == "1",
 		Disabled:                    r.FormValue("disabled") == "1",
 		NSFW:                        r.FormValue("nsfw") == "1",
-		ProxifyImages:               r.FormValue("proxify_images") == "1",
+		ProxifyMedia:                r.FormValue("proxify_media") == "1",
 	}
 }

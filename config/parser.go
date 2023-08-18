@@ -142,10 +142,21 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.schedulerEntryFrequencyMinInterval = parseInt(value, defaultSchedulerEntryFrequencyMinInterval)
 		case "POLLING_PARSING_ERROR_LIMIT":
 			p.opts.pollingParsingErrorLimit = parseInt(value, defaultPollingParsingErrorLimit)
+		// kept for compatibility purpose
 		case "PROXY_IMAGES":
-			p.opts.proxyImages = parseString(value, defaultProxyImages)
+			p.opts.proxyOption = parseString(value, defaultProxyOption)
+			p.opts.proxyMediaTypes = append(p.opts.proxyMediaTypes, "image")
+		case "PROXY_HTTP_CLIENT_TIMEOUT":
+			p.opts.proxyHTTPClientTimeout = parseInt(value, defaultProxyHTTPClientTimeout)
+		case "PROXY_OPTION":
+			p.opts.proxyOption = parseString(value, defaultProxyOption)
+		case "PROXY_MEDIA_TYPES":
+			p.opts.proxyMediaTypes = parseStringList(value, []string{defaultProxyMediaTypes})
+		// kept for compatibility purpose
 		case "PROXY_IMAGE_URL":
-			p.opts.proxyImageUrl = parseString(value, defaultProxyImageUrl)
+			p.opts.proxyUrl = parseString(value, defaultProxyUrl)
+		case "PROXY_URL":
+			p.opts.proxyUrl = parseString(value, defaultProxyUrl)
 		case "CREATE_ADMIN":
 			p.opts.createAdmin = parseBool(value, defaultCreateAdmin)
 		case "ADMIN_USERNAME":
@@ -188,6 +199,8 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.httpClientProxy = parseString(value, defaultHTTPClientProxy)
 		case "HTTP_CLIENT_USER_AGENT":
 			p.opts.httpClientUserAgent = parseString(value, defaultHTTPClientUserAgent)
+		case "HTTP_SERVER_TIMEOUT":
+			p.opts.httpServerTimeout = parseInt(value, defaultHTTPServerTimeout)
 		case "AUTH_PROXY_HEADER":
 			p.opts.authProxyHeader = parseString(value, defaultAuthProxyHeader)
 		case "AUTH_PROXY_USER_CREATION":
@@ -202,6 +215,14 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.metricsRefreshInterval = parseInt(value, defaultMetricsRefreshInterval)
 		case "METRICS_ALLOWED_NETWORKS":
 			p.opts.metricsAllowedNetworks = parseStringList(value, []string{defaultMetricsAllowedNetworks})
+		case "METRICS_USERNAME":
+			p.opts.metricsUsername = parseString(value, defaultMetricsUsername)
+		case "METRICS_USERNAME_FILE":
+			p.opts.metricsUsername = readSecretFile(value, defaultMetricsUsername)
+		case "METRICS_PASSWORD":
+			p.opts.metricsPassword = parseString(value, defaultMetricsPassword)
+		case "METRICS_PASSWORD_FILE":
+			p.opts.metricsPassword = readSecretFile(value, defaultMetricsPassword)
 		case "FETCH_YOUTUBE_WATCH_TIME":
 			p.opts.fetchYouTubeWatchTime = parseBool(value, defaultFetchYouTubeWatchTime)
 		case "WATCHDOG":

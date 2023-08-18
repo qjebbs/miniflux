@@ -23,8 +23,8 @@ import (
 	"miniflux.app/reader/media"
 )
 
-func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
-	// If we receive a "If-None-Match" header, we assume the image is already stored in browser cache.
+func (h *handler) mediaProxy(w http.ResponseWriter, r *http.Request) {
+	// If we receive a "If-None-Match" header, we assume the media is already stored in browser cache.
 	if r.Header.Get("If-None-Match") != "" {
 		w.WriteHeader(http.StatusNotModified)
 		return
@@ -58,15 +58,16 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imageURL := string(decodedURL)
+	mediaURL := string(decodedURL)
+	logger.Debug(`[Proxy] Fetching %q`, mediaURL)
 	etag := crypto.HashFromBytes(decodedURL)
 
-	m, err := h.store.MediaByURL(imageURL)
+	m, err := h.store.MediaByURL(mediaURL)
 	if err != nil {
 		goto FETCH
 	}
 	if m.Content != nil {
-		logger.Debug(`[Proxy] From database cache, for %q`, imageURL)
+		logger.Debug(`[Proxy] From database cache, for %q`, mediaURL)
 		response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
 			b.WithHeader("Content-Type", m.MimeType)
 			b.WithBody(m.Content)
@@ -85,7 +86,7 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 			goto FETCH
 		}
 		defer file.Close()
-		logger.Debug(`[Proxy] From filesystem cache, for %q`, imageURL)
+		logger.Debug(`[Proxy] From filesystem cache, for %q`, mediaURL)
 		response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
 			b.WithHeader("Content-Type", m.MimeType)
 			b.WithBody(file)
@@ -96,23 +97,35 @@ func (h *handler) imageProxy(w http.ResponseWriter, r *http.Request) {
 	}
 
 FETCH:
-	logger.Debug(`[Proxy] Fetching %q`, imageURL)
-	resp, err := media.FetchMedia(m)
+	logger.Debug(`[Proxy] Fetching %q`, mediaURL)
+	resp, err := media.FetchMedia(m, r)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		logger.Error(`[Proxy] Status Code is %d for URL %q`, resp.StatusCode, imageURL)
+	if resp.StatusCode == http.StatusRequestedRangeNotSatisfiable {
+		logger.Error(`[Proxy] Status Code is %d for URL %q`, resp.StatusCode, mediaURL)
+		html.RequestedRangeNotSatisfiable(w, r, resp.Header.Get("Content-Range"))
+		return
+	}
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusPartialContent {
+		logger.Error(`[Proxy] Status Code is %d for URL %q`, resp.StatusCode, mediaURL)
 		html.NotFound(w, r)
 		return
 	}
 
 	response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+		b.WithStatus(resp.StatusCode)
 		b.WithHeader("Content-Security-Policy", `default-src 'self'`)
 		b.WithHeader("Content-Type", resp.Header.Get("Content-Type"))
+		forwardedResponseHeader := []string{"Content-Encoding", "Content-Type", "Content-Length", "Accept-Ranges", "Content-Range"}
+		for _, responseHeaderName := range forwardedResponseHeader {
+			if resp.Header.Get(responseHeaderName) != "" {
+				b.WithHeader(responseHeaderName, resp.Header.Get(responseHeaderName))
+			}
+		}
 		b.WithBody(resp.Body)
 		b.WithoutCompression()
 		b.Write()

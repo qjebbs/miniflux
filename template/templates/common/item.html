@@ -1,5 +1,5 @@
 {{ define "item" }}
-<article role="article" class="item {{ if .user.EntrySwipe }}touch-item{{ end }} item-status-{{ .entry.Status }}{{ if .entry.Starred }} item-starred{{ end }}" data-id="{{ .entry.ID }}">
+<article role="article" class="item entry-item {{ if .user.EntrySwipe }}entry-swipe{{ end }} item-status-{{ .entry.Status }}{{ if .entry.Starred }} item-starred{{ end }}" data-id="{{ .entry.ID }}">
     <div class="item-header" dir="auto">
         <span class="item-title">
             {{ if ne .entry.Feed.Icon.IconID 0 }}
@@ -23,7 +23,7 @@
     {{ if and (eq .view "masonry") (ne .entry.CoverImage "") }}
     <div class="thumbnail">
         <a target="_blank" data-set-read="true" data-no-request="true" href="{{ .href }}">
-            <img class="lazy" src="" data-src="{{ proxyURL (or .entry.Feed.ProxifyImages .entry.Feed.CacheMedia) .entry.CoverImage }}">
+            <img class="lazy" src="" data-src="{{ proxyURL (or .entry.Feed.ProxifyMedia .entry.Feed.CacheMedia) .entry.CoverImage }}">
             {{ if gt .entry.ImageCount 1 }}
             <p class="badge">{{ t "entry.more_images" .entry.ImageCount }}</p>
             {{ end }}

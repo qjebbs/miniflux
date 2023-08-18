@@ -137,7 +137,8 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 				feed_id,
 				reading_time,
 				changed_at,
-				document_vectors
+				document_vectors,
+				tags
 			)
 		VALUES
 			(
@@ -152,7 +153,8 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 				$9,
 				$10,
 				now(),
-				setweight(to_tsvector(left(coalesce($1, ''), 500000)), 'A') || setweight(to_tsvector(left(coalesce($6, ''), 500000)), 'B')
+				setweight(to_tsvector(left(coalesce($1, ''), 500000)), 'A') || setweight(to_tsvector(left(coalesce($6, ''), 500000)), 'B'),
+				$11
 			)
 		RETURNING
 			id, status
@@ -169,6 +171,7 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.UserID,
 		entry.FeedID,
 		entry.ReadingTime,
+		pq.Array(removeDuplicates(entry.Tags)),
 	).Scan(&entry.ID, &entry.Status)
 
 	if err != nil {
@@ -223,9 +226,10 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 			reading_time=$6,
 			cover_image=$7, 
 			image_count=$8,
+			tags=$9,
 			document_vectors = setweight(to_tsvector(left(coalesce($1, ''), 500000)), 'A') || setweight(to_tsvector(left(coalesce($4, ''), 500000)), 'B')
 		WHERE
-			user_id=$9 AND feed_id=$10 AND hash=$11
+			user_id=$10 AND feed_id=$11 AND hash=$12
 		RETURNING
 			id
 	`
@@ -239,9 +243,11 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.ReadingTime,
 		entry.CoverImage,
 		entry.ImageCount,
+		entry.Tags,
 		entry.UserID,
 		entry.FeedID,
 		entry.Hash,
+		pq.Array(removeDuplicates(entry.Tags)),
 	).Scan(&entry.ID)
 
 	if err != nil {
@@ -630,4 +636,17 @@ func (s *Storage) UnshareEntry(userID int64, entryID int64) (err error) {
 		err = fmt.Errorf(`store: unable to remove share code for entry #%d: %v`, entryID, err)
 	}
 	return
+}
+
+// removeDuplicate removes duplicate entries from a slice
+func removeDuplicates[T string | int](sliceList []T) []T {
+	allKeys := make(map[T]bool)
+	list := []T{}
+	for _, item := range sliceList {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
 }

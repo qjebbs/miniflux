@@ -21,7 +21,7 @@ import (
 // ProxifyURL generates a relative URL for a proxified resource.
 func ProxifyURL(router *mux.Router, link string) string {
 	if link != "" {
-		proxyImageUrl := config.Opts.ProxyImageUrl()
+		proxyImageUrl := config.Opts.ProxyUrl()
 
 		if proxyImageUrl == "" {
 			mac := hmac.New(sha256.New, config.Opts.ProxyPrivateKey())
@@ -44,7 +44,7 @@ func ProxifyURL(router *mux.Router, link string) string {
 // AbsoluteProxifyURL generates an absolute URL for a proxified resource.
 func AbsoluteProxifyURL(router *mux.Router, host, link string) string {
 	if link != "" {
-		proxyImageUrl := config.Opts.ProxyImageUrl()
+		proxyImageUrl := config.Opts.ProxyUrl()
 
 		if proxyImageUrl == "" {
 			mac := hmac.New(sha256.New, config.Opts.ProxyPrivateKey())
@@ -74,9 +74,9 @@ func ShouldProxify(link string) bool {
 	if link == "" {
 		return false
 	}
-	proxyImages := config.Opts.ProxyImages()
+	proxyOption := config.Opts.ProxyOption()
 	if isDataURL(link) {
 		return false
 	}
-	return proxyImages == "all" || (proxyImages != "none" && !murl.IsHTTPS(link))
+	return proxyOption == "all" || (proxyOption != "none" && !murl.IsHTTPS(link))
 }

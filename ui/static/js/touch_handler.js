@@ -147,7 +147,7 @@ class TouchHandler {
 }
 
 function initTouchHandlers() {
-    let touchHandler = new TouchHandler('touch-item');
+    let touchHandler = new TouchHandler('entry-swipe');
     touchHandler.addEventListener("start", (e) => {
         ActionMenu.close();
     });
@@ -172,7 +172,7 @@ function initTouchHandlers() {
     touchHandler.listen();
 
     let entryContentElement = document.querySelector(".entry-content");
-    if (entryContentElement) {
+    if (entryContentElement && entryContentElement.classList.contains('double-tap')) {
         let hasPassiveOption = DomHelper.hasPassiveEventListenerOption();
         let doubleTapTimers = {
             previous: null,

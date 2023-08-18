@@ -142,6 +142,7 @@ a:hover {
 .page-footer li {
     list-style-type: none;
     line-height: 1.8em;
+    white-space: nowrap;
 }
 
 .page-header ul a .icon {
@@ -516,6 +517,10 @@ textarea:focus {
 input::placeholder {
     color: var(--input-placeholder-color);
     padding-top: 2px;
+}
+
+.form-label-row {
+    display: flex;
 }
 
 .form-help {
@@ -922,7 +927,7 @@ template {
 }
 
 .item-meta-info li:last-child:after {
-    content: "";
+    content: " ";
 }
 
 .item-meta-icons li {
@@ -1308,10 +1313,6 @@ details.entry-enclosures {
     font-weight: 600;
     text-decoration: none;
     font-size: 1.2em;
-}
-
-.rules-entry {
-    display: flex;
 }
 
 .disabled {

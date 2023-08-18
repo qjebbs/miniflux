@@ -310,7 +310,7 @@ func (h *handler) handleItems(w http.ResponseWriter, r *http.Request) {
 			FeedID:    entry.FeedID,
 			Title:     entry.Title,
 			Author:    entry.Author,
-			HTML:      proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entry),
+			HTML:      proxy.AbsoluteProxyRewriter(h.router, r.Host, entry),
 			URL:       entry.URL,
 			IsSaved:   isSaved,
 			IsRead:    isRead,

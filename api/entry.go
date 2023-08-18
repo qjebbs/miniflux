@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"miniflux.app/config"
 	"miniflux.app/http/request"
 	"miniflux.app/http/response/json"
 	"miniflux.app/model"
@@ -33,11 +34,16 @@ func (h *handler) getEntryFromBuilder(w http.ResponseWriter, r *http.Request, b 
 		return
 	}
 
-	entry.Content = proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entry)
+	entry.Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entry)
 
 	for i := range entry.Enclosures {
-		if strings.HasPrefix(entry.Enclosures[i].MimeType, "image/") && (proxy.ShouldProxify(entry.Enclosures[i].URL) || entry.Feed.ProxifyImages) {
-			entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
+		if proxy.ShouldProxify(entry.Enclosures[i].URL) || entry.Feed.ProxifyMedia {
+			for _, mediaType := range config.Opts.ProxyMediaTypes() {
+				if strings.HasPrefix(entry.Enclosures[i].MimeType, mediaType+"/") {
+					entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
+					break
+				}
+			}
 		}
 	}
 
@@ -129,6 +135,8 @@ func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int
 		return
 	}
 
+	tags := request.QueryStringParamList(r, "tags")
+
 	builder := h.store.NewEntryQueryBuilder(userID)
 	builder.WithFeedID(feedID)
 	builder.WithCategoryID(categoryID)
@@ -137,6 +145,7 @@ func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int
 	builder.WithDirection(direction)
 	builder.WithOffset(offset)
 	builder.WithLimit(limit)
+	builder.WithTags(tags)
 	configureFilters(builder, r)
 
 	entries, err := builder.GetEntries()
@@ -152,7 +161,7 @@ func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int
 	}
 
 	for i := range entries {
-		entries[i].Content = proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entries[i])
+		entries[i].Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entries[i])
 	}
 
 	json.OK(w, r, &entriesResponse{Total: count, Entries: entries})

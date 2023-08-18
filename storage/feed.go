@@ -349,7 +349,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			allow_self_signed_certificates=$25,
 			fetch_via_proxy=$26,
 			url_rewrite_rules=$27,
-			proxify_images=$28
+			proxify_media=$28
 		WHERE
 			id=$29 AND user_id=$30
 	`
@@ -381,7 +381,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
 		feed.UrlRewriteRules,
-		feed.ProxifyImages,
+		feed.ProxifyMedia,
 		feed.ID,
 		feed.UserID,
 	)

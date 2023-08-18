@@ -32,7 +32,7 @@ func FindMedia(media *model.Media) error {
 	}
 
 	logger.Debug("[FindMedia] Fetching media => %s", media.URL)
-	resp, err := FetchMedia(media)
+	resp, err := FetchMedia(media, nil)
 	if err != nil {
 		return err
 	}
@@ -60,8 +60,11 @@ func FindMedia(media *model.Media) error {
 }
 
 // FetchMedia fetches the media from the URL.
-func FetchMedia(media *model.Media) (*http.Response, error) {
+func FetchMedia(media *model.Media, r *http.Request) (*http.Response, error) {
 	clt := &http.Client{
+		Transport: &http.Transport{
+			IdleConnTimeout: time.Duration(config.Opts.ProxyHTTPClientTimeout()) * time.Second,
+		},
 		Timeout: time.Duration(config.Opts.HTTPClientTimeout()) * time.Second,
 	}
 	req, err := http.NewRequest("GET", media.URL, nil)
@@ -69,6 +72,14 @@ func FetchMedia(media *model.Media) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Add("Connection", "close")
+	if r != nil {
+		forwardedRequestHeader := []string{"Range", "Accept", "Accept-Encoding"}
+		for _, requestHeaderName := range forwardedRequestHeader {
+			if r.Header.Get(requestHeaderName) != "" {
+				req.Header.Add(requestHeaderName, r.Header.Get(requestHeaderName))
+			}
+		}
+	}
 	resp, err := clt.Do(req)
 	if err != nil {
 		return nil, err

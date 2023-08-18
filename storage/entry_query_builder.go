@@ -144,6 +144,17 @@ func (e *EntryQueryBuilder) WithStatuses(statuses []string) *EntryQueryBuilder {
 	return e
 }
 
+// WithTags filter by a list of entry tags.
+func (e *EntryQueryBuilder) WithTags(tags []string) *EntryQueryBuilder {
+	if len(tags) > 0 {
+		for _, cat := range tags {
+			e.conditions = append(e.conditions, fmt.Sprintf("$%d = ANY(e.tags)", len(e.args)+1))
+			e.args = append(e.args, cat)
+		}
+	}
+	return e
+}
+
 // WithoutStatus set the entry status that should not be returned.
 func (e *EntryQueryBuilder) WithoutStatus(status string) *EntryQueryBuilder {
 	if status != "" {
@@ -255,6 +266,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			e.image_count,
 			e.created_at,
 			e.changed_at,
+			e.tags,
 			f.title as feed_title,
 			f.feed_url,
 			f.site_url,
@@ -266,7 +278,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			f.crawler,
 			f.user_agent,
 			f.cookie,
-			f.proxify_images,
+			f.proxify_media,
 			f.cache_media,
 			fi.icon_id,
 			u.timezone
@@ -322,6 +334,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.ImageCount,
 			&entry.CreatedAt,
 			&entry.ChangedAt,
+			pq.Array(&entry.Tags),
 			&entry.Feed.Title,
 			&entry.Feed.FeedURL,
 			&entry.Feed.SiteURL,
@@ -333,7 +346,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.Feed.Crawler,
 			&entry.Feed.UserAgent,
 			&entry.Feed.Cookie,
-			&entry.Feed.ProxifyImages,
+			&entry.Feed.ProxifyMedia,
 			&entry.Feed.CacheMedia,
 			&iconID,
 			&tz,

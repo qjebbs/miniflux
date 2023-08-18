@@ -840,11 +840,16 @@ func (h *handler) streamItemContents(w http.ResponseWriter, r *http.Request) {
 			categories = append(categories, userStarred)
 		}
 
-		entry.Content = proxy.AbsoluteImageProxyRewriter(h.router, r.Host, entry)
+		entry.Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entry)
 
 		for i := range entry.Enclosures {
-			if strings.HasPrefix(entry.Enclosures[i].MimeType, "image/") && (proxy.ShouldProxify(entry.Enclosures[i].URL) || entry.Feed.ProxifyImages) {
-				entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
+			if proxy.ShouldProxify(entry.Enclosures[i].URL) || entry.Feed.ProxifyMedia {
+				for _, mediaType := range config.Opts.ProxyMediaTypes() {
+					if strings.HasPrefix(entry.Enclosures[i].MimeType, mediaType+"/") {
+						entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
+						break
+					}
+				}
 			}
 		}
 

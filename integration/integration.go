@@ -1,22 +1,24 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package integration // import "miniflux.app/integration"
+package integration // import "miniflux.app/v2/integration"
 
 import (
-	"miniflux.app/config"
-	"miniflux.app/integration/espial"
-	"miniflux.app/integration/instapaper"
-	"miniflux.app/integration/linkding"
-	"miniflux.app/integration/matrixbot"
-	"miniflux.app/integration/notion"
-	"miniflux.app/integration/nunuxkeeper"
-	"miniflux.app/integration/pinboard"
-	"miniflux.app/integration/pocket"
-	"miniflux.app/integration/telegrambot"
-	"miniflux.app/integration/wallabag"
-	"miniflux.app/logger"
-	"miniflux.app/model"
+	"miniflux.app/v2/config"
+	"miniflux.app/v2/integration/apprise"
+	"miniflux.app/v2/integration/espial"
+	"miniflux.app/v2/integration/instapaper"
+	"miniflux.app/v2/integration/linkding"
+	"miniflux.app/v2/integration/matrixbot"
+	"miniflux.app/v2/integration/notion"
+	"miniflux.app/v2/integration/nunuxkeeper"
+	"miniflux.app/v2/integration/pinboard"
+	"miniflux.app/v2/integration/pocket"
+	"miniflux.app/v2/integration/readwise"
+	"miniflux.app/v2/integration/telegrambot"
+	"miniflux.app/v2/integration/wallabag"
+	"miniflux.app/v2/logger"
+	"miniflux.app/v2/model"
 )
 
 // SendEntry sends the entry to third-party providers when the user click on "Save".
@@ -123,6 +125,18 @@ func SendEntry(entry *model.Entry, integration *model.Integration) {
 			logger.Error("[Integration] UserID #%d: %v", integration.UserID, err)
 		}
 	}
+
+	if integration.ReadwiseEnabled {
+		logger.Debug("[Integration] Sending Entry #%d %q for User #%d to Readwise Reader", entry.ID, entry.URL, integration.UserID)
+
+		client := readwise.NewClient(
+			integration.ReadwiseAPIKey,
+		)
+
+		if err := client.AddEntry(entry.URL); err != nil {
+			logger.Error("[Integration] UserID #%d: %v", integration.UserID, err)
+		}
+	}
 }
 
 // PushEntries pushes an entry array to third-party providers during feed refreshes.
@@ -145,6 +159,18 @@ func PushEntry(entry *model.Entry, integration *model.Integration) {
 		err := telegrambot.PushEntry(entry, integration.TelegramBotToken, integration.TelegramBotChatID)
 		if err != nil {
 			logger.Error("[Integration] push entry to telegram bot failed: %v", err)
+		}
+	}
+	if integration.AppriseEnabled {
+		logger.Debug("[Integration] Sending Entry %q for User #%d to apprise", entry.URL, integration.UserID)
+
+		client := apprise.NewClient(
+			integration.AppriseServicesURL,
+			integration.AppriseURL,
+		)
+		err := client.PushEntry(entry)
+		if err != nil {
+			logger.Error("[Integration] push entry to apprise failed: %v", err)
 		}
 	}
 }

@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package worker // import "miniflux.app/worker"
+package worker // import "miniflux.app/v2/worker"
 
 import (
 	"time"
 
-	"miniflux.app/config"
-	"miniflux.app/logger"
-	"miniflux.app/metric"
-	"miniflux.app/model"
-	feedHandler "miniflux.app/reader/handler"
-	"miniflux.app/storage"
+	"miniflux.app/v2/config"
+	"miniflux.app/v2/logger"
+	"miniflux.app/v2/metric"
+	"miniflux.app/v2/model"
+	feedHandler "miniflux.app/v2/reader/handler"
+	"miniflux.app/v2/storage"
 )
 
 // Worker refreshes a feed in the background.
@@ -29,7 +29,7 @@ func (w *Worker) Run(c chan model.Job) {
 		logger.Debug("[Worker #%d] Received feed #%d for user #%d", w.id, job.FeedID, job.UserID)
 
 		startTime := time.Now()
-		refreshErr := feedHandler.RefreshFeed(w.store, job.UserID, job.FeedID)
+		refreshErr := feedHandler.RefreshFeed(w.store, job.UserID, job.FeedID, false)
 
 		if config.Opts.HasMetricsCollector() {
 			status := "success"

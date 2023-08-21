@@ -450,7 +450,7 @@ function handleFetchOriginalContent() {
         response.json().then((data) => {
             if (data.hasOwnProperty("content") && data.hasOwnProperty("reading_time")) {
                 document.querySelector(".entry-content").innerHTML = data.content;
-				document.querySelector(".entry-reading-time").innerHTML = data.reading_time;
+                document.querySelector(".entry-reading-time").innerHTML = data.reading_time;
             }
         });
     });
@@ -663,18 +663,22 @@ function handleConfirmationMessage(linkElement, callback) {
     let containerElement = linkElement.parentNode;
     let questionElement = document.createElement("span");
 
-    let yesElement = document.createElement("a");
-    yesElement.href = "#";
-    yesElement.appendChild(document.createTextNode(linkElement.dataset.labelYes));
-    yesElement.onclick = (event) => {
-        event.preventDefault();
-
+    function createLoadingElement() {
         let loadingElement = document.createElement("span");
         loadingElement.className = "loading";
         loadingElement.appendChild(document.createTextNode(linkElement.dataset.labelLoading));
 
         questionElement.remove();
         containerElement.appendChild(loadingElement);
+    }
+
+    let yesElement = document.createElement("a");
+    yesElement.href = "#";
+    yesElement.appendChild(document.createTextNode(linkElement.dataset.labelYes));
+    yesElement.onclick = (event) => {
+        event.preventDefault();
+
+        createLoadingElement();
 
         callback(linkElement.dataset.url, linkElement.dataset.redirectUrl);
     };
@@ -684,8 +688,16 @@ function handleConfirmationMessage(linkElement, callback) {
     noElement.appendChild(document.createTextNode(linkElement.dataset.labelNo));
     noElement.onclick = (event) => {
         event.preventDefault();
-        linkElement.style.display = "inline";
-        questionElement.remove();
+
+        const noActionUrl = linkElement.dataset.noActionUrl;
+        if (noActionUrl) {
+            createLoadingElement();
+
+            callback(noActionUrl, linkElement.dataset.redirectUrl);
+        } else {
+            linkElement.style.display = "inline";
+            questionElement.remove();
+        }
     };
 
     questionElement.className = "confirm";
@@ -799,5 +811,45 @@ function handlePlayerProgressionSave(playerElement) {
         let request = new RequestBuilder(playerElement.dataset.saveUrl);
         request.withBody({progression: currentPositionInSeconds});
         request.execute();
+    }
+}
+
+/**
+ * handle new share entires and already shared entries
+ */
+function handleShare() {
+    let link = document.querySelector('a[data-share-status]');
+    let title = document.querySelector("body > main > section > header > h1 > a");
+    if (link.dataset.shareStatus === "shared") {
+        checkShareAPI(title, link.href);
+    }
+    if (link.dataset.shareStatus === "share") {
+        let request = new RequestBuilder(link.href);
+        request.withCallback((r) => {
+            checkShareAPI(title, r.url);
+        });
+        request.withHttpMethod("GET");
+        request.execute();
+    }
+}
+
+/**
+* wrapper for Web Share API
+*/
+function checkShareAPI(title, url) {
+    if (!navigator.canShare) {
+        console.error("Your browser doesn't support the Web Share API.");
+        window.location = url;
+        return;
+    }
+    try {
+        navigator.share({
+            title: title,
+            url: url
+        });
+        window.location.reload();
+    } catch (err) {
+        console.error(err);
+        window.location.reload();
     }
 }

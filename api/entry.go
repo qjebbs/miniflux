@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package api // import "miniflux.app/api"
+package api // import "miniflux.app/v2/api"
 
 import (
 	json_parser "encoding/json"
@@ -11,14 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"miniflux.app/config"
-	"miniflux.app/http/request"
-	"miniflux.app/http/response/json"
-	"miniflux.app/model"
-	"miniflux.app/proxy"
-	"miniflux.app/reader/processor"
-	"miniflux.app/storage"
-	"miniflux.app/validator"
+	"miniflux.app/v2/config"
+	"miniflux.app/v2/http/request"
+	"miniflux.app/v2/http/response/json"
+	"miniflux.app/v2/integration"
+	"miniflux.app/v2/model"
+	"miniflux.app/v2/proxy"
+	"miniflux.app/v2/reader/processor"
+	"miniflux.app/v2/storage"
+	"miniflux.app/v2/validator"
 )
 
 func (h *handler) getEntryFromBuilder(w http.ResponseWriter, r *http.Request, b *storage.EntryQueryBuilder) {
@@ -124,13 +125,13 @@ func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int
 	userID := request.UserID(r)
 	categoryID = request.QueryInt64Param(r, "category_id", categoryID)
 	if categoryID > 0 && !h.store.CategoryIDExists(userID, categoryID) {
-		json.BadRequest(w, r, errors.New("Invalid category ID"))
+		json.BadRequest(w, r, errors.New("invalid category ID"))
 		return
 	}
 
 	feedID = request.QueryInt64Param(r, "feed_id", feedID)
 	if feedID > 0 && !h.store.FeedExists(userID, feedID) {
-		json.BadRequest(w, r, errors.New("Invalid feed ID"))
+		json.BadRequest(w, r, errors.New("invalid feed ID"))
 		return
 	}
 
@@ -193,6 +194,39 @@ func (h *handler) toggleBookmark(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NoContent(w, r)
+}
+
+func (h *handler) saveEntry(w http.ResponseWriter, r *http.Request) {
+	entryID := request.RouteInt64Param(r, "entryID")
+	builder := h.store.NewEntryQueryBuilder(request.UserID(r))
+	builder.WithEntryID(entryID)
+	builder.WithoutStatus(model.EntryStatusRemoved)
+
+	if !h.store.HasSaveEntry(request.UserID(r)) {
+		json.BadRequest(w, r, errors.New("no third-party integration enabled"))
+		return
+	}
+
+	entry, err := builder.GetEntry()
+	if err != nil {
+		json.ServerError(w, r, err)
+		return
+	}
+
+	if entry == nil {
+		json.NotFound(w, r)
+		return
+	}
+
+	settings, err := h.store.Integration(request.UserID(r))
+	if err != nil {
+		json.ServerError(w, r, err)
+		return
+	}
+
+	go integration.SendEntry(entry, settings)
+
+	json.Accepted(w, r)
 }
 
 func (h *handler) fetchContent(w http.ResponseWriter, r *http.Request) {

@@ -1,13 +1,13 @@
-package storage // import "miniflux.app/storage"
+package storage // import "miniflux.app/v2/storage"
 
 import (
 	"database/sql"
 	"time"
 
-	"miniflux.app/logger"
+	"miniflux.app/v2/logger"
 
-	"miniflux.app/model"
-	"miniflux.app/timer"
+	"miniflux.app/v2/model"
+	"miniflux.app/v2/timer"
 )
 
 // CreateMediasRunOnce create media records for starred and unread entries,

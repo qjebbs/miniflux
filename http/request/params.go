@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package request // import "miniflux.app/http/request"
+package request // import "miniflux.app/v2/http/request"
 
 import (
 	"net/http"
@@ -101,6 +101,22 @@ func QueryInt64Param(r *http.Request, param string, defaultValue int64) int64 {
 	}
 
 	if val < 0 {
+		return defaultValue
+	}
+
+	return val
+}
+
+// QueryBoolParam returns a query string parameter as bool.
+func QueryBoolParam(r *http.Request, param string, defaultValue bool) bool {
+	value := r.URL.Query().Get(param)
+	if value == "" {
+		return defaultValue
+	}
+
+	val, err := strconv.ParseBool(value)
+
+	if err != nil {
 		return defaultValue
 	}
 

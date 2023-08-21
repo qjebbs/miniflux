@@ -1,12 +1,12 @@
-package storage // import "miniflux.app/storage"
+package storage // import "miniflux.app/v2/storage"
 
 import (
 	"fmt"
 	"time"
 
-	"miniflux.app/model"
+	"miniflux.app/v2/model"
 
-	"miniflux.app/timer"
+	"miniflux.app/v2/timer"
 )
 
 // UnreadStatByFeed returns unread count of feeds.

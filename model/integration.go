@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package model // import "miniflux.app/model"
+package model // import "miniflux.app/v2/model"
 
 // Integration represents user integration settings.
 type Integration struct {
@@ -36,6 +36,8 @@ type Integration struct {
 	EspialURL            string
 	EspialAPIKey         string
 	EspialTags           string
+	ReadwiseEnabled      bool
+	ReadwiseAPIKey       string
 	PocketEnabled        bool
 	PocketAccessToken    string
 	PocketConsumerKey    string
@@ -52,4 +54,7 @@ type Integration struct {
 	MatrixBotPassword    string
 	MatrixBotURL         string
 	MatrixBotChatID      string
+	AppriseEnabled       bool
+	AppriseURL           string
+	AppriseServicesURL   string
 }

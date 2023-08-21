@@ -1,4 +1,4 @@
-package storage // import "miniflux.app/storage"
+package storage // import "miniflux.app/v2/storage"
 
 import (
 	"bytes"
@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"miniflux.app/config"
-	"miniflux.app/filesystem"
-	"miniflux.app/logger"
-	"miniflux.app/model"
-	"miniflux.app/reader/media"
-	"miniflux.app/timer"
+	"miniflux.app/v2/config"
+	"miniflux.app/v2/filesystem"
+	"miniflux.app/v2/logger"
+	"miniflux.app/v2/model"
+	"miniflux.app/v2/reader/media"
+	"miniflux.app/v2/timer"
 )
 
 // MediaByURL returns an Media by the url.

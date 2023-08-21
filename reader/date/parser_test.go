@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package date // import "miniflux.app/reader/date"
+package date // import "miniflux.app/v2/reader/date"
 
 import (
 	"testing"
@@ -32,6 +32,35 @@ func TestParseAtomDate(t *testing.T) {
 
 	_, offset := date.Zone()
 	expectedOffset := 0
+	if offset != expectedOffset {
+		t.Errorf(`The offset should be %v instead of %v`, expectedOffset, offset)
+	}
+}
+
+func TestParseRSSDateTimezone(t *testing.T) {
+	date, err := Parse("Fri, 31 Mar 2023 20:19:00 America/Los_Angeles")
+	if err != nil {
+		t.Fatalf(`RSS dates should be parsed correctly`)
+	}
+
+	expectedTS := int64(1680319140)
+	if date.Unix() != expectedTS {
+		t.Errorf(`The Unix timestamp should be %v instead of %v`, expectedTS, date.Unix())
+	}
+
+	expectedLocation := "America/Los_Angeles"
+	if date.Location().String() != expectedLocation {
+		t.Errorf(`The location should be %q instead of %q`, expectedLocation, date.Location())
+	}
+
+	name, offset := date.Zone()
+
+	expectedName := "PDT"
+	if name != expectedName {
+		t.Errorf(`The zone name should be %q instead of %q`, expectedName, name)
+	}
+
+	expectedOffset := -25200
 	if offset != expectedOffset {
 		t.Errorf(`The offset should be %v instead of %v`, expectedOffset, offset)
 	}

@@ -1,4 +1,4 @@
-package filesystem // import "miniflux.app/filesystem"
+package filesystem // import "miniflux.app/v2/filesystem"
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"miniflux.app/model"
-	"miniflux.app/reader/media"
+	"miniflux.app/v2/model"
+	"miniflux.app/v2/reader/media"
 )
 
 // MediaFromCache loads media from disk cache

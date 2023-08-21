@@ -2,14 +2,14 @@
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
-package ui // import "miniflux.app/ui"
+package ui // import "miniflux.app/v2/ui"
 
 import (
 	"net/http"
 
-	"miniflux.app/http/request"
-	"miniflux.app/http/response/json"
-	"miniflux.app/ui/session"
+	"miniflux.app/v2/http/request"
+	"miniflux.app/v2/http/response/json"
+	"miniflux.app/v2/ui/session"
 )
 
 func (h *handler) toggleNSFW(w http.ResponseWriter, r *http.Request) {

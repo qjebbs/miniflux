@@ -2,7 +2,7 @@
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
-package scraper // import "miniflux.app/reader/scraper"
+package scraper // import "miniflux.app/v2/reader/scraper"
 
 import (
 	"bytes"
@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
-	"miniflux.app/crypto"
-	"miniflux.app/logger"
+	"miniflux.app/v2/crypto"
+	"miniflux.app/v2/logger"
 
-	"miniflux.app/http/client"
-	"miniflux.app/model"
-	"miniflux.app/reader/readability"
-	"miniflux.app/reader/sanitizer"
+	"miniflux.app/v2/http/client"
+	"miniflux.app/v2/model"
+	"miniflux.app/v2/reader/readability"
+	"miniflux.app/v2/reader/sanitizer"
 
 	"github.com/PuerkitoBio/goquery"
 )

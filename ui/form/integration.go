@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package form // import "miniflux.app/ui/form"
+package form // import "miniflux.app/v2/ui/form"
 
 import (
 	"net/http"
 
-	"miniflux.app/model"
+	"miniflux.app/v2/model"
 )
 
 // IntegrationForm represents user integration settings form.
@@ -41,6 +41,8 @@ type IntegrationForm struct {
 	EspialURL            string
 	EspialAPIKey         string
 	EspialTags           string
+	ReadwiseEnabled      bool
+	ReadwiseAPIKey       string
 	PocketEnabled        bool
 	PocketAccessToken    string
 	PocketConsumerKey    string
@@ -57,6 +59,9 @@ type IntegrationForm struct {
 	MatrixBotPassword    string
 	MatrixBotURL         string
 	MatrixBotChatID      string
+	AppriseEnabled       bool
+	AppriseURL           string
+	AppriseServicesURL   string
 }
 
 // Merge copy form values to the model.
@@ -89,6 +94,8 @@ func (i IntegrationForm) Merge(integration *model.Integration) {
 	integration.EspialURL = i.EspialURL
 	integration.EspialAPIKey = i.EspialAPIKey
 	integration.EspialTags = i.EspialTags
+	integration.ReadwiseEnabled = i.ReadwiseEnabled
+	integration.ReadwiseAPIKey = i.ReadwiseAPIKey
 	integration.PocketEnabled = i.PocketEnabled
 	integration.PocketAccessToken = i.PocketAccessToken
 	integration.PocketConsumerKey = i.PocketConsumerKey
@@ -105,6 +112,9 @@ func (i IntegrationForm) Merge(integration *model.Integration) {
 	integration.MatrixBotPassword = i.MatrixBotPassword
 	integration.MatrixBotURL = i.MatrixBotURL
 	integration.MatrixBotChatID = i.MatrixBotChatID
+	integration.AppriseEnabled = i.AppriseEnabled
+	integration.AppriseServicesURL = i.AppriseServicesURL
+	integration.AppriseURL = i.AppriseURL
 }
 
 // NewIntegrationForm returns a new IntegrationForm.
@@ -140,6 +150,8 @@ func NewIntegrationForm(r *http.Request) *IntegrationForm {
 		EspialURL:            r.FormValue("espial_url"),
 		EspialAPIKey:         r.FormValue("espial_api_key"),
 		EspialTags:           r.FormValue("espial_tags"),
+		ReadwiseEnabled:      r.FormValue("readwise_enabled") == "1",
+		ReadwiseAPIKey:       r.FormValue("readwise_api_key"),
 		PocketEnabled:        r.FormValue("pocket_enabled") == "1",
 		PocketAccessToken:    r.FormValue("pocket_access_token"),
 		PocketConsumerKey:    r.FormValue("pocket_consumer_key"),
@@ -156,5 +168,8 @@ func NewIntegrationForm(r *http.Request) *IntegrationForm {
 		MatrixBotPassword:    r.FormValue("matrix_bot_password"),
 		MatrixBotURL:         r.FormValue("matrix_bot_url"),
 		MatrixBotChatID:      r.FormValue("matrix_bot_chat_id"),
+		AppriseEnabled:       r.FormValue("apprise_enabled") == "1",
+		AppriseURL:           r.FormValue("apprise_url"),
+		AppriseServicesURL:   r.FormValue("apprise_services_url"),
 	}
 }

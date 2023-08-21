@@ -1,11 +1,11 @@
-package filesystem // import "miniflux.app/filesystem"
+package filesystem // import "miniflux.app/v2/filesystem"
 
 import (
 	"os"
 	"path/filepath"
 
-	"miniflux.app/config"
-	"miniflux.app/logger"
+	"miniflux.app/v2/config"
+	"miniflux.app/v2/logger"
 )
 
 // StorageRoot returns the root directory of file system storage

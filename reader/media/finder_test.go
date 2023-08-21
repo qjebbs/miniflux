@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"miniflux.app/model"
+	"miniflux.app/v2/model"
 )
 
 var baseURL = "http://miniflux.app"

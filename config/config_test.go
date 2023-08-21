@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package config // import "miniflux.app/config"
+package config // import "miniflux.app/v2/config"
 
 import (
 	"os"
@@ -1729,6 +1729,24 @@ func TestAuthProxyUserCreationAdmin(t *testing.T) {
 
 	if result != expected {
 		t.Fatalf(`Unexpected AUTH_PROXY_USER_CREATION value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestFetchOdyseeWatchTime(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("FETCH_ODYSEE_WATCH_TIME", "1")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := true
+	result := opts.FetchOdyseeWatchTime()
+
+	if result != expected {
+		t.Fatalf(`Unexpected FETCH_ODYSEE_WATCH_TIME value, got %v instead of %v`, result, expected)
 	}
 }
 

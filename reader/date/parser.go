@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package date // import "miniflux.app/reader/date"
+package date // import "miniflux.app/v2/reader/date"
 
 import (
 	"errors"
@@ -223,6 +223,7 @@ var dateFormats = []string{
 
 var invalidTimezoneReplacer = strings.NewReplacer(
 	"Europe/Brussels", "CET",
+	"America/Los_Angeles", "PDT",
 	"GMT+0000 (Coordinated Universal Time)", "GMT",
 	"GMT-", "GMT -",
 )

@@ -1,10 +1,10 @@
-package storage // import "miniflux.app/storage"
+package storage // import "miniflux.app/v2/storage"
 
 import (
 	"fmt"
 	"time"
 
-	"miniflux.app/timer"
+	"miniflux.app/v2/timer"
 )
 
 // MediaStatisticsAll returns media count and cached size of the whole miniflux service.

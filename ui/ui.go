@@ -1,15 +1,15 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package ui // import "miniflux.app/ui"
+package ui // import "miniflux.app/v2/ui"
 
 import (
 	"net/http"
 
-	"miniflux.app/logger"
-	"miniflux.app/storage"
-	"miniflux.app/template"
-	"miniflux.app/worker"
+	"miniflux.app/v2/logger"
+	"miniflux.app/v2/storage"
+	"miniflux.app/v2/template"
+	"miniflux.app/v2/worker"
 
 	"github.com/gorilla/mux"
 )
@@ -74,7 +74,8 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/feeds/refresh", handler.refreshAllFeeds).Name("refreshAllFeeds").Methods(http.MethodGet)
 
 	// Individual feed pages.
-	uiRouter.HandleFunc("/feed/{feedID}/refresh", handler.refreshFeed).Name("refreshFeed").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/feed/{feedID}/refresh", handler.refreshFeed).Name("refreshFeed").Methods(http.MethodGet, http.MethodPost)
+	uiRouter.HandleFunc("/feed/{feedID}/refresh", handler.refreshFeed).Queries("forceRefresh", "{forceRefresh:true|false}").Name("refreshFeed").Methods(http.MethodGet, http.MethodPost)
 	uiRouter.HandleFunc("/feed/{feedID}/edit", handler.showEditFeedPage).Name("editFeed").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/{feedID}/remove", handler.removeFeed).Name("removeFeed").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/feed/{feedID}/update", handler.updateFeed).Name("updateFeed").Methods(http.MethodPost)

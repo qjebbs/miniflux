@@ -1,9 +1,9 @@
 package cli
 
 import (
-	"miniflux.app/logger"
-	"miniflux.app/model"
-	"miniflux.app/storage"
+	"miniflux.app/v2/logger"
+	"miniflux.app/v2/model"
+	"miniflux.app/v2/storage"
 )
 
 func fixCovers(store *storage.Storage, uid int64) error {

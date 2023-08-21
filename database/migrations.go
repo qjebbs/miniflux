@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package database // import "miniflux.app/database"
+package database // import "miniflux.app/v2/database"
 
 import (
 	"database/sql"
@@ -700,6 +700,23 @@ var migrations = []func(tx *sql.Tx) error{
 		ALTER TABLE integrations ADD COLUMN notion_enabled bool default 'f';
 		ALTER TABLE integrations ADD COLUMN notion_token text default '';
 		ALTER TABLE integrations ADD COLUMN notion_page_id text default '';
+		`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+		ALTER TABLE integrations ADD COLUMN readwise_enabled bool default 'f';
+		ALTER TABLE integrations ADD COLUMN readwise_api_key text default '';
+		`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+		ALTER TABLE integrations ADD COLUMN apprise_enabled bool default 'f';
+		ALTER TABLE integrations ADD COLUMN apprise_url text default '';
+		ALTER TABLE integrations ADD COLUMN apprise_services_url text default '';
 		`
 		_, err = tx.Exec(sql)
 		return err

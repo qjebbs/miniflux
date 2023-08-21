@@ -1,4 +1,4 @@
-package storage // import "miniflux.app/storage"
+package storage // import "miniflux.app/v2/storage"
 
 import (
 	"bytes"
@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	"miniflux.app/filesystem"
-	"miniflux.app/logger"
-	"miniflux.app/model"
-	"miniflux.app/reader/media"
-	"miniflux.app/timer"
+	"miniflux.app/v2/filesystem"
+	"miniflux.app/v2/logger"
+	"miniflux.app/v2/model"
+	"miniflux.app/v2/reader/media"
+	"miniflux.app/v2/timer"
 )
 
 const maxCachingError = 3

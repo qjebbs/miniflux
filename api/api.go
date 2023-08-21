@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package api // import "miniflux.app/api"
+package api // import "miniflux.app/v2/api"
 
 import (
 	"net/http"
 
-	"miniflux.app/storage"
-	"miniflux.app/worker"
+	"miniflux.app/v2/storage"
+	"miniflux.app/v2/worker"
 
 	"github.com/gorilla/mux"
 )
@@ -64,5 +64,6 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	sr.HandleFunc("/entries", handler.setEntryStatus).Methods(http.MethodPut)
 	sr.HandleFunc("/entries/{entryID}", handler.getEntry).Methods(http.MethodGet)
 	sr.HandleFunc("/entries/{entryID}/bookmark", handler.toggleBookmark).Methods(http.MethodPut)
+	sr.HandleFunc("/entries/{entryID}/save", handler.saveEntry).Methods(http.MethodPost)
 	sr.HandleFunc("/entries/{entryID}/fetch-content", handler.fetchContent).Methods(http.MethodGet)
 }

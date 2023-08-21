@@ -2,14 +2,14 @@
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
-package form // import "miniflux.app/ui/form"
+package form // import "miniflux.app/v2/ui/form"
 
 import (
 	"net/http"
 	"strconv"
 
-	"miniflux.app/errors"
-	"miniflux.app/model"
+	"miniflux.app/v2/errors"
+	"miniflux.app/v2/model"
 )
 
 // EntryForm represents a feed form in the UI

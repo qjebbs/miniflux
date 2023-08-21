@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package ui // import "miniflux.app/ui"
+package ui // import "miniflux.app/v2/ui"
 
 import (
 	"net/http"
 
-	"miniflux.app/config"
-	"miniflux.app/http/request"
-	"miniflux.app/http/response/html"
-	"miniflux.app/ui/form"
-	"miniflux.app/ui/session"
-	"miniflux.app/ui/view"
+	"miniflux.app/v2/config"
+	"miniflux.app/v2/http/request"
+	"miniflux.app/v2/http/response/html"
+	"miniflux.app/v2/ui/form"
+	"miniflux.app/v2/ui/session"
+	"miniflux.app/v2/ui/view"
 )
 
 func (h *handler) showIntegrationPage(w http.ResponseWriter, r *http.Request) {
@@ -56,6 +56,8 @@ func (h *handler) showIntegrationPage(w http.ResponseWriter, r *http.Request) {
 		EspialURL:            integration.EspialURL,
 		EspialAPIKey:         integration.EspialAPIKey,
 		EspialTags:           integration.EspialTags,
+		ReadwiseEnabled:      integration.ReadwiseEnabled,
+		ReadwiseAPIKey:       integration.ReadwiseAPIKey,
 		PocketEnabled:        integration.PocketEnabled,
 		PocketAccessToken:    integration.PocketAccessToken,
 		PocketConsumerKey:    integration.PocketConsumerKey,
@@ -72,6 +74,9 @@ func (h *handler) showIntegrationPage(w http.ResponseWriter, r *http.Request) {
 		MatrixBotPassword:    integration.MatrixBotPassword,
 		MatrixBotURL:         integration.MatrixBotURL,
 		MatrixBotChatID:      integration.MatrixBotChatID,
+		AppriseEnabled:       integration.AppriseEnabled,
+		AppriseURL:           integration.AppriseURL,
+		AppriseServicesURL:   integration.AppriseServicesURL,
 	}
 
 	nsfw := request.IsNSFWEnabled(r)

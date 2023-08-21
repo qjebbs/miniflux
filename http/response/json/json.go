@@ -1,15 +1,15 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package json // import "miniflux.app/http/response/json"
+package json // import "miniflux.app/v2/http/response/json"
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
 
-	"miniflux.app/http/response"
-	"miniflux.app/logger"
+	"miniflux.app/v2/http/response"
+	"miniflux.app/v2/logger"
 )
 
 const contentTypeHeader = `application/json`
@@ -35,6 +35,13 @@ func Created(w http.ResponseWriter, r *http.Request, body interface{}) {
 func NoContent(w http.ResponseWriter, r *http.Request) {
 	builder := response.New(w, r)
 	builder.WithStatus(http.StatusNoContent)
+	builder.WithHeader("Content-Type", contentTypeHeader)
+	builder.Write()
+}
+
+func Accepted(w http.ResponseWriter, r *http.Request) {
+	builder := response.New(w, r)
+	builder.WithStatus(http.StatusAccepted)
 	builder.WithHeader("Content-Type", contentTypeHeader)
 	builder.Write()
 }
@@ -68,7 +75,7 @@ func Unauthorized(w http.ResponseWriter, r *http.Request) {
 	builder := response.New(w, r)
 	builder.WithStatus(http.StatusUnauthorized)
 	builder.WithHeader("Content-Type", contentTypeHeader)
-	builder.WithBody(toJSONError(errors.New("Access Unauthorized")))
+	builder.WithBody(toJSONError(errors.New("access unauthorized")))
 	builder.Write()
 }
 
@@ -79,7 +86,7 @@ func Forbidden(w http.ResponseWriter, r *http.Request) {
 	builder := response.New(w, r)
 	builder.WithStatus(http.StatusForbidden)
 	builder.WithHeader("Content-Type", contentTypeHeader)
-	builder.WithBody(toJSONError(errors.New("Access Forbidden")))
+	builder.WithBody(toJSONError(errors.New("access forbidden")))
 	builder.Write()
 }
 
@@ -90,7 +97,7 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 	builder := response.New(w, r)
 	builder.WithStatus(http.StatusNotFound)
 	builder.WithHeader("Content-Type", contentTypeHeader)
-	builder.WithBody(toJSONError(errors.New("Resource Not Found")))
+	builder.WithBody(toJSONError(errors.New("resource not found")))
 	builder.Write()
 }
 

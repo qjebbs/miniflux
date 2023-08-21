@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
     onClick("a[data-toggle-bookmark]", (event) => handleBookmark(event.target));
     onClick("a[data-fetch-content-entry]", () => handleFetchOriginalContent());
     onClick("a[data-action=search]", (event) => setFocusToSearchInput(event));
+    onClick("a[data-share-status]", () => handleShare());
     onClick("a[data-action=setView]", (event) => handleSetView(event.target));
     onClick("a[data-action=markPageAsRead]", (event) => handleConfirmationMessage(event.target, () => markPageAsRead()));
     onClick("a[data-toggle-status]", (event) => handleEntryStatus("next", event.target));
@@ -70,9 +71,11 @@ document.addEventListener("DOMContentLoaded", function () {
     onClick("a[data-confirm]", (event) => handleConfirmationMessage(event.target, (url, redirectURL) => {
         let request = new RequestBuilder(url);
 
-        request.withCallback(() => {
+        request.withCallback((response) => {
             if (redirectURL) {
                 window.location.href = redirectURL;
+            } else if (response && response.redirected && response.url) {
+                window.location.href = response.url;
             } else {
                 window.location.reload();
             }

@@ -2,18 +2,18 @@
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
-package ui // import "miniflux.app/ui"
+package ui // import "miniflux.app/v2/ui"
 
 import (
 	"net/http"
 
-	"miniflux.app/config"
-	"miniflux.app/http/request"
-	"miniflux.app/http/response/html"
-	"miniflux.app/model"
-	"miniflux.app/ui/form"
-	"miniflux.app/ui/session"
-	"miniflux.app/ui/view"
+	"miniflux.app/v2/config"
+	"miniflux.app/v2/http/request"
+	"miniflux.app/v2/http/response/html"
+	"miniflux.app/v2/model"
+	"miniflux.app/v2/ui/form"
+	"miniflux.app/v2/ui/session"
+	"miniflux.app/v2/ui/view"
 )
 
 func (h *handler) bookmarkletEntry(w http.ResponseWriter, r *http.Request) {

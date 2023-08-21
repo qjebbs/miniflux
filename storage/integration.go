@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package storage // import "miniflux.app/storage"
+package storage // import "miniflux.app/v2/storage"
 
 import (
 	"database/sql"
 	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
-	"miniflux.app/model"
+	"miniflux.app/v2/model"
 )
 
 // HasDuplicateFeverUsername checks if another user have the same Fever username.
@@ -140,6 +140,8 @@ func (s *Storage) Integration(userID int64) (*model.Integration, error) {
 			espial_url,
 			espial_api_key,
 			espial_tags,
+			readwise_enabled,
+			readwise_api_key,
 			pocket_enabled,
 			pocket_access_token,
 			pocket_consumer_key,
@@ -155,7 +157,10 @@ func (s *Storage) Integration(userID int64) (*model.Integration, error) {
 			matrix_bot_user,
 			matrix_bot_password,
 			matrix_bot_url,
-			matrix_bot_chat_id
+			matrix_bot_chat_id,
+			apprise_enabled,
+			apprise_url,
+			apprise_services_url
 		FROM
 			integrations
 		WHERE
@@ -194,6 +199,8 @@ func (s *Storage) Integration(userID int64) (*model.Integration, error) {
 		&integration.EspialURL,
 		&integration.EspialAPIKey,
 		&integration.EspialTags,
+		&integration.ReadwiseEnabled,
+		&integration.ReadwiseAPIKey,
 		&integration.PocketEnabled,
 		&integration.PocketAccessToken,
 		&integration.PocketConsumerKey,
@@ -210,6 +217,9 @@ func (s *Storage) Integration(userID int64) (*model.Integration, error) {
 		&integration.MatrixBotPassword,
 		&integration.MatrixBotURL,
 		&integration.MatrixBotChatID,
+		&integration.AppriseEnabled,
+		&integration.AppriseURL,
+		&integration.AppriseServicesURL,
 	)
 	switch {
 	case err == sql.ErrNoRows:
@@ -272,9 +282,14 @@ func (s *Storage) UpdateIntegration(integration *model.Integration) error {
 			matrix_bot_chat_id=$43,
 			notion_enabled=$44,
 			notion_token=$45,
-			notion_page_id=$46
+			notion_page_id=$46,
+			readwise_enabled=$47,
+			readwise_api_key=$48,
+			apprise_enabled=$49,
+			apprise_url=$50,
+			apprise_services_url=$51
 		WHERE
-			user_id=$47
+			user_id=$52
 	`
 	_, err := s.db.Exec(
 		query,
@@ -324,6 +339,11 @@ func (s *Storage) UpdateIntegration(integration *model.Integration) error {
 		integration.NotionEnabled,
 		integration.NotionToken,
 		integration.NotionPageID,
+		integration.ReadwiseEnabled,
+		integration.ReadwiseAPIKey,
+		integration.AppriseEnabled,
+		integration.AppriseURL,
+		integration.AppriseServicesURL,
 		integration.UserID,
 	)
 
@@ -344,7 +364,7 @@ func (s *Storage) HasSaveEntry(userID int64) (result bool) {
 		WHERE
 			user_id=$1
 		AND
-			(pinboard_enabled='t' OR instapaper_enabled='t' OR wallabag_enabled='t' OR notion_enabled='t' OR nunux_keeper_enabled='t' OR espial_enabled='t' OR pocket_enabled='t' OR linkding_enabled='t')
+			(pinboard_enabled='t' OR instapaper_enabled='t' OR wallabag_enabled='t' OR notion_enabled='t' OR nunux_keeper_enabled='t' OR espial_enabled='t' OR readwise_enabled='t' OR pocket_enabled='t' OR linkding_enabled='t' OR apprise_enabled='t')
 	`
 	if err := s.db.QueryRow(query, userID).Scan(&result); err != nil {
 		result = false

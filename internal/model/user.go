@@ -16,7 +16,6 @@ type User struct {
 	Password               string     `json:"-"`
 	IsAdmin                bool       `json:"is_admin"`
 	Theme                  string     `json:"theme"`
-	View                   string     `json:"view"`
 	Language               string     `json:"language"`
 	Timezone               string     `json:"timezone"`
 	EntryDirection         string     `json:"entry_sorting_direction"`
@@ -52,7 +51,6 @@ type UserModificationRequest struct {
 	Username               *string `json:"username"`
 	Password               *string `json:"password"`
 	Theme                  *string `json:"theme"`
-	View                   *string `json:"view"`
 	Language               *string `json:"language"`
 	Timezone               *string `json:"timezone"`
 	EntryDirection         *string `json:"entry_sorting_direction"`
@@ -86,10 +84,6 @@ func (u *UserModificationRequest) Patch(user *User) {
 
 	if u.IsAdmin != nil {
 		user.IsAdmin = *u.IsAdmin
-	}
-
-	if u.View != nil {
-		user.View = *u.View
 	}
 
 	if u.Theme != nil {

@@ -107,7 +107,6 @@ func (m *middleware) handleAppSession(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, request.FlashErrorMessageContextKey, session.Data.FlashErrorMessage)
 		ctx = context.WithValue(ctx, request.UserLanguageContextKey, session.Data.Language)
 		ctx = context.WithValue(ctx, request.UserThemeContextKey, session.Data.Theme)
-		ctx = context.WithValue(ctx, request.UserViewContextKey, session.Data.View)
 		ctx = context.WithValue(ctx, request.PocketRequestTokenContextKey, session.Data.PocketRequestToken)
 		ctx = context.WithValue(ctx, request.NSFWContextKey, session.Data.NSFW)
 		next.ServeHTTP(w, r.WithContext(ctx))

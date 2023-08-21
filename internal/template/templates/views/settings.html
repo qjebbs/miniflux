@@ -43,13 +43,6 @@
     {{ end }}
     </select>
 
-    <label for="form-view">{{ t "form.prefs.label.view" }}</label>
-    <select id="form-view" name="view">
-    {{ range $key, $value := .views }}
-        <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ t $value }}</option>
-    {{ end }}
-    </select>
-
     <div class="form-label-row">
         <label for="form-display-mode">{{ t "form.prefs.label.display_mode" }}</label>
         &nbsp;

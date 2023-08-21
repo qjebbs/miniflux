@@ -17,7 +17,6 @@ const (
 	UserSessionTokenContextKey
 	UserLanguageContextKey
 	UserThemeContextKey
-	UserViewContextKey
 	SessionIDContextKey
 	CSRFContextKey
 	OAuth2StateContextKey
@@ -74,15 +73,6 @@ func UserTheme(r *http.Request) string {
 		theme = "system_serif"
 	}
 	return theme
-}
-
-// UserView get the view used by the current logged user.
-func UserView(r *http.Request) string {
-	view := getContextStringValue(r, UserViewContextKey)
-	if view == "" {
-		view = "list"
-	}
-	return view
 }
 
 // IsNSFWEnabled returns the current NSFW setting.

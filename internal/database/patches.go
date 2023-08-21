@@ -36,12 +36,6 @@ func patch(tx *sql.Tx) error {
 			return err
 		}
 	}
-	if !columnExists(tx, "users", "view") {
-		_, err = tx.Exec("alter table users add column view text not null default 'default';")
-		if err != nil {
-			return err
-		}
-	}
 	if !columnExists(tx, "categories", "view") {
 		_, err = tx.Exec("alter table categories add column view text not null default 'default';")
 		if err != nil {

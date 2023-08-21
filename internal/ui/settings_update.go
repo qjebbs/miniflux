@@ -84,7 +84,6 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 
 	sess.SetLanguage(loggedUser.Language)
 	sess.SetTheme(loggedUser.Theme)
-	sess.SetView(loggedUser.View)
 	sess.NewFlashMessage(locale.NewPrinter(request.UserLanguage(r)).Printf("alert.prefs_saved"))
 	html.Redirect(w, r, route.Path(h.router, "settings"))
 }

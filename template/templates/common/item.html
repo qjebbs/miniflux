@@ -5,7 +5,7 @@
             {{ if ne .entry.Feed.Icon.IconID 0 }}
                 <img src="{{ route "icon" "iconID" .entry.Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .entry.Feed.Title }}">
             {{ end }}
-            <a target="_blank" data-set-read="true" data-no-request="true" href="{{ .href }}">{{ .entry.Title }}</a>
+            <a target="_blank" data-set-read="{{ .user.MarkReadOnView }}" data-no-request="true" href="{{ .href }}">{{ .entry.Title }}</a>
         </span>
         {{ if .pageEntriesType }}
             {{ if eq .pageEntriesType "all" }}
@@ -22,7 +22,7 @@
     {{ template "item_meta" . }}
     {{ if and (eq .view "masonry") (ne .entry.CoverImage "") }}
     <div class="thumbnail">
-        <a target="_blank" data-set-read="true" data-no-request="true" href="{{ .href }}">
+        <a target="_blank" data-set-read="{{ .user.MarkReadOnView }}" data-no-request="true" href="{{ .href }}">
             <img class="lazy" src="" data-src="{{ proxyURL (or .entry.Feed.ProxifyMedia .entry.Feed.CacheMedia) .entry.CoverImage }}">
             {{ if gt .entry.ImageCount 1 }}
             <p class="badge">{{ t "entry.more_images" .entry.ImageCount }}</p>

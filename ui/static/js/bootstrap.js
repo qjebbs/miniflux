@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
     tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);
 
     onClick("a[data-toggle-cache]", (event) => handleCache(event.target));
-    onClick("a[data-set-read]", (event) => setEntryStatusRead(findEntry(event.target)), true);
+    onClick("a[data-set-read='true']", (event) => setEntryStatusRead(findEntry(event.target)), true);
     onClick("a[data-action=showActionMenu]", (event) => ActionMenu.switch(event.target));
     onClick("button[data-action=submitEntry]", (event) => EntryEditorHandler.submitHandler(event));
 

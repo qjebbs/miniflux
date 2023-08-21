@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"os"
 
-	miniflux "miniflux.app/v2/client"
+	miniflux "miniflux.app/v2/internal/client"
 )
 
 func main() {

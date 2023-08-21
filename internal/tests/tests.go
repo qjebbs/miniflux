@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 
 	miniflux "miniflux.app/v2/internal/client"
 )
@@ -28,7 +27,6 @@ const (
 )
 
 func getRandomUsername() string {
-	rand.Seed(time.Now().UnixNano())
 	var suffix []string
 	for i := 0; i < 10; i++ {
 		suffix = append(suffix, strconv.Itoa(rand.Intn(1000)))

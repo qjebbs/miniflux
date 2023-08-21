@@ -81,10 +81,10 @@ document.addEventListener("DOMContentLoaded", function () {
         request.execute();
     }));
 
-    onClick("a[data-original-link]", (event) => {
+    onClick("a[data-original-link='true']", (event) => {
         handleEntryStatus("next", event.target, true);
     }, true);
-    onAuxClick("a[data-original-link]", (event) => {
+    onAuxClick("a[data-original-link='true']", (event) => {
         if (event.button == 1) {
             handleEntryStatus("next", event.target, true);
         }

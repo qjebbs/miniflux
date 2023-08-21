@@ -43,9 +43,9 @@ func (c *Client) AddEntry(link, title, content string) error {
 }
 
 func (c *Client) createEntry(accessToken, link, title, content string) error {
-	endpoint, err := getAPIEndpoint(c.baseURL, "/api/entries.json")
+	endpoint, err := url.JoinPath(c.baseURL, "/api/entries.json")
 	if err != nil {
-		return fmt.Errorf("wallbag: unable to get entries endpoint: %v", err)
+		return fmt.Errorf("wallbag: unable to generate entries endpoint using %q: %v", c.baseURL, err)
 	}
 
 	data := map[string]string{"url": link, "title": title}
@@ -57,11 +57,11 @@ func (c *Client) createEntry(accessToken, link, title, content string) error {
 	clt.WithAuthorization("Bearer " + accessToken)
 	response, err := clt.PostJSON(data)
 	if err != nil {
-		return fmt.Errorf("wallabag: unable to post entry: %v", err)
+		return fmt.Errorf("wallabag: unable to post entry using %q endpoint: %v", endpoint, err)
 	}
 
 	if response.HasServerFailure() {
-		return fmt.Errorf("wallabag: request failed, status=%d", response.StatusCode)
+		return fmt.Errorf("wallabag: request failed using %q, status=%d", endpoint, response.StatusCode)
 	}
 
 	return nil
@@ -75,19 +75,19 @@ func (c *Client) getAccessToken() (string, error) {
 	values.Add("username", c.username)
 	values.Add("password", c.password)
 
-	endpoint, err := getAPIEndpoint(c.baseURL, "/oauth/v2/token")
+	endpoint, err := url.JoinPath(c.baseURL, "/oauth/v2/token")
 	if err != nil {
-		return "", fmt.Errorf("wallbag: unable to get token endpoint: %v", err)
+		return "", fmt.Errorf("wallbag: unable to generate token endpoint using %q: %v", c.baseURL, err)
 	}
 
 	clt := client.New(endpoint)
 	response, err := clt.PostForm(values)
 	if err != nil {
-		return "", fmt.Errorf("wallabag: unable to get access token: %v", err)
+		return "", fmt.Errorf("wallabag: unable to get access token using %q endpoint: %v", endpoint, err)
 	}
 
 	if response.HasServerFailure() {
-		return "", fmt.Errorf("wallabag: request failed, status=%d", response.StatusCode)
+		return "", fmt.Errorf("wallabag: request failed using %q, status=%d", endpoint, response.StatusCode)
 	}
 
 	token, err := decodeTokenResponse(response.Body)
@@ -96,15 +96,6 @@ func (c *Client) getAccessToken() (string, error) {
 	}
 
 	return token.AccessToken, nil
-}
-
-func getAPIEndpoint(baseURL, path string) (string, error) {
-	u, err := url.Parse(baseURL)
-	if err != nil {
-		return "", fmt.Errorf("wallabag: invalid API endpoint: %v", err)
-	}
-	u.Path = path
-	return u.String(), nil
 }
 
 type tokenResponse struct {

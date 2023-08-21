@@ -67,13 +67,18 @@ func (h *handler) showUnreadEntryPage(w http.ResponseWriter, r *http.Request) {
 		prevEntryRoute = route.Path(h.router, "unreadEntry", "entryID", prevEntry.ID)
 	}
 
-	// Always mark the entry as read after fetching the pagination.
-	err = h.store.SetEntriesStatus(user.ID, []int64{entry.ID}, model.EntryStatusRead)
-	if err != nil {
-		html.ServerError(w, r, err)
-		return
+	if user.MarkReadOnView {
+		entry.Status = model.EntryStatusRead
 	}
-	entry.Status = model.EntryStatusRead
+
+	// Restore entry read status if needed after fetching the pagination.
+	if entry.Status == model.EntryStatusRead {
+		err = h.store.SetEntriesStatus(user.ID, []int64{entry.ID}, model.EntryStatusRead)
+		if err != nil {
+			html.ServerError(w, r, err)
+			return
+		}
+	}
 
 	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))

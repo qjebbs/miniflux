@@ -283,7 +283,7 @@ a:hover {
     text-align: right;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 620px) {
     body {
         margin: auto;
         max-width: 750px;
@@ -709,6 +709,8 @@ template {
     padding:0 .2em;
     margin: 10px;
     text-decoration: none;
+    background-color: transparent;
+    border: none;
 }
 
 .btn-close-modal:hover {
@@ -1086,6 +1088,15 @@ article.category-has-unread {
     margin: 0 0 20px;
     color: #666;
     overflow-wrap: break-word;
+}
+
+.entry-tags {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.entry-tags strong {
+    font-weight: 600;
 }
 
 .entry-website img {

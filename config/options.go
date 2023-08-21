@@ -50,6 +50,7 @@ const (
 	defaultProxyMediaTypes                    = "image"
 	defaultProxyUrl                           = ""
 	defaultFetchYouTubeWatchTime              = false
+	defaultYouTubeEmbedUrlOverride            = "https://www.youtube-nocookie.com/embed/"
 	defaultCreateAdmin                        = false
 	defaultAdminUsername                      = ""
 	defaultAdminPassword                      = ""
@@ -130,6 +131,7 @@ type Options struct {
 	proxyMediaTypes                    []string
 	proxyUrl                           string
 	fetchYouTubeWatchTime              bool
+	youTubeEmbedUrlOverride            string
 	oauth2UserCreationAllowed          bool
 	oauth2ClientID                     string
 	oauth2ClientSecret                 string
@@ -203,6 +205,7 @@ func NewOptions() *Options {
 		proxyMediaTypes:                    []string{defaultProxyMediaTypes},
 		proxyUrl:                           defaultProxyUrl,
 		fetchYouTubeWatchTime:              defaultFetchYouTubeWatchTime,
+		youTubeEmbedUrlOverride:            defaultYouTubeEmbedUrlOverride,
 		oauth2UserCreationAllowed:          defaultOAuth2UserCreation,
 		oauth2ClientID:                     defaultOAuth2ClientID,
 		oauth2ClientSecret:                 defaultOAuth2ClientSecret,
@@ -450,6 +453,11 @@ func (o *Options) FetchYouTubeWatchTime() bool {
 	return o.fetchYouTubeWatchTime
 }
 
+// YouTubeEmbedUrlOverride returns YouTube URL which will be used for embeds
+func (o *Options) YouTubeEmbedUrlOverride() string {
+	return o.youTubeEmbedUrlOverride
+}
+
 // ProxyOption returns "none" to never proxy, "http-only" to proxy non-HTTPS, "all" to always proxy.
 func (o *Options) ProxyOption() string {
 	return o.proxyOption
@@ -593,20 +601,20 @@ func (o *Options) SortedOptions(redactSecret bool) []*Option {
 		"CACHE_FREQUENCY":                        o.cacheFrequency,
 		"CERT_DOMAIN":                            o.certDomain,
 		"CERT_FILE":                              o.certFile,
+		"CLEANUP_ARCHIVE_BATCH_SIZE":             o.cleanupArchiveBatchSize,
 		"CLEANUP_ARCHIVE_READ_DAYS":              o.cleanupArchiveReadDays,
 		"CLEANUP_ARCHIVE_UNREAD_DAYS":            o.cleanupArchiveUnreadDays,
-		"CLEANUP_ARCHIVE_BATCH_SIZE":             o.cleanupArchiveBatchSize,
 		"CLEANUP_FREQUENCY_HOURS":                o.cleanupFrequencyHours,
 		"CLEANUP_REMOVE_SESSIONS_DAYS":           o.cleanupRemoveSessionsDays,
 		"CREATE_ADMIN":                           o.createAdmin,
+		"DATABASE_CONNECTION_LIFETIME":           o.databaseConnectionLifetime,
 		"DATABASE_MAX_CONNS":                     o.databaseMaxConns,
 		"DATABASE_MIN_CONNS":                     o.databaseMinConns,
-		"DATABASE_CONNECTION_LIFETIME":           o.databaseConnectionLifetime,
 		"DATABASE_URL":                           redactSecretValue(o.databaseURL, redactSecret),
 		"DEBUG":                                  o.debug,
 		"DISABLE_HSTS":                           !o.hsts,
-		"DISABLE_SCHEDULER_SERVICE":              !o.schedulerService,
 		"DISABLE_HTTP_SERVICE":                   !o.httpService,
+		"DISABLE_SCHEDULER_SERVICE":              !o.schedulerService,
 		"DISK_STORAGE_ROOT":                      o.diskStorageRoot,
 		"FETCH_YOUTUBE_WATCH_TIME":               o.fetchYouTubeWatchTime,
 		"HTTPS":                                  o.HTTPS,
@@ -616,17 +624,17 @@ func (o *Options) SortedOptions(redactSecret bool) []*Option {
 		"HTTP_CLIENT_USER_AGENT":                 o.httpClientUserAgent,
 		"HTTP_SERVER_TIMEOUT":                    o.httpServerTimeout,
 		"HTTP_SERVICE":                           o.httpService,
-		"KEY_FILE":                               o.certKeyFile,
 		"INVIDIOUS_INSTANCE":                     o.invidiousInstance,
+		"KEY_FILE":                               o.certKeyFile,
 		"LISTEN_ADDR":                            o.listenAddr,
 		"LOG_DATE_TIME":                          o.logDateTime,
 		"MAINTENANCE_MESSAGE":                    o.maintenanceMessage,
 		"MAINTENANCE_MODE":                       o.maintenanceMode,
 		"METRICS_ALLOWED_NETWORKS":               strings.Join(o.metricsAllowedNetworks, ","),
 		"METRICS_COLLECTOR":                      o.metricsCollector,
+		"METRICS_PASSWORD":                       redactSecretValue(o.metricsPassword, redactSecret),
 		"METRICS_REFRESH_INTERVAL":               o.metricsRefreshInterval,
 		"METRICS_USERNAME":                       o.metricsUsername,
-		"METRICS_PASSWORD":                       redactSecretValue(o.metricsPassword, redactSecret),
 		"OAUTH2_CLIENT_ID":                       o.oauth2ClientID,
 		"OAUTH2_CLIENT_SECRET":                   redactSecretValue(o.oauth2ClientSecret, redactSecret),
 		"OAUTH2_OIDC_DISCOVERY_ENDPOINT":         o.oauth2OidcDiscoveryEndpoint,
@@ -638,17 +646,18 @@ func (o *Options) SortedOptions(redactSecret bool) []*Option {
 		"POLLING_PARSING_ERROR_LIMIT":            o.pollingParsingErrorLimit,
 		"POLLING_SCHEDULER":                      o.pollingScheduler,
 		"PROXY_HTTP_CLIENT_TIMEOUT":              o.proxyHTTPClientTimeout,
-		"PROXY_PRIVATE_KEY":                      redactSecretValue(string(o.proxyPrivateKey), redactSecret),
 		"PROXY_MEDIA_TYPES":                      o.proxyMediaTypes,
 		"PROXY_OPTION":                           o.proxyOption,
+		"PROXY_PRIVATE_KEY":                      redactSecretValue(string(o.proxyPrivateKey), redactSecret),
 		"PROXY_URL":                              o.proxyUrl,
 		"ROOT_URL":                               o.rootURL,
 		"RUN_MIGRATIONS":                         o.runMigrations,
 		"SCHEDULER_ENTRY_FREQUENCY_MAX_INTERVAL": o.schedulerEntryFrequencyMaxInterval,
 		"SCHEDULER_ENTRY_FREQUENCY_MIN_INTERVAL": o.schedulerEntryFrequencyMinInterval,
 		"SERVER_TIMING_HEADER":                   o.serverTimingHeader,
-		"WORKER_POOL_SIZE":                       o.workerPoolSize,
 		"WATCHDOG":                               o.watchdog,
+		"WORKER_POOL_SIZE":                       o.workerPoolSize,
+		"YOUTUBE_EMBED_URL_OVERRIDE":             o.youTubeEmbedUrlOverride,
 	}
 
 	keys := make([]string, 0, len(keyValues))

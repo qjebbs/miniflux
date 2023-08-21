@@ -655,4 +655,53 @@ var migrations = []func(tx *sql.Tx) error{
 		_, err = tx.Exec(sql)
 		return err
 	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+			ALTER TABLE integrations ADD COLUMN linkding_mark_as_unread bool default 'f';
+		`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		// Delete duplicated rows
+		sql := `
+			DELETE FROM enclosures a USING enclosures b
+			WHERE a.id < b.id
+				AND a.user_id = b.user_id
+				AND a.entry_id = b.entry_id
+				AND a.url = b.url;
+		`
+		_, err = tx.Exec(sql)
+		if err != nil {
+			return err
+		}
+
+		// Remove previous index
+		_, err = tx.Exec(`DROP INDEX enclosures_user_entry_url_idx`)
+		if err != nil {
+			return err
+		}
+
+		// Create unique index
+		_, err = tx.Exec(`CREATE UNIQUE INDEX enclosures_user_entry_url_unique_idx ON enclosures(user_id, entry_id, md5(url))`)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `ALTER TABLE users ADD COLUMN mark_read_on_view boolean default 't'`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+		ALTER TABLE integrations ADD COLUMN notion_enabled bool default 'f';
+		ALTER TABLE integrations ADD COLUMN notion_token text default '';
+		ALTER TABLE integrations ADD COLUMN notion_page_id text default '';
+		`
+		_, err = tx.Exec(sql)
+		return err
+	},
 }

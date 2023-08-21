@@ -4,11 +4,29 @@
 package client // import "miniflux.app/http/client"
 
 import (
+	"fmt"
+	"net/http/httptest"
+	"os"
 	"testing"
+
+	"github.com/mccutchen/go-httpbin/v2/httpbin"
 )
 
+var srv *httptest.Server
+
+func TestMain(m *testing.M) {
+	srv = httptest.NewServer(httpbin.New())
+	exitCode := m.Run()
+	srv.Close()
+	os.Exit(exitCode)
+}
+
+func MakeClient(path string) *Client {
+	return New(fmt.Sprintf("%s%s", srv.URL, path))
+}
+
 func TestClientWithDelay(t *testing.T) {
-	clt := New("http://httpbin.org/delay/5")
+	clt := MakeClient("/delay/5")
 	clt.ClientTimeout = 1
 	_, err := clt.Get()
 	if err == nil {
@@ -17,7 +35,7 @@ func TestClientWithDelay(t *testing.T) {
 }
 
 func TestClientWithError(t *testing.T) {
-	clt := New("http://httpbin.org/status/502")
+	clt := MakeClient("/status/502")
 	clt.ClientTimeout = 5
 	response, err := clt.Get()
 	if err != nil {
@@ -34,7 +52,7 @@ func TestClientWithError(t *testing.T) {
 }
 
 func TestClientWithResponseTooLarge(t *testing.T) {
-	clt := New("http://httpbin.org/bytes/100")
+	clt := MakeClient("/bytes/100")
 	clt.ClientMaxBodySize = 10
 	_, err := clt.Get()
 	if err == nil {
@@ -43,7 +61,7 @@ func TestClientWithResponseTooLarge(t *testing.T) {
 }
 
 func TestClientWithBasicAuth(t *testing.T) {
-	clt := New("http://httpbin.org/basic-auth/testuser/testpassword")
+	clt := MakeClient("/basic-auth/testuser/testpassword")
 	clt.WithCredentials("testuser", "testpassword")
 	_, err := clt.Get()
 	if err != nil {

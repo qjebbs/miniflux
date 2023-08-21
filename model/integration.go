@@ -29,6 +29,9 @@ type Integration struct {
 	NunuxKeeperEnabled   bool
 	NunuxKeeperURL       string
 	NunuxKeeperAPIKey    string
+	NotionEnabled        bool
+	NotionToken          string
+	NotionPageID         string
 	EspialEnabled        bool
 	EspialURL            string
 	EspialAPIKey         string
@@ -43,6 +46,7 @@ type Integration struct {
 	LinkdingURL          string
 	LinkdingAPIKey       string
 	LinkdingTags         string
+	LinkdingMarkAsUnread bool
 	MatrixBotEnabled     bool
 	MatrixBotUser        string
 	MatrixBotPassword    string

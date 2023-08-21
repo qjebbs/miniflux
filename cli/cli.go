@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	flagInfoHelp            = "Show application information"
+	flagInfoHelp            = "Show build information"
 	flagVersionHelp         = "Show application version"
 	flagMigrateHelp         = "Run SQL migrations"
 	flagFlushSessionsHelp   = "Flush all sessions (disconnect users)"
@@ -33,6 +33,8 @@ const (
 	flagCleanCacheHelp      = "Remove unused caches from disk and database"
 	flagArchiveReadHelp     = "Archive read articles"
 	flagHealthCheckHelp     = `Perform a health check on the given endpoint (the value "auto" try to guess the health check endpoint).`
+	flagRefreshFeedsHelp    = "Refresh a batch of feeds and exit"
+	flagRunCleanupTasksHelp = "Run cleanup tasks (delete old sessions and archives old entries)"
 	flagFixCoverImagesHelp  = "Fix cover images display for old articles for a user"
 )
 
@@ -55,6 +57,8 @@ func Parse() {
 		flagCache           bool
 		flagArchiveRead     bool
 		flagHealthCheck     string
+		flagRefreshFeeds    bool
+		flagRunCleanupTasks bool
 		flagFixCoverImages  int64
 	)
 
@@ -76,6 +80,8 @@ func Parse() {
 	flag.BoolVar(&flagCleanCache, "cache-clean", false, flagCleanCacheHelp)
 	flag.BoolVar(&flagArchiveRead, "archive-read", false, flagArchiveReadHelp)
 	flag.StringVar(&flagHealthCheck, "healthcheck", "", flagHealthCheckHelp)
+	flag.BoolVar(&flagRefreshFeeds, "refresh-feeds", false, flagRefreshFeedsHelp)
+	flag.BoolVar(&flagRunCleanupTasks, "run-cleanup-tasks", false, flagRunCleanupTasksHelp)
 	flag.Int64Var(&flagFixCoverImages, "fix-cover", 0, flagFixCoverImagesHelp)
 	flag.Parse()
 
@@ -246,6 +252,16 @@ func Parse() {
 	// Create admin user and start the daemon.
 	if config.Opts.CreateAdmin() {
 		createAdmin(store)
+	}
+
+	if flagRefreshFeeds {
+		refreshFeeds(store)
+		return
+	}
+
+	if flagRunCleanupTasks {
+		runCleanupTasks(store)
+		return
 	}
 
 	startDaemon(store)

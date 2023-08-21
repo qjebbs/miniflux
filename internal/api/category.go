@@ -102,7 +102,8 @@ func (h *handler) getCategories(w http.ResponseWriter, r *http.Request) {
 	includeCounts := request.QueryStringParam(r, "counts", "false")
 
 	if includeCounts == "true" {
-		categories, err = h.store.CategoriesWithFeedCount(request.UserID(r))
+		nsfw := request.IsNSFWEnabled(r)
+		categories, err = h.store.CategoriesWithFeedCount(request.UserID(r), nsfw)
 	} else {
 		categories, err = h.store.Categories(request.UserID(r))
 	}

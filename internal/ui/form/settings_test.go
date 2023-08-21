@@ -21,7 +21,7 @@ func TestValid(t *testing.T) {
 		GestureNav:          "tap",
 		DefaultReadingSpeed: 35,
 		CJKReadingSpeed:     25,
-		DefaultHomePage:     "unread",
+		DefaultHomePage:     "stat",
 	}
 
 	err := settings.Validate()
@@ -44,7 +44,7 @@ func TestConfirmationEmpty(t *testing.T) {
 		GestureNav:          "tap",
 		DefaultReadingSpeed: 35,
 		CJKReadingSpeed:     25,
-		DefaultHomePage:     "unread",
+		DefaultHomePage:     "stat",
 	}
 
 	err := settings.Validate()

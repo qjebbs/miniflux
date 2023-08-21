@@ -129,19 +129,32 @@
         </div>
         <input type="text" name="urlrewrite_rules" id="form-urlrewrite-rules" value="{{ .form.UrlRewriteRules }}" spellcheck="false">
 
+        <label for="form-category">{{ t "form.feed.label.category" }}</label>
+        <select id="form-category" name="category_id">
+        {{ range .categories }}
+            <option value="{{ .ID }}" {{ if eq .ID $.form.CategoryID }}selected="selected"{{ end }}>{{ .Title }}</option>
+        {{ end }}
+        </select>
+
+        <label for="form-view">{{ t "form.prefs.label.view" }}</label>
+        <select id="form-view" name="view">
+            {{ range $key, $value := .views }}
+                <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ t $value }}</option>
+            {{ end }}
+        </select>
+        
+        <label><input type="checkbox" name="nsfw" value="1" {{ if .form.NSFW }}checked{{ end }}> {{ t "form.feed.label.nsfw" }}</label>
         <label><input type="checkbox" name="crawler" value="1" {{ if .form.Crawler }}checked{{ end }}> {{ t "form.feed.label.crawler" }}</label>
         <label><input type="checkbox" name="ignore_http_cache" value="1" {{ if .form.IgnoreHTTPCache }}checked{{ end }}> {{ t "form.feed.label.ignore_http_cache" }}</label>
         <label><input type="checkbox" name="allow_self_signed_certificates" value="1" {{ if .form.AllowSelfSignedCertificates }}checked{{ end }}> {{ t "form.feed.label.allow_self_signed_certificates" }}</label>
+        <label><input type="checkbox" name="proxify_media" value="1" {{ if .form.ProxifyMedia }}checked{{ end }}> {{ t "form.feed.label.proxify_media" }}</label>
+        <label><input type="checkbox" name="cache_media" value="1" {{ if .form.CacheMedia }}checked{{ end }}> {{ t "form.feed.label.cache_media" }}</label>
         {{ if .hasProxyConfigured }}
         <label><input type="checkbox" name="fetch_via_proxy" value="1" {{ if .form.FetchViaProxy }}checked{{ end }}> {{ t "form.feed.label.fetch_via_proxy" }}</label>
         {{ end }}
         <label><input type="checkbox" name="disabled" value="1" {{ if .form.Disabled }}checked{{ end }}> {{ t "form.feed.label.disabled" }}</label>
 
         <label><input type="checkbox" name="no_media_player" {{ if .form.NoMediaPlayer }}checked{{ end }} value="1" >  {{ t "form.feed.label.no_media_player" }} </label>
-
-        {{ if not .form.CategoryHidden }}
-        <label><input type="checkbox" name="hide_globally" value="1"{{ if .form.HideGlobally }} checked{{ end }}> {{ t "form.feed.label.hide_globally" }}</label>
-        {{ end }}
 
         <div class="buttons">
             <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="{{ route "feeds" }}">{{ t "action.cancel" }}</a>
@@ -153,19 +166,28 @@
             <li><strong>{{ t "page.edit_feed.last_check" }} </strong><time datetime="{{ isodate .feed.CheckedAt }}" title="{{ isodate .feed.CheckedAt }}">{{ elapsed $.user.Timezone .feed.CheckedAt }}</time></li>
             <li><strong>{{ t "page.edit_feed.etag_header" }} </strong>{{ if .feed.EtagHeader }}{{ .feed.EtagHeader }}{{ else }}{{ t "page.edit_feed.no_header" }}{{ end }}</li>
             <li><strong>{{ t "page.edit_feed.last_modified_header" }} </strong>{{ if .feed.LastModifiedHeader }}{{ .feed.LastModifiedHeader }}{{ else }}{{ t "page.edit_feed.no_header" }}{{ end }}</li>
+            <li><strong>{{ t "page.edit_feed.medias" }} </strong>{{ if eq .mediaCount 0 }}{{ t "page.edit_feed.no_media" }}{{ else }}{{ plural "page.edit_feed.media_statistics" .mediaCount .mediaCount }}{{ if eq .cacheCount 0 }}{{ t "page.edit_feed.no_cache" }}{{ else }}{{ plural "page.edit_feed.cache_statistics" .cacheCount .cacheCount .cacheSize }}{{end}}{{end}}</li>
         </ul>
     </div>
 
     <div class="alert alert-error">
-        <a href="#"
-            data-confirm="true"
-            data-action="remove-feed"
-            data-label-question="{{ t "confirm.question" }}"
-            data-label-yes="{{ t "confirm.yes" }}"
-            data-label-no="{{ t "confirm.no" }}"
-            data-label-loading="{{ t "confirm.loading" }}"
-            data-url="{{ route "removeFeed" "feedID" .feed.ID }}"
-            data-redirect-url="{{ route "feeds" }}">{{ t "action.remove_feed" }}</a>
+            <a href="#"
+                data-confirm="true"
+                data-action="remove-feed"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}"
+                data-url="{{ route "removeFeed" "feedID" .feed.ID }}"
+                data-redirect-url="{{ route "feeds" }}">{{ t "action.remove_feed" }}</a>,
+            <a href="#"
+                data-confirm="true"
+                data-action="remove-feed"
+                data-label-question="{{ t "confirm.question" }}"
+                data-label-yes="{{ t "confirm.yes" }}"
+                data-label-no="{{ t "confirm.no" }}"
+                data-label-loading="{{ t "confirm.loading" }}"
+                data-url="{{ route "removeFeedCache" "feedID" .feed.ID }}">{{ t "action.remove_feed_cache" }}</a>
     </div>
 {{ end }}
 

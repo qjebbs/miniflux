@@ -15,6 +15,7 @@ import (
 
 // EditUser shows the form to edit a user.
 func (h *handler) showEditUserPage(w http.ResponseWriter, r *http.Request) {
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 
@@ -50,8 +51,8 @@ func (h *handler) showEditUserPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("selected_user", selectedUser)
 	view.Set("menu", "settings")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("edit_user"))
 }

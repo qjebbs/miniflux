@@ -24,7 +24,6 @@ import (
 	mff "miniflux.app/v2/internal/reader/handler"
 	mfs "miniflux.app/v2/internal/reader/subscription"
 	"miniflux.app/v2/internal/storage"
-	"miniflux.app/v2/internal/urllib"
 	"miniflux.app/v2/internal/validator"
 )
 
@@ -548,9 +547,9 @@ func (h *handler) quickAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	subscriptions, s_err := mfs.FindSubscriptions(url, "", "", "", "", false, false)
-	if s_err != nil {
-		json.ServerError(w, r, s_err)
+	subscriptions, sErr := mfs.FindSubscriptions(url, "", "", "", "", false, false)
+	if sErr != nil {
+		json.ServerError(w, r, sErr)
 		return
 	}
 
@@ -839,11 +838,10 @@ func (h *handler) streamItemContents(w http.ResponseWriter, r *http.Request) {
 			categories = append(categories, userStarred)
 		}
 
-		entry.Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entry.Content)
-		proxyOption := config.Opts.ProxyOption()
+		entry.Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entry)
 
 		for i := range entry.Enclosures {
-			if proxyOption == "all" || proxyOption != "none" && !urllib.IsHTTPS(entry.Enclosures[i].URL) {
+			if proxy.ShouldProxify(entry.Enclosures[i].URL) || entry.Feed.ProxifyMedia {
 				for _, mediaType := range config.Opts.ProxyMediaTypes() {
 					if strings.HasPrefix(entry.Enclosures[i].MimeType, mediaType+"/") {
 						entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
@@ -1036,7 +1034,7 @@ func (h *handler) subscriptionList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var result subscriptionsResponse
-	feeds, err := h.store.Feeds(userID)
+	feeds, err := h.store.Feeds(userID, false)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return

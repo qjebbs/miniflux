@@ -37,6 +37,7 @@ type Feed struct {
 	ScraperRules                string    `json:"scraper_rules"`
 	RewriteRules                string    `json:"rewrite_rules"`
 	Crawler                     bool      `json:"crawler"`
+	CacheMedia                  bool      `json:"cache_media"`
 	BlocklistRules              string    `json:"blocklist_rules"`
 	KeeplistRules               string    `json:"keeplist_rules"`
 	UrlRewriteRules             string    `json:"urlrewrite_rules"`
@@ -53,7 +54,9 @@ type Feed struct {
 	Entries                     Entries   `json:"entries,omitempty"`
 	IconURL                     string    `json:"icon_url"`
 	Icon                        *FeedIcon `json:"icon"`
-	HideGlobally                bool      `json:"hide_globally"`
+	View                        string    `json:"view"`
+	NSFW                        bool      `json:"nsfw"`
+	ProxifyMedia                bool      `json:"-"`
 	UnreadCount                 int       `json:"-"`
 	ReadCount                   int       `json:"-"`
 }
@@ -143,7 +146,6 @@ type FeedCreationRequest struct {
 	RewriteRules                string `json:"rewrite_rules"`
 	BlocklistRules              string `json:"blocklist_rules"`
 	KeeplistRules               string `json:"keeplist_rules"`
-	HideGlobally                bool   `json:"hide_globally"`
 	UrlRewriteRules             string `json:"urlrewrite_rules"`
 }
 
@@ -168,7 +170,10 @@ type FeedModificationRequest struct {
 	IgnoreHTTPCache             *bool   `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates *bool   `json:"allow_self_signed_certificates"`
 	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
-	HideGlobally                *bool   `json:"hide_globally"`
+	View                        *string `json:"view"`
+	NSFW                        *bool   `json:"nsfw"`
+	ProxifyMedia                *bool   `json:"proxify_media"`
+	CacheMedia                  *bool   `json:"cache_media"`
 }
 
 // Patch updates a feed with modified values.
@@ -249,8 +254,20 @@ func (f *FeedModificationRequest) Patch(feed *Feed) {
 		feed.FetchViaProxy = *f.FetchViaProxy
 	}
 
-	if f.HideGlobally != nil {
-		feed.HideGlobally = *f.HideGlobally
+	if f.View != nil {
+		feed.View = *f.View
+	}
+
+	if f.NSFW != nil {
+		feed.NSFW = *f.NSFW
+	}
+
+	if f.CacheMedia != nil {
+		feed.CacheMedia = *f.CacheMedia
+	}
+
+	if f.ProxifyMedia != nil {
+		feed.ProxifyMedia = *f.ProxifyMedia
 	}
 }
 

@@ -86,13 +86,14 @@ func (h *handler) showIntegrationPage(w http.ResponseWriter, r *http.Request) {
 		ShaarliAPISecret:     integration.ShaarliAPISecret,
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("form", integrationForm)
 	view.Set("menu", "settings")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("hasPocketConsumerKeyConfigured", config.Opts.PocketConsumerKey("") != "")
 
 	html.OK(w, r, view.Render("integrations"))

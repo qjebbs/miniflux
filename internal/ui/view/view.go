@@ -34,11 +34,13 @@ func (v *View) Render(template string) []byte {
 func New(tpl *template.Engine, r *http.Request, sess *session.Session) *View {
 	b := &View{tpl, r, make(map[string]interface{})}
 	theme := request.UserTheme(r)
+	nsfw := request.IsNSFWEnabled(r)
 	b.params["menu"] = ""
 	b.params["csrf"] = request.CSRF(r)
 	b.params["flashMessage"] = sess.FlashMessage(request.FlashMessage(r))
 	b.params["flashErrorMessage"] = sess.FlashErrorMessage(request.FlashErrorMessage(r))
 	b.params["theme"] = theme
+	b.params["nsfw"] = nsfw
 	b.params["language"] = request.UserLanguage(r)
 	b.params["theme_checksum"] = static.StylesheetBundleChecksums[theme]
 	b.params["app_js_checksum"] = static.JavascriptBundleChecksums["app"]

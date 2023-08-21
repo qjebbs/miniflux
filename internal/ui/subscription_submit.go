@@ -20,6 +20,7 @@ import (
 )
 
 func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	v := view.New(h.tpl, r, sess)
 
@@ -38,8 +39,8 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 	v.Set("categories", categories)
 	v.Set("menu", "feeds")
 	v.Set("user", user)
-	v.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	v.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	v.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	v.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	v.Set("defaultUserAgent", config.Opts.HTTPClientUserAgent())
 	v.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
 
@@ -107,8 +108,8 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 		v.Set("form", subscriptionForm)
 		v.Set("menu", "feeds")
 		v.Set("user", user)
-		v.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-		v.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+		v.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+		v.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 		v.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
 
 		html.OK(w, r, v.Render("choose_subscription"))

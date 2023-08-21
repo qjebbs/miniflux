@@ -51,9 +51,7 @@ class ModalHandler {
     }
 
     static open(fragment, initialFocusElementId) {
-        if (ModalHandler.exists()) {
-            return;
-        }
+        ModalHandler.close();
 
         this.activeElement = document.activeElement;
 
@@ -86,6 +84,7 @@ class ModalHandler {
         }
 
         this.setupFocusTrap();
+        return container;
     }
 
     static close() {

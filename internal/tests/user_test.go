@@ -9,7 +9,7 @@ package tests
 import (
 	"testing"
 
-	miniflux "miniflux.app/v2/client"
+	miniflux "miniflux.app/v2/internal/client"
 )
 
 func TestWithWrongCredentials(t *testing.T) {

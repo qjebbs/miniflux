@@ -19,7 +19,6 @@ import (
 	"miniflux.app/v2/internal/proxy"
 	"miniflux.app/v2/internal/reader/processor"
 	"miniflux.app/v2/internal/storage"
-	"miniflux.app/v2/internal/urllib"
 	"miniflux.app/v2/internal/validator"
 )
 
@@ -35,11 +34,10 @@ func (h *handler) getEntryFromBuilder(w http.ResponseWriter, r *http.Request, b 
 		return
 	}
 
-	entry.Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entry.Content)
-	proxyOption := config.Opts.ProxyOption()
+	entry.Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entry)
 
 	for i := range entry.Enclosures {
-		if proxyOption == "all" || proxyOption != "none" && !urllib.IsHTTPS(entry.Enclosures[i].URL) {
+		if proxy.ShouldProxify(entry.Enclosures[i].URL) || entry.Feed.ProxifyMedia {
 			for _, mediaType := range config.Opts.ProxyMediaTypes() {
 				if strings.HasPrefix(entry.Enclosures[i].MimeType, mediaType+"/") {
 					entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
@@ -162,7 +160,7 @@ func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int
 	}
 
 	for i := range entries {
-		entries[i].Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entries[i].Content)
+		entries[i].Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entries[i])
 	}
 
 	json.OK(w, r, &entriesResponse{Total: count, Entries: entries})

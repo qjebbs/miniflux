@@ -53,6 +53,7 @@ func (h *handler) showFeedEntriesPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("feed", feed)
@@ -61,10 +62,14 @@ func (h *handler) showFeedEntriesPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("pagination", getPagination(route.Path(h.router, "feedEntries", "feedID", feed.ID), count, offset, user.EntriesPerPage))
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("showOnlyUnreadEntries", true)
+	view.Set("pageEntriesType", "unread")
+	if feed.View != model.ViewDefault {
+		view.Set("view", feed.View)
+	}
 
 	html.OK(w, r, view.Render("feed_entries"))
 }

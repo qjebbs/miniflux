@@ -19,7 +19,8 @@ func (h *handler) showCategoryListPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	categories, err := h.store.CategoriesWithFeedCount(user.ID)
+	nsfw := request.IsNSFWEnabled(r)
+	categories, err := h.store.CategoriesWithFeedCount(user.ID, nsfw)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
@@ -31,8 +32,8 @@ func (h *handler) showCategoryListPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("total", len(categories))
 	view.Set("menu", "categories")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("categories"))
 }

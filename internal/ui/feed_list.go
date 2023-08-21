@@ -19,7 +19,8 @@ func (h *handler) showFeedsPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	feeds, err := h.store.FeedsWithCounters(user.ID)
+	nsfw := request.IsNSFWEnabled(r)
+	feeds, err := h.store.FeedsWithCounters(user.ID, nsfw)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
@@ -31,8 +32,8 @@ func (h *handler) showFeedsPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("total", len(feeds))
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("feeds"))
 }

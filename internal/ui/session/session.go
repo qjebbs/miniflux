@@ -57,6 +57,11 @@ func (s *Session) SetTheme(theme string) {
 	s.store.UpdateAppSessionField(s.sessionID, "theme", theme)
 }
 
+// SetNSFW updates the nsfw field in session.
+func (s *Session) SetNSFW(nsfw string) {
+	s.store.UpdateAppSessionField(s.sessionID, "nsfw", nsfw)
+}
+
 // SetPocketRequestToken updates Pocket Request Token.
 func (s *Session) SetPocketRequestToken(requestToken string) {
 	s.store.UpdateAppSessionField(s.sessionID, "pocket_request_token", requestToken)

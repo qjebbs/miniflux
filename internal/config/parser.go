@@ -107,6 +107,8 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.schedulerService = !parseBool(value, defaultSchedulerService)
 		case "DISABLE_HTTP_SERVICE":
 			p.opts.httpService = !parseBool(value, defaultHTTPService)
+		case "DISABLE_CACHE_SERVICE":
+			p.opts.cacheService = !parseBool(value, defaultCacheService)
 		case "CERT_FILE":
 			p.opts.certFile = parseString(value, defaultCertFile)
 		case "KEY_FILE":
@@ -123,6 +125,8 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.cleanupArchiveBatchSize = parseInt(value, defaultCleanupArchiveBatchSize)
 		case "CLEANUP_REMOVE_SESSIONS_DAYS":
 			p.opts.cleanupRemoveSessionsDays = parseInt(value, defaultCleanupRemoveSessionsDays)
+		case "CACHE_FREQUENCY":
+			p.opts.cacheFrequency = parseInt(value, defaultCacheFrequency)
 		case "WORKER_POOL_SIZE":
 			p.opts.workerPoolSize = parseInt(value, defaultWorkerPoolSize)
 		case "POLLING_FREQUENCY":
@@ -185,6 +189,10 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.httpClientTimeout = parseInt(value, defaultHTTPClientTimeout)
 		case "HTTP_CLIENT_MAX_BODY_SIZE":
 			p.opts.httpClientMaxBodySize = int64(parseInt(value, defaultHTTPClientMaxBodySize) * 1024 * 1024)
+		case "DISK_STORAGE_ROOT":
+			p.opts.diskStorageRoot = parseString(value, defaultDiskStorageRoot)
+		case "CACHE_LOCATION":
+			p.opts.cacheLocation = parseString(value, defaultCacheLocation)
 		case "HTTP_CLIENT_PROXY":
 			p.opts.httpClientProxy = parseString(value, defaultHTTPClientProxy)
 		case "HTTP_CLIENT_USER_AGENT":

@@ -242,11 +242,10 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.ReadingTime,
 		entry.CoverImage,
 		entry.ImageCount,
-		entry.Tags,
+		pq.Array(removeDuplicates(entry.Tags)),
 		entry.UserID,
 		entry.FeedID,
 		entry.Hash,
-		pq.Array(removeDuplicates(entry.Tags)),
 	).Scan(&entry.ID)
 
 	if err != nil {

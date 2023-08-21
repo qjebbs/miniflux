@@ -358,7 +358,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			no_media_player=$26,
 			cache_media=$27,
 			view=$28,
-			proxify_media=$29,
+			proxify_media=$29
 		WHERE
 			id=$30 AND user_id=$31
 	`

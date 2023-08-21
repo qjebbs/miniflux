@@ -4,9 +4,14 @@ import (
 	"database/sql"
 )
 
-func patch(tx *sql.Tx) error {
+func patch(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 	// CREATE TABLE IF NOT EXISTS since Postgres 9.1
-	_, err := tx.Exec(`
+	_, err = tx.Exec(`
 		CREATE TABLE IF NOT EXISTS medias (
 			id bigserial not null,
 			url text not null,
@@ -78,7 +83,7 @@ func patch(tx *sql.Tx) error {
 			return err
 		}
 	}
-	return nil
+	return tx.Commit()
 }
 
 func columnExists(tx *sql.Tx, table string, column string) bool {

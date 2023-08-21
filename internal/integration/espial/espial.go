@@ -4,69 +4,77 @@
 package espial // import "miniflux.app/v2/internal/integration/espial"
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"net/url"
-	"path"
+	"net/http"
+	"time"
 
-	"miniflux.app/v2/internal/http/client"
+	"miniflux.app/v2/internal/urllib"
+	"miniflux.app/v2/internal/version"
 )
 
-// Document structure of an Espial document
-type Document struct {
-	Title  string `json:"title,omitempty"`
-	Url    string `json:"url,omitempty"`
-	ToRead bool   `json:"toread,omitempty"`
-	Tags   string `json:"tags,omitempty"`
-}
+const defaultClientTimeout = 10 * time.Second
 
-// Client represents an Espial client.
 type Client struct {
 	baseURL string
 	apiKey  string
 }
 
-// NewClient returns a new Espial client.
 func NewClient(baseURL, apiKey string) *Client {
 	return &Client{baseURL: baseURL, apiKey: apiKey}
 }
 
-// AddEntry sends an entry to Espial.
-func (c *Client) AddEntry(link, title, content, tags string) error {
+func (c *Client) CreateLink(entryURL, entryTitle, espialTags string) error {
 	if c.baseURL == "" || c.apiKey == "" {
-		return fmt.Errorf("espial: missing credentials")
+		return fmt.Errorf("espial: missing base URL or API key")
 	}
 
-	doc := &Document{
-		Title:  title,
-		Url:    link,
+	apiEndpoint, err := urllib.JoinBaseURLAndPath(c.baseURL, "/api/add")
+	if err != nil {
+		return fmt.Errorf("espial: invalid API endpoint: %v", err)
+	}
+
+	requestBody, err := json.Marshal(&espialDocument{
+		Title:  entryTitle,
+		Url:    entryURL,
 		ToRead: true,
-		Tags:   tags,
-	}
+		Tags:   espialTags,
+	})
 
-	apiURL, err := getAPIEndpoint(c.baseURL, "/api/add")
 	if err != nil {
-		return err
+		return fmt.Errorf("espial: unable to encode request body: %v", err)
 	}
 
-	clt := client.New(apiURL)
-	clt.WithAuthorization("ApiKey " + c.apiKey)
-	response, err := clt.PostJSON(doc)
+	request, err := http.NewRequest(http.MethodPost, apiEndpoint, bytes.NewReader(requestBody))
 	if err != nil {
-		return fmt.Errorf("espial: unable to send entry: %v", err)
+		return fmt.Errorf("espial: unable to create request: %v", err)
 	}
 
-	if response.HasServerFailure() {
-		return fmt.Errorf("espial: unable to send entry, status=%d", response.StatusCode)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("User-Agent", "Miniflux/"+version.Version)
+	request.Header.Set("Authorization", "ApiKey "+c.apiKey)
+
+	httpClient := &http.Client{Timeout: defaultClientTimeout}
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return fmt.Errorf("espial: unable to send request: %v", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusCreated {
+		responseBody := new(bytes.Buffer)
+		responseBody.ReadFrom(response.Body)
+
+		return fmt.Errorf("espial: unable to create link: url=%s status=%d body=%s", apiEndpoint, response.StatusCode, responseBody.String())
 	}
 
 	return nil
 }
 
-func getAPIEndpoint(baseURL, pathURL string) (string, error) {
-	u, err := url.Parse(baseURL)
-	if err != nil {
-		return "", fmt.Errorf("espial: invalid API endpoint: %v", err)
-	}
-	u.Path = path.Join(u.Path, pathURL)
-	return u.String(), nil
+type espialDocument struct {
+	Title  string `json:"title,omitempty"`
+	Url    string `json:"url,omitempty"`
+	ToRead bool   `json:"toread,omitempty"`
+	Tags   string `json:"tags,omitempty"`
 }

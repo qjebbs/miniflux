@@ -4,50 +4,64 @@
 package apprise
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"net"
-	"strings"
+	"net/http"
 	"time"
 
-	"miniflux.app/v2/internal/http/client"
 	"miniflux.app/v2/internal/model"
+	"miniflux.app/v2/internal/urllib"
+	"miniflux.app/v2/internal/version"
 )
 
-// Client represents a Apprise client.
+const defaultClientTimeout = 10 * time.Second
+
 type Client struct {
 	servicesURL string
 	baseURL     string
 }
 
-// NewClient returns a new Apprise client.
 func NewClient(serviceURL, baseURL string) *Client {
 	return &Client{serviceURL, baseURL}
 }
 
-// PushEntry pushes entry to apprise
-func (c *Client) PushEntry(entry *model.Entry) error {
+func (c *Client) SendNotification(entry *model.Entry) error {
 	if c.baseURL == "" || c.servicesURL == "" {
-		return fmt.Errorf("apprise: missing credentials")
+		return fmt.Errorf("apprise: missing base URL or service URL")
 	}
-	timeout := time.Duration(1 * time.Second)
-	_, err := net.DialTimeout("tcp", c.baseURL, timeout)
-	if err != nil {
-		clt := client.New(c.baseURL + "/notify")
-		message := "[" + entry.Title + "]" + "(" + entry.URL + ")" + "\n\n"
-		data := &Data{
-			Urls: c.servicesURL,
-			Body: message,
-		}
-		response, error := clt.PostJSON(data)
-		if error != nil {
-			return fmt.Errorf("apprise: ending message failed: %v", error)
-		}
 
-		if response.HasServerFailure() {
-			return fmt.Errorf("apprise: request failed, status=%d", response.StatusCode)
-		}
-	} else {
-		return fmt.Errorf("%s %s %s", c.baseURL, "responding on port:", strings.Split(c.baseURL, ":")[1])
+	message := "[" + entry.Title + "]" + "(" + entry.URL + ")" + "\n\n"
+	apiEndpoint, err := urllib.JoinBaseURLAndPath(c.baseURL, "/notify")
+	if err != nil {
+		return fmt.Errorf(`apprise: invalid API endpoint: %v`, err)
+	}
+
+	requestBody, err := json.Marshal(map[string]any{
+		"urls": c.servicesURL,
+		"body": message,
+	})
+	if err != nil {
+		return fmt.Errorf("apprise: unable to encode request body: %v", err)
+	}
+
+	request, err := http.NewRequest(http.MethodPost, apiEndpoint, bytes.NewReader(requestBody))
+	if err != nil {
+		return fmt.Errorf("apprise: unable to create request: %v", err)
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("User-Agent", "Miniflux/"+version.Version)
+
+	httpClient := &http.Client{Timeout: defaultClientTimeout}
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return fmt.Errorf("apprise: unable to send request: %v", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode >= 400 {
+		return fmt.Errorf("apprise: unable to send a notification: url=%s status=%d", apiEndpoint, response.StatusCode)
 	}
 
 	return nil

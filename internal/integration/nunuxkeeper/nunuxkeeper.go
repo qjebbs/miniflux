@@ -4,69 +4,73 @@
 package nunuxkeeper // import "miniflux.app/v2/internal/integration/nunuxkeeper"
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"net/url"
-	"path"
+	"net/http"
+	"time"
 
-	"miniflux.app/v2/internal/http/client"
+	"miniflux.app/v2/internal/urllib"
+	"miniflux.app/v2/internal/version"
 )
 
-// Document structure of a Nununx Keeper document
-type Document struct {
-	Title       string `json:"title,omitempty"`
-	Origin      string `json:"origin,omitempty"`
-	Content     string `json:"content,omitempty"`
-	ContentType string `json:"contentType,omitempty"`
-}
+const defaultClientTimeout = 10 * time.Second
 
-// Client represents an Nunux Keeper client.
 type Client struct {
 	baseURL string
 	apiKey  string
 }
 
-// NewClient returns a new Nunux Keeepr client.
 func NewClient(baseURL, apiKey string) *Client {
 	return &Client{baseURL: baseURL, apiKey: apiKey}
 }
 
-// AddEntry sends an entry to Nunux Keeper.
-func (c *Client) AddEntry(link, title, content string) error {
+func (c *Client) AddEntry(entryURL, entryTitle, entryContent string) error {
 	if c.baseURL == "" || c.apiKey == "" {
-		return fmt.Errorf("nunux-keeper: missing credentials")
+		return fmt.Errorf("nunux-keeper: missing base URL or API key")
 	}
 
-	doc := &Document{
-		Title:       title,
-		Origin:      link,
-		Content:     content,
+	apiEndpoint, err := urllib.JoinBaseURLAndPath(c.baseURL, "/v2/documents")
+	if err != nil {
+		return fmt.Errorf(`nunux-keeper: invalid API endpoint: %v`, err)
+	}
+
+	requestBody, err := json.Marshal(&nunuxKeeperDocument{
+		Title:       entryTitle,
+		Origin:      entryURL,
+		Content:     entryContent,
 		ContentType: "text/html",
-	}
-
-	apiURL, err := getAPIEndpoint(c.baseURL, "/v2/documents")
+	})
 	if err != nil {
-		return err
+		return fmt.Errorf("notion: unable to encode request body: %v", err)
 	}
 
-	clt := client.New(apiURL)
-	clt.WithCredentials("api", c.apiKey)
-	response, err := clt.PostJSON(doc)
+	request, err := http.NewRequest(http.MethodPost, apiEndpoint, bytes.NewReader(requestBody))
 	if err != nil {
-		return fmt.Errorf("nunux-keeper: unable to send entry: %v", err)
+		return fmt.Errorf("nunux-keeper: unable to create request: %v", err)
 	}
 
-	if response.HasServerFailure() {
-		return fmt.Errorf("nunux-keeper: unable to send entry, status=%d", response.StatusCode)
+	request.SetBasicAuth("api", c.apiKey)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("User-Agent", "Miniflux/"+version.Version)
+
+	httpClient := &http.Client{Timeout: defaultClientTimeout}
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return fmt.Errorf("nunux-keeper: unable to send request: %v", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("nunux-keeper: unable to create document: url=%s status=%d", apiEndpoint, response.StatusCode)
 	}
 
 	return nil
 }
 
-func getAPIEndpoint(baseURL, pathURL string) (string, error) {
-	u, err := url.Parse(baseURL)
-	if err != nil {
-		return "", fmt.Errorf("nunux-keeper: invalid API endpoint: %v", err)
-	}
-	u.Path = path.Join(u.Path, pathURL)
-	return u.String(), nil
+type nunuxKeeperDocument struct {
+	Title       string `json:"title,omitempty"`
+	Origin      string `json:"origin,omitempty"`
+	Content     string `json:"content,omitempty"`
+	ContentType string `json:"contentType,omitempty"`
 }

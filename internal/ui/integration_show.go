@@ -77,6 +77,13 @@ func (h *handler) showIntegrationPage(w http.ResponseWriter, r *http.Request) {
 		AppriseEnabled:       integration.AppriseEnabled,
 		AppriseURL:           integration.AppriseURL,
 		AppriseServicesURL:   integration.AppriseServicesURL,
+		ShioriEnabled:        integration.ShioriEnabled,
+		ShioriURL:            integration.ShioriURL,
+		ShioriUsername:       integration.ShioriUsername,
+		ShioriPassword:       integration.ShioriPassword,
+		ShaarliEnabled:       integration.ShaarliEnabled,
+		ShaarliURL:           integration.ShaarliURL,
+		ShaarliAPISecret:     integration.ShaarliAPISecret,
 	}
 
 	nsfw := request.IsNSFWEnabled(r)

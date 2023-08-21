@@ -7,9 +7,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"net/url"
 	"strings"
-
-	stdlib_url "net/url"
 
 	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/crypto"
@@ -173,7 +172,7 @@ func parseImageDataURL(value string) (*model.Icon, error) {
 			return nil, fmt.Errorf(`icon: invalid data %q (%v)`, value, err)
 		}
 	case "":
-		decodedData, err := stdlib_url.QueryUnescape(data)
+		decodedData, err := url.QueryUnescape(data)
 		if err != nil {
 			return nil, fmt.Errorf(`icon: unable to decode data URL %q`, value)
 		}

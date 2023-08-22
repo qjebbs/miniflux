@@ -129,13 +129,6 @@
         </div>
         <input type="text" name="urlrewrite_rules" id="form-urlrewrite-rules" value="{{ .form.UrlRewriteRules }}" spellcheck="false">
 
-        <label for="form-category">{{ t "form.feed.label.category" }}</label>
-        <select id="form-category" name="category_id">
-        {{ range .categories }}
-            <option value="{{ .ID }}" {{ if eq .ID $.form.CategoryID }}selected="selected"{{ end }}>{{ .Title }}</option>
-        {{ end }}
-        </select>
-
         <label for="form-view">{{ t "form.prefs.label.view" }}</label>
         <select id="form-view" name="view">
             {{ range $key, $value := .views }}

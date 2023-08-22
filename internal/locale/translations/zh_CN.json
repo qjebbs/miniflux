@@ -321,7 +321,7 @@
     "form.feed.label.cookie": "设置 Cookies",
     "form.feed.label.scraper_rules": "抓取规则",
     "form.feed.label.rewrite_rules": "重写规则",
-    "form.feed.label.nsfw": "包含不适合工作场合(NSFW)的内容",
+    "form.feed.label.nsfw": "不适合工作场合(NSFW)的内容",
     "form.feed.label.proxify_media": "代理文章中的图片(应对防盗链等)",
     "form.entry.label.title": "标题",
     "form.entry.label.author": "作者",

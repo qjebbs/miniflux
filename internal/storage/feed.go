@@ -253,11 +253,12 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			ignore_http_cache,
 			allow_self_signed_certificates,
 			fetch_via_proxy,
+			nsfw,
 			url_rewrite_rules,
 			no_media_player
 		)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
 		RETURNING
 			id
 	`
@@ -283,6 +284,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.IgnoreHTTPCache,
 		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
+		feed.NSFW,
 		feed.UrlRewriteRules,
 		feed.NoMediaPlayer,
 	).Scan(&feed.ID)

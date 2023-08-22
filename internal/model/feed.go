@@ -37,7 +37,6 @@ type Feed struct {
 	ScraperRules                string    `json:"scraper_rules"`
 	RewriteRules                string    `json:"rewrite_rules"`
 	Crawler                     bool      `json:"crawler"`
-	CacheMedia                  bool      `json:"cache_media"`
 	BlocklistRules              string    `json:"blocklist_rules"`
 	KeeplistRules               string    `json:"keeplist_rules"`
 	UrlRewriteRules             string    `json:"urlrewrite_rules"`
@@ -54,11 +53,13 @@ type Feed struct {
 	Entries                     Entries   `json:"entries,omitempty"`
 	IconURL                     string    `json:"icon_url"`
 	Icon                        *FeedIcon `json:"icon"`
-	View                        string    `json:"view"`
 	NSFW                        bool      `json:"nsfw"`
-	ProxifyMedia                bool      `json:"-"`
 	UnreadCount                 int       `json:"-"`
 	ReadCount                   int       `json:"-"`
+
+	View         string `json:"view"`
+	CacheMedia   bool   `json:"cache_media"`
+	ProxifyMedia bool   `json:"-"`
 }
 
 type FeedCounters struct {
@@ -146,6 +147,7 @@ type FeedCreationRequest struct {
 	RewriteRules                string `json:"rewrite_rules"`
 	BlocklistRules              string `json:"blocklist_rules"`
 	KeeplistRules               string `json:"keeplist_rules"`
+	NSFW                        bool   `json:"nsfw"`
 	UrlRewriteRules             string `json:"urlrewrite_rules"`
 }
 
@@ -170,10 +172,11 @@ type FeedModificationRequest struct {
 	IgnoreHTTPCache             *bool   `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates *bool   `json:"allow_self_signed_certificates"`
 	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
-	View                        *string `json:"view"`
 	NSFW                        *bool   `json:"nsfw"`
-	ProxifyMedia                *bool   `json:"proxify_media"`
-	CacheMedia                  *bool   `json:"cache_media"`
+
+	View         *string `json:"view"`
+	ProxifyMedia *bool   `json:"proxify_media"`
+	CacheMedia   *bool   `json:"cache_media"`
 }
 
 // Patch updates a feed with modified values.

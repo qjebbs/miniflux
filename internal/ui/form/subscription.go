@@ -27,6 +27,8 @@ type SubscriptionForm struct {
 	BlocklistRules              string
 	KeeplistRules               string
 	UrlRewriteRules             string
+
+	NSFW bool
 }
 
 // Validate makes sure the form values are valid.
@@ -76,5 +78,6 @@ func NewSubscriptionForm(r *http.Request) *SubscriptionForm {
 		BlocklistRules:              r.FormValue("blocklist_rules"),
 		KeeplistRules:               r.FormValue("keeplist_rules"),
 		UrlRewriteRules:             r.FormValue("urlrewrite_rules"),
+		NSFW:                        r.FormValue("nsfw") == "1",
 	}
 }

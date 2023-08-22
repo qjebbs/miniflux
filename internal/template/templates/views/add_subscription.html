@@ -29,6 +29,7 @@
         <details>
             <summary>{{ t "page.add_feed.legend.advanced_options" }}</summary>
             <div class="details-content">
+                <label><input type="checkbox" name="nsfw" value="1" {{ if .form.NSFW }}checked{{ end }}> {{ t "form.feed.label.nsfw" }}</label>
                 <label><input type="checkbox" name="crawler" value="1" {{ if .form.Crawler }}checked{{ end }}> {{ t "form.feed.label.crawler" }}</label>
                 <label><input type="checkbox" name="allow_self_signed_certificates" value="1" {{ if .form.AllowSelfSignedCertificates }}checked{{ end }}> {{ t "form.feed.label.allow_self_signed_certificates" }}</label>
 

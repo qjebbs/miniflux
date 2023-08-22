@@ -139,6 +139,7 @@ type Feed struct {
 	Username                    string    `json:"username"`
 	Password                    string    `json:"password"`
 	Category                    *Category `json:"category,omitempty"`
+	NSFW                        bool      `json:"nsfw"`
 }
 
 // FeedCreationRequest represents the request to create a feed.
@@ -158,6 +159,7 @@ type FeedCreationRequest struct {
 	RewriteRules                string `json:"rewrite_rules"`
 	BlocklistRules              string `json:"blocklist_rules"`
 	KeeplistRules               string `json:"keeplist_rules"`
+	NSFW                        bool   `json:"nsfw"`
 }
 
 // FeedModificationRequest represents the request to update a feed.
@@ -179,6 +181,7 @@ type FeedModificationRequest struct {
 	IgnoreHTTPCache             *bool   `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates *bool   `json:"allow_self_signed_certificates"`
 	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
+	NSFW                        *bool   `json:"nsfw"`
 }
 
 // FeedIcon represents the feed icon.

@@ -39,6 +39,7 @@ func (h *handler) showEditCategoryPage(w http.ResponseWriter, r *http.Request) {
 
 	categoryForm := form.CategoryForm{
 		Title: category.Title,
+		NSFW:  category.NSFW,
 		View:  category.View,
 	}
 

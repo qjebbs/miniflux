@@ -107,10 +107,15 @@ func (s *Storage) CountUserFeedsWithErrors(userID int64, nsfw bool) int {
 		pollingParsingErrorLimit = 1
 	}
 	var query string
-	if nsfw {
-		query = `SELECT count(*) FROM feeds WHERE user_id=$1 AND parsing_error_count >= $2 AND nsfw = 'f'`
-	} else {
+	if !nsfw {
 		query = `SELECT count(*) FROM feeds WHERE user_id=$1 AND parsing_error_count >= $2`
+	} else {
+		query = `
+		SELECT count(*) 
+		FROM feeds f
+		INNER JOIN categories c ON f.category_id = c.id
+		WHERE f.user_id=$1 AND f.parsing_error_count >= $2 
+			AND f.nsfw = 'f' AND (c.nsfw IS NULL OR c.nsfw = 'f')`
 	}
 	var result int
 	err := s.db.QueryRow(query, userID, pollingParsingErrorLimit).Scan(&result)

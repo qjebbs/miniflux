@@ -27,6 +27,11 @@
         {{ end }}
     </select>
 
+    <label>
+    <input type="checkbox" name="nsfw" value="1" {{ if .form.NSFW }}checked{{ end }}>
+    {{ t "form.feed.label.nsfw" }}
+    </label>
+    
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.save" }}</button> {{ t "action.or" }} <a href="{{ route "categories" }}">{{ t "action.cancel" }}</a>
     </div>

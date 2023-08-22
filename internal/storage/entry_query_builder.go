@@ -166,7 +166,7 @@ func (e *EntryQueryBuilder) WithoutStatus(status string) *EntryQueryBuilder {
 
 // WithoutNSFW excludes entries whose feed marked as Not Safe For Work.
 func (e *EntryQueryBuilder) WithoutNSFW() *EntryQueryBuilder {
-	e.conditions = append(e.conditions, "f.nsfw = 'f'")
+	e.conditions = append(e.conditions, "c.nsfw = 'f' AND f.nsfw = 'f'")
 	return e
 }
 
@@ -211,6 +211,7 @@ func (e *EntryQueryBuilder) CountEntries() (count int, err error) {
 		SELECT count(*)
 		FROM entries e
 			JOIN feeds f ON f.id = e.feed_id
+			JOIN categories c ON c.id = f.category_id
 		WHERE %s
 	`
 	condition := e.buildCondition()

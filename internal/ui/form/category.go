@@ -12,6 +12,7 @@ import (
 // CategoryForm represents a feed form in the UI
 type CategoryForm struct {
 	Title string
+	NSFW  bool
 	View  string
 }
 
@@ -23,6 +24,7 @@ func NewCategoryForm(r *http.Request) *CategoryForm {
 	}
 	return &CategoryForm{
 		Title: r.FormValue("title"),
+		NSFW:  r.FormValue("nsfw") == "1",
 		View:  view,
 	}
 }

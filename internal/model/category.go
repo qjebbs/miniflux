@@ -10,9 +10,10 @@ type Category struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	UserID      int64  `json:"user_id"`
-	View        string `json:"view,omitempty"`
+	NSFW        bool   `json:"nsfw"`
 	FeedCount   *int   `json:"feed_count,omitempty"`
 	TotalUnread *int   `json:"total_unread,omitempty"`
+	View        string `json:"view,omitempty"`
 }
 
 func (c *Category) String() string {
@@ -22,12 +23,14 @@ func (c *Category) String() string {
 // CategoryRequest represents the request to create or update a category.
 type CategoryRequest struct {
 	Title string `json:"title"`
+	NSFW  bool   `json:"nsfw"`
 	View  string `json:"view"`
 }
 
 // Patch updates category fields.
 func (cr *CategoryRequest) Patch(category *Category) {
 	category.Title = cr.Title
+	category.NSFW = cr.NSFW
 	category.View = cr.View
 }
 

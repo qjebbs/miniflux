@@ -38,6 +38,7 @@ func (h *handler) saveCategory(w http.ResponseWriter, r *http.Request) {
 
 	categoryRequest := &model.CategoryRequest{
 		Title: categoryForm.Title,
+		NSFW:  categoryForm.NSFW,
 		View:  categoryForm.View,
 	}
 

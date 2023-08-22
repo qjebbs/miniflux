@@ -65,6 +65,12 @@ func patch(db *sql.DB) error {
 			return err
 		}
 	}
+	if !columnExists(tx, "categories", "nsfw") {
+		_, err = tx.Exec("alter table categories add column nsfw bool not null default 'f';")
+		if err != nil {
+			return err
+		}
+	}
 	if !columnExists(tx, "medias", "error_count") {
 		_, err = tx.Exec("alter table medias add column error_count int not null default 0;")
 		if err != nil {

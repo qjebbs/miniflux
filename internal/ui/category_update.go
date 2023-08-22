@@ -50,6 +50,7 @@ func (h *handler) updateCategory(w http.ResponseWriter, r *http.Request) {
 
 	categoryRequest := &model.CategoryRequest{
 		Title: categoryForm.Title,
+		NSFW:  categoryForm.NSFW,
 		View:  categoryForm.View,
 	}
 

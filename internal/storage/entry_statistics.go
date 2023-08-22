@@ -15,6 +15,7 @@ func (s *Storage) UnreadStatByFeed(userID int64, nsfw bool) (stat model.EntrySta
 	query := `
 		SELECT f.id, f.title, max(fi.icon_id) icon, count(e.id) u_count
 		FROM feeds f
+			INNER JOIN categories c ON c.id=f.category_id
 			LEFT JOIN (
 				SELECT f.id id, count(e.id) count
 				FROM feeds f
@@ -29,7 +30,7 @@ func (s *Storage) UnreadStatByFeed(userID int64, nsfw bool) (stat model.EntrySta
 		ORDER BY max(starred.count) DESC NULLS LAST, f.title ASC`
 	nsfwCond := ""
 	if nsfw {
-		nsfwCond = "AND f.nsfw = 'f'"
+		nsfwCond = "AND c.nsfw = 'f' AND f.nsfw = 'f'"
 	}
 	query = fmt.Sprintf(query, nsfwCond)
 	return s.feedStatistics(query, userID)
@@ -42,13 +43,14 @@ func (s *Storage) StarredStatByFeed(userID int64, nsfw bool) (stat model.EntrySt
 		SELECT f.id, f.title, max(fi.icon_id) icon, count(e.id) s_count
 		FROM feeds f
 			INNER JOIN entries e ON f.id=e.feed_id
+			INNER JOIN categories c ON c.id=f.category_id
 			LEFT JOIN feed_icons fi ON fi.feed_id=f.id
 		WHERE f.user_id=$1 AND e.starred='T' %s
 		GROUP BY f.id
 		ORDER BY s_count DESC NULLS LAST, f.title ASC`
 	nsfwCond := ""
 	if nsfw {
-		nsfwCond = "AND f.nsfw = 'f'"
+		nsfwCond = "AND c.nsfw = 'f' AND f.nsfw = 'f'"
 	}
 	query = fmt.Sprintf(query, nsfwCond)
 	return s.feedStatistics(query, userID)
@@ -75,7 +77,7 @@ func (s *Storage) UnreadStatByCategory(userID int64, nsfw bool) (stat model.Entr
 		ORDER BY max(starred.count) DESC NULLS LAST, c.title ASC`
 	nsfwCond := ""
 	if nsfw {
-		nsfwCond = "AND f.nsfw = 'f'"
+		nsfwCond = "AND c.nsfw = 'f' AND f.nsfw = 'f'"
 	}
 	query = fmt.Sprintf(query, nsfwCond)
 	return s.categoryStatistics(query, userID)
@@ -94,7 +96,7 @@ func (s *Storage) StarredStatByCategory(userID int64, nsfw bool) (stat model.Ent
 		ORDER BY s_count DESC NULLS LAST, c.title ASC`
 	nsfwCond := ""
 	if nsfw {
-		nsfwCond = "AND f.nsfw = 'f'"
+		nsfwCond = "AND c.nsfw = 'f' AND f.nsfw = 'f'"
 	}
 	query = fmt.Sprintf(query, nsfwCond)
 	return s.categoryStatistics(query, userID)

@@ -3,7 +3,7 @@
 {{ define "content"}}
 <section class="page-header clearfix">
     <h1 dir="auto">{{ .category.Title }} ({{ .total }})</h1>
-    <ul class="left">
+    <ul>
         <li>
             <a href="{{ route "categoryEntries" "categoryID" .category.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ icon "show-unread-entries" }}{{ t "menu.show_only_unread_entries" }}</a>
         </li>
@@ -15,21 +15,6 @@
         </li>
         <li>
             <a href="{{ route "categoryFeeds" "categoryID" .category.ID }}">{{ icon "feeds" }}{{ t "menu.feeds" }}</a>
-        </li>
-    </ul>
-    <ul class="right">
-        <li>
-            <a href="#"
-                data-action="setView"
-                data-url="{{ route "updateCategoryView" "categoryID" .category.ID }}"
-                {{ if ne .view "masonry" }}
-                    data-value="masonry">
-                    {{ icon "masonry" }}{{ t "form.prefs.select.view_masonry" }}
-                {{ else }}
-                    data-value="list">
-                    {{ icon "list" }}{{ t "form.prefs.select.view_list" }}
-                {{ end }}
-            </a>
         </li>
     </ul>
     <ul class="left full">
@@ -55,6 +40,19 @@
         {{ end }}
         <li>
             <a href="{{ route "refreshCategoryEntriesPage" "categoryID" .category.ID }}">{{ icon "refresh" }}{{ t "menu.refresh_all_feeds" }}</a>
+        </li>
+        <li>
+            <a href="#"
+                data-action="setView"
+                data-url="{{ route "updateCategoryView" "categoryID" .category.ID }}"
+                {{ if eq .view "masonry" }}
+                    data-value="list">
+                    {{ icon "list" }}{{ t "form.prefs.select.view_list" }}
+                {{ else }}
+                    data-value="masonry">
+                    {{ icon "masonry" }}{{ t "form.prefs.select.view_masonry" }}
+                {{ end }}
+            </a>
         </li>
     </ul>
 </section>

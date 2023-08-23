@@ -6,7 +6,7 @@
         <a href="{{ .feed.SiteURL | safeURL  }}" title="{{ .feed.SiteURL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-original-link="{{ .user.MarkReadOnView }}">{{ .feed.Title }}</a>
         ({{ .total }})
     </h1>
-    <ul class="left">
+    <ul>
         <li>
             <a href="{{ route "feedEntries" "feedID" .feed.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ icon "show-unread-entries" }}{{ t "menu.show_only_unread_entries" }}</a>
         </li>
@@ -15,21 +15,6 @@
         </li>
         <li>
             <a href="{{ route "feedEntriesAll" "feedID" .feed.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ icon "show-all-entries" }}{{ t "menu.show_all_entries" }}</a>
-        </li>
-    </ul>
-    <ul class="right">
-        <li>
-            <a href="#"
-                data-action="setView"
-                data-url="{{ route "updateFeedView" "feedID" .feed.ID }}"
-                {{ if ne .view "masonry" }}
-                    data-value="masonry">
-                    {{ icon "masonry" }}{{ t "form.prefs.select.view_masonry" }}
-                {{ else }}
-                    data-value="list">
-                    {{ icon "list" }}{{ t "form.prefs.select.view_list" }}
-                {{ end }}
-            </a>
         </li>
     </ul>
     <ul class="left full">
@@ -76,6 +61,19 @@
                 data-label-loading="{{ t "confirm.loading" }}"
                 data-url="{{ route "removeFeed" "feedID" .feed.ID }}"
                 data-redirect-url="{{ route "feeds" }}">{{ icon "delete" }}{{ t "action.remove_feed" }}</a>
+        </li>
+        <li>
+            <a href="#"
+                data-action="setView"
+                data-url="{{ route "updateFeedView" "feedID" .feed.ID }}"
+                {{ if eq .view "masonry" }}
+                    data-value="list">
+                    {{ icon "list" }}{{ t "form.prefs.select.view_list" }}
+                {{ else }}
+                    data-value="masonry">
+                    {{ icon "masonry" }}{{ t "form.prefs.select.view_masonry" }}
+                {{ end }}
+            </a>
         </li>
     </ul>
 </section>

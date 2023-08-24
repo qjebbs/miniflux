@@ -422,6 +422,9 @@ function setEntriesAboveStatusRead(element) {
         targetItems.push(items[i]);
         entryIds.push(parseInt(items[i].dataset.id, 10));
     }
+    if (entryIds.length === 0) {
+        return;
+    }
     updateEntriesStatus(entryIds, "read", () => {
         targetItems.map(element => {
             updateEntriesStatusUI(element, "read", false);

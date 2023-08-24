@@ -59,16 +59,16 @@ func (f *funcMap) Map() template.FuncMap {
 		"noescape": func(str string) template.HTML {
 			return template.HTML(str)
 		},
-		"proxyFilter": func(data string) string {
+		"proxyFilter": func(feedProxifyImages bool, data string) string {
+			if feedProxifyImages {
+				return proxy.ForceProxyRewriter(f.router, data)
+			}
 			return proxy.ProxyRewriter(f.router, data)
 		},
-		"proxyURL": func(link string) string {
-			proxyOption := config.Opts.ProxyOption()
-
-			if proxyOption == "all" || (proxyOption != "none" && !urllib.IsHTTPS(link)) {
+		"proxyURL": func(feedProxifyImages bool, link string) string {
+			if feedProxifyImages || proxy.ShouldProxify(link) {
 				return proxy.ProxifyURL(f.router, link)
 			}
-
 			return link
 		},
 		"mustBeProxyfied": func(mediaType string) bool {

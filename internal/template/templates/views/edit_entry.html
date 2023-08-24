@@ -1,0 +1,71 @@
+{{ define "title"}}{{ .form.Title }}{{ end }}
+
+{{ define "content"}}
+{{ if not .feeds }}
+    <p class="alert alert-error">{{ t "alert.no_feed" }}</p>
+{{ else }}
+    <form id="entry-form" action="{{ route "updateEntry" }}" method="post" autocomplete="off">
+        <input type="hidden" name="csrf" value="{{ .csrf }}">
+        <input type="hidden" name="entry_id" value="{{ .form.EntryID }}">
+
+        {{ if .errorMessage }}
+            <div class="alert alert-error">
+                {{ t .errorMessage }}
+                {{ if .errorAction }}
+                    <a href="{{ .errorAction }}" target="_blank">{{ t "action.edit_existing" }}</a>
+                {{ end }}
+            </div>
+        {{ end }}
+
+        <label for="form-title">{{ t "form.entry.label.title" }}</label>
+        <input type="text" name="title" id="form-title" value="{{ .form.Title }}" required autofocus>
+
+        <label for="form-author">{{ t "form.entry.label.author" }}</label>
+        <input type="text" name="author" id="form-author" value="{{ .form.Author }}">
+
+        <label for="form-url">{{ t "form.entry.label.url" }}</label>
+        <input type="url" name="url" id="form-url" placeholder="https://domain.tld/" value="{{ .form.URL }}" required>
+        
+        <label for="form-comments-url">{{ t "form.entry.label.comments_url" }}</label>
+        <input type="url" name="comments_url" id="form-comments-url" placeholder="https://domain.tld/" value="{{ .form.CommentsURL }}">
+        
+        <label for="form-feed">{{ t "form.entry.label.feed" }}</label>
+        <select id="form-category" name="category_id">
+            <option value="" selected="selected">{{ t "form.entry.label.all_feeds" }}</option>
+        {{ range .categories }}
+            <option value="{{ .ID }}">{{ .Title }}</option>
+        {{ end }}
+        </select>
+        <select id="form-feed" name="feed_id">
+        {{ range .feeds }}
+            <option value="{{ .ID }}" data-category="{{ .Category.ID }}" {{ if eq .ID $.form.FeedID }}selected="selected"{{ end }}>{{ .Title }}</option>
+        {{ end }}
+        </select>
+
+        <label for="content-editor">{{ t "form.entry.label.content" }}</label>
+        <div class="tabs tabs-entry-edit" id="content-editor">
+            <div class="tab-head">
+                <ul>
+                    <li class="active">{{ t "form.entry.label.code" }}</li>
+                    <li>{{ t "form.entry.label.preview" }}</li>
+                    <div class="clearfix"></div>
+                </ul>
+            </div>
+            <div class="tab-body">
+                <div class="tab-content active">
+                    <textarea name="content" id="form-content" required>{{ .form.Content }}</textarea>
+                </div>
+                <div class="tab-content">
+                    <article role="article" id="preview-content" class="panel entry-content">
+                    </article>
+                </div>
+            </div>
+        </div>
+        <label></label><input type="checkbox" name="readability" id="form-readability"> {{ t "form.entry.label.readability" }}</label>
+        <div class="buttons">
+            <button class="button button-primary" data-action="submitEntry" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button> {{ t "action.or" }} <a href="#" data-action="historyGoBack">{{ t "action.cancel" }}</a>
+        </div>
+    </form>
+{{ end }}
+
+{{ end }}

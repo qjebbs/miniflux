@@ -51,6 +51,7 @@ type Client struct {
 	ClientTimeout               int
 	ClientMaxBodySize           int64
 	ClientProxyURL              string
+	referrer                    string
 	AllowSelfSignedCertificates bool
 }
 
@@ -140,6 +141,14 @@ func (c *Client) WithoutRedirects() *Client {
 func (c *Client) WithUserAgent(userAgent string) *Client {
 	if userAgent != "" {
 		c.requestUserAgent = userAgent
+	}
+	return c
+}
+
+// WithReferrer add referrer for outgoing requests.
+func (c *Client) WithReferrer(referrer string) *Client {
+	if referrer != "" {
+		c.referrer = referrer
 	}
 	return c
 }
@@ -355,6 +364,9 @@ func (c *Client) buildHeaders() http.Header {
 		headers.Add("Authorization", c.requestAuthorizationHeader)
 	}
 
+	if c.referrer != "" {
+		headers.Add("Referer", c.referrer)
+	}
 	if c.requestCookie != "" {
 		headers.Add("Cookie", c.requestCookie)
 	}

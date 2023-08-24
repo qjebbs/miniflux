@@ -66,5 +66,10 @@ func (h *handler) fetchContent(w http.ResponseWriter, r *http.Request) {
 
 	readingTime := locale.NewPrinter(user.Language).Plural("entry.estimated_reading_time", entry.ReadingTime, entry.ReadingTime)
 
+	if entry.Feed.ProxifyMedia || entry.Feed.CacheMedia {
+		json.OK(w, r, map[string]string{"content": proxy.ForceProxyRewriter(h.router, entry.Content), "reading_time": readingTime})
+		return
+	}
+
 	json.OK(w, r, map[string]string{"content": proxy.ProxyRewriter(h.router, entry.Content), "reading_time": readingTime})
 }

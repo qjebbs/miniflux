@@ -9,14 +9,17 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/crypto"
+	"miniflux.app/v2/internal/filesystem"
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response"
 	"miniflux.app/v2/internal/http/response/html"
 	"miniflux.app/v2/internal/logger"
+	"miniflux.app/v2/internal/reader/media"
 )
 
 func (h *handler) mediaProxy(w http.ResponseWriter, r *http.Request) {
@@ -56,34 +59,47 @@ func (h *handler) mediaProxy(w http.ResponseWriter, r *http.Request) {
 
 	mediaURL := string(decodedURL)
 	logger.Debug(`[Proxy] Fetching %q`, mediaURL)
+	etag := crypto.HashFromBytes(decodedURL)
 
-	req, err := http.NewRequest("GET", mediaURL, nil)
+	m, err := h.store.MediaByURL(mediaURL)
 	if err != nil {
-		html.ServerError(w, r, err)
+		goto FETCH
+	}
+	if m.Content != nil {
+		logger.Debug(`[Proxy] From database cache, for %q`, mediaURL)
+		response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+			b.WithHeader("Content-Type", m.MimeType)
+			b.WithBody(m.Content)
+			b.WithoutCompression()
+			b.Write()
+		})
 		return
 	}
 
-	// Note: User-Agent HTTP header is omitted to avoid being blocked by bot protection mechanisms.
-	req.Header.Add("Connection", "close")
-
-	forwardedRequestHeader := []string{"Range", "Accept", "Accept-Encoding"}
-	for _, requestHeaderName := range forwardedRequestHeader {
-		if r.Header.Get(requestHeaderName) != "" {
-			req.Header.Add(requestHeaderName, r.Header.Get(requestHeaderName))
+	if m.Cached {
+		// cache is located in file system
+		var file *os.File
+		file, err = filesystem.MediaFileByHash(m.URLHash)
+		if err != nil {
+			logger.Debug("Unable to fetch media from file system: %s", err)
+			goto FETCH
 		}
+		defer file.Close()
+		logger.Debug(`[Proxy] From filesystem cache, for %q`, mediaURL)
+		response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
+			b.WithHeader("Content-Type", m.MimeType)
+			b.WithBody(file)
+			b.WithoutCompression()
+			b.Write()
+		})
+		return
 	}
 
-	clt := &http.Client{
-		Transport: &http.Transport{
-			IdleConnTimeout: time.Duration(config.Opts.ProxyHTTPClientTimeout()) * time.Second,
-		},
-		Timeout: time.Duration(config.Opts.ProxyHTTPClientTimeout()) * time.Second,
-	}
-
-	resp, err := clt.Do(req)
+FETCH:
+	logger.Debug(`[Proxy] Fetching %q`, mediaURL)
+	resp, err := media.FetchMedia(m, r)
 	if err != nil {
-		logger.Error(`[Proxy] Unable to initialize HTTP client: %v`, err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		html.ServerError(w, r, err)
 		return
 	}
 	defer resp.Body.Close()
@@ -98,8 +114,6 @@ func (h *handler) mediaProxy(w http.ResponseWriter, r *http.Request) {
 		html.NotFound(w, r)
 		return
 	}
-
-	etag := crypto.HashFromBytes(decodedURL)
 
 	response.New(w, r).WithCaching(etag, 72*time.Hour, func(b *response.Builder) {
 		b.WithStatus(resp.StatusCode)

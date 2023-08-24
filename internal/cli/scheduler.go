@@ -15,6 +15,8 @@ import (
 func runScheduler(store *storage.Storage, pool *worker.Pool) {
 	logger.Info(`Starting background scheduler...`)
 
+	go store.CreateMediasRunOnce()
+
 	go feedScheduler(
 		store,
 		pool,
@@ -26,6 +28,10 @@ func runScheduler(store *storage.Storage, pool *worker.Pool) {
 		store,
 		config.Opts.CleanupFrequencyHours(),
 	)
+
+	if config.Opts.HasCacheService() {
+		go cacheScheduler(store, config.Opts.CacheFrequency())
+	}
 }
 
 func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency, batchSize int) {
@@ -43,5 +49,17 @@ func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency, batchSi
 func cleanupScheduler(store *storage.Storage, frequency int) {
 	for range time.Tick(time.Duration(frequency) * time.Hour) {
 		runCleanupTasks(store)
+	}
+}
+
+func cacheScheduler(store *storage.Storage, frequency int) {
+	c := time.Tick(time.Duration(frequency) * time.Hour)
+	for range c {
+		if err := store.ValidateCaches(); err != nil {
+			logger.Error("[Scheduler:ValidateCaches] %v", err)
+		}
+		if err := store.CacheMedias(); err != nil {
+			logger.Error("[Scheduler:CacheMedias] %v", err)
+		}
 	}
 }

@@ -60,12 +60,6 @@ func (e *EntryPaginationBuilder) WithStatus(status string) {
 	}
 }
 
-// WithGloballyVisible adds global visibility to the condition.
-func (e *EntryPaginationBuilder) WithGloballyVisible() {
-	e.conditions = append(e.conditions, "not c.hide_globally")
-	e.conditions = append(e.conditions, "not f.hide_globally")
-}
-
 // Entries returns previous and next entries.
 func (e *EntryPaginationBuilder) Entries() (*model.Entry, *model.Entry, error) {
 	tx, err := e.store.db.Begin()

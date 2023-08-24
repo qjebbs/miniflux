@@ -6,6 +6,8 @@ package ui // import "miniflux.app/v2/internal/ui"
 import (
 	"net/http"
 
+	"miniflux.app/v2/internal/config"
+
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/html"
 	"miniflux.app/v2/internal/http/route"
@@ -69,6 +71,7 @@ func (h *handler) showFeedEntryPage(w http.ResponseWriter, r *http.Request) {
 		prevEntryRoute = route.Path(h.router, "feedEntry", "feedID", feedID, "entryID", prevEntry.ID)
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("entry", entry)
@@ -78,9 +81,22 @@ func (h *handler) showFeedEntryPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("prevEntryRoute", prevEntryRoute)
 	view.Set("menu", "feeds")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
+
+	if config.Opts.HasCacheService() {
+		countMedias, countCached, _, err := h.store.MediaStatisticsByEntry(entryID)
+		if err != nil {
+			html.ServerError(w, r, err)
+			return
+		}
+		view.Set("hasCacheService", countMedias > 0)
+		view.Set("entryCached", countCached > 0)
+	} else {
+		view.Set("hasCacheService", false)
+		view.Set("entryCached", false)
+	}
 
 	html.OK(w, r, view.Render("entry"))
 }

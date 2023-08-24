@@ -62,6 +62,9 @@ func Migrate(db *sql.DB) error {
 			return fmt.Errorf("[Migration v%d] %v", newVersion, err)
 		}
 	}
+	if err := patch(db); err != nil {
+		return fmt.Errorf("[Migration patch] %v", err)
+	}
 
 	return nil
 }

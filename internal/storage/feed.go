@@ -99,13 +99,24 @@ func (s *Storage) CountFeeds(userID int64) int {
 	return result
 }
 
-// CountUserFeedsWithErrors returns the number of feeds with parsing errors that belong to the given user.
-func (s *Storage) CountUserFeedsWithErrors(userID int64) int {
+// CountUserFeedsWithErrors returns the number of feeds with parse errors that belong to the given user.
+// If nsfw is enabled, it doesn't take nsfw feeds into count
+func (s *Storage) CountUserFeedsWithErrors(userID int64, nsfw bool) int {
 	pollingParsingErrorLimit := config.Opts.PollingParsingErrorLimit()
 	if pollingParsingErrorLimit <= 0 {
 		pollingParsingErrorLimit = 1
 	}
-	query := `SELECT count(*) FROM feeds WHERE user_id=$1 AND parsing_error_count >= $2`
+	var query string
+	if !nsfw {
+		query = `SELECT count(*) FROM feeds WHERE user_id=$1 AND parsing_error_count >= $2`
+	} else {
+		query = `
+		SELECT count(*) 
+		FROM feeds f
+		INNER JOIN categories c ON f.category_id = c.id
+		WHERE f.user_id=$1 AND f.parsing_error_count >= $2 
+			AND f.nsfw = 'f' AND (c.nsfw IS NULL OR c.nsfw = 'f')`
+	}
 	var result int
 	err := s.db.QueryRow(query, userID, pollingParsingErrorLimit).Scan(&result)
 	if err != nil {
@@ -132,9 +143,12 @@ func (s *Storage) CountAllFeedsWithErrors() int {
 }
 
 // Feeds returns all feeds that belongs to the given user.
-func (s *Storage) Feeds(userID int64) (model.Feeds, error) {
+func (s *Storage) Feeds(userID int64, nsfw bool) (model.Feeds, error) {
 	builder := NewFeedQueryBuilder(s, userID)
 	builder.WithSorting(model.DefaultFeedSorting, model.DefaultFeedSortingDirection)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	return builder.GetFeeds()
 }
 
@@ -148,10 +162,13 @@ func getFeedsSorted(builder *FeedQueryBuilder) (model.Feeds, error) {
 }
 
 // FeedsWithCounters returns all feeds of the given user with counters of read and unread entries.
-func (s *Storage) FeedsWithCounters(userID int64) (model.Feeds, error) {
+func (s *Storage) FeedsWithCounters(userID int64, nsfw bool) (model.Feeds, error) {
 	builder := NewFeedQueryBuilder(s, userID)
 	builder.WithCounters()
 	builder.WithSorting(model.DefaultFeedSorting, model.DefaultFeedSortingDirection)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	return getFeedsSorted(builder)
 }
 
@@ -164,11 +181,14 @@ func (s *Storage) FetchCounters(userID int64) (model.FeedCounters, error) {
 }
 
 // FeedsByCategoryWithCounters returns all feeds of the given user/category with counters of read and unread entries.
-func (s *Storage) FeedsByCategoryWithCounters(userID, categoryID int64) (model.Feeds, error) {
+func (s *Storage) FeedsByCategoryWithCounters(userID, categoryID int64, nsfw bool) (model.Feeds, error) {
 	builder := NewFeedQueryBuilder(s, userID)
 	builder.WithCategoryID(categoryID)
 	builder.WithCounters()
 	builder.WithSorting(model.DefaultFeedSorting, model.DefaultFeedSortingDirection)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	return getFeedsSorted(builder)
 }
 
@@ -238,7 +258,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			ignore_http_cache,
 			allow_self_signed_certificates,
 			fetch_via_proxy,
-			hide_globally,
+			nsfw,
 			url_rewrite_rules,
 			no_media_player
 		)
@@ -269,7 +289,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.IgnoreHTTPCache,
 		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
-		feed.HideGlobally,
+		feed.NSFW,
 		feed.UrlRewriteRules,
 		feed.NoMediaPlayer,
 	).Scan(&feed.ID)
@@ -295,7 +315,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		}
 
 		if !entryExists {
-			if err := s.createEntry(tx, feed.Entries[i]); err != nil {
+			if err := s.CreateEntry(tx, feed.Entries[i]); err != nil {
 				if rollbackErr := tx.Rollback(); rollbackErr != nil {
 					return fmt.Errorf(`store: unable to rollback transaction: %v (rolled back due to: %v)`, rollbackErr, err)
 				}
@@ -340,11 +360,14 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			ignore_http_cache=$21,
 			allow_self_signed_certificates=$22,
 			fetch_via_proxy=$23,
-			hide_globally=$24,
+			nsfw=$24,
 			url_rewrite_rules=$25,
-			no_media_player=$26
+			no_media_player=$26,
+			cache_media=$27,
+			view=$28,
+			proxify_media=$29
 		WHERE
-			id=$27 AND user_id=$28
+			id=$30 AND user_id=$31
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -370,9 +393,12 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.IgnoreHTTPCache,
 		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
-		feed.HideGlobally,
+		feed.NSFW,
 		feed.UrlRewriteRules,
 		feed.NoMediaPlayer,
+		feed.CacheMedia,
+		feed.View,
+		feed.ProxifyMedia,
 		feed.ID,
 		feed.UserID,
 	)
@@ -408,6 +434,29 @@ func (s *Storage) UpdateFeedError(feed *model.Feed) (err error) {
 
 	if err != nil {
 		return fmt.Errorf(`store: unable to update feed error #%d (%s): %v`, feed.ID, feed.FeedURL, err)
+	}
+
+	return nil
+}
+
+// UpdateFeedView updates a feed view setting.
+func (s *Storage) UpdateFeedView(userID int64, feedID int64, view string) error {
+	if _, ok := model.Views()[view]; !ok {
+		return fmt.Errorf("invalid view value: %v", view)
+	}
+	query := `UPDATE feeds SET view = $3 WHERE user_id=$1 AND id=$2`
+	result, err := s.db.Exec(query, userID, feedID, view)
+	if err != nil {
+		return fmt.Errorf("unable to set view for feed #%d: %v", feedID, err)
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("unable to set view for feed #%d: %v", feedID, err)
+	}
+
+	if count == 0 {
+		return errors.New("nothing has been updated")
 	}
 
 	return nil

@@ -712,6 +712,7 @@ function handleConfirmationMessage(linkElement, callback) {
     containerElement.appendChild(questionElement);
 }
 
+// https://masonry.desandro.com
 function initMasonryLayout() {
     let layoutCallback;
     let msnryElement = document.querySelector('.masonry');
@@ -719,7 +720,9 @@ function initMasonryLayout() {
         let msnry = new Masonry(msnryElement, {
             itemSelector: '.item',
             columnWidth: '.item-sizer',
-            gutter: 10
+            gutter: 10,
+            horizontalOrder: false,
+            transitionDuration: '0.2s'
         })
         layoutCallback = throttle(() => msnry.layout(), 500, 1000);
         // initialize layout

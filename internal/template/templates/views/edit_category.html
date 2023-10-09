@@ -26,9 +26,16 @@
     <label for="form-title">{{ t "form.category.label.title" }}</label>
     <input type="text" name="title" id="form-title" value="{{ .form.Title }}" required autofocus>
 
+    <label for="form-view">{{ t "form.prefs.label.view" }}</label>
+    <select id="form-view" name="view">
+        {{ range $key, $value := .views }}
+            <option value="{{ $key }}" {{ if eq $key $.form.View }}selected="selected"{{ end }}>{{ t $value }}</option>
+        {{ end }}
+    </select>
+
     <label>
-        <input type="checkbox" name="hide_globally" {{ if .form.HideGlobally }}checked{{ end }}>
-        {{ t "form.category.hide_globally" }}
+    <input type="checkbox" name="nsfw" value="1" {{ if .form.NSFW }}checked{{ end }}>
+    {{ t "form.feed.label.nsfw" }}
     </label>
 
     <div class="buttons">

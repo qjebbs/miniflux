@@ -39,7 +39,7 @@
     <label for="form-theme">{{ t "form.prefs.label.theme" }}</label>
     <select id="form-theme" name="theme">
     {{ range $key, $value := .themes }}
-        <option value="{{ $key }}" {{ if eq $key $.form.Theme }}selected="selected"{{ end }}>{{ $value }}</option>
+        <option value="{{ $key }}" {{ if eq $key $.form.Theme }}selected="selected"{{ end }}>{{ t $value }}</option>
     {{ end }}
     </select>
 

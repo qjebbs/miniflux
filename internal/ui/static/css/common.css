@@ -352,7 +352,7 @@ input[type="search"],
 input[type="url"],
 input[type="password"],
 input[type="text"],
-input[type="number"] {
+textarea, input[type="number"] {
     color: var(--input-color);
     background: var(--input-background);
     border: var(--input-border);
@@ -369,7 +369,7 @@ input[type="search"]:focus,
 input[type="url"]:focus,
 input[type="password"]:focus,
 input[type="text"]:focus,
-input[type="number"]:focus {
+textarea:focus, input[type="number"]:focus {
     color: var(--input-focus-color);
     border-color: var(--input-focus-border-color);
     outline: 0;
@@ -550,12 +550,12 @@ template {
     display: none;
 }
 
-#modal-left {
+.modal {
     position: fixed;
     top: 0;
-    left: 0;
     bottom: 0;
     width: 380px;
+    max-width: 80%;
     overflow: auto;
     color: var(--modal-color);
     background: var(--modal-background);
@@ -564,9 +564,27 @@ template {
     padding-top: 30px;
 }
 
-#modal-left h3 {
+.modal h3 {
     font-weight: 400;
     margin: 0;
+}
+
+.modal.left {
+    left: -360px;
+}
+
+.modal.right {
+    right: -360px;
+}
+
+.modal.left.fade {
+    left: 0;
+    transition: left 0.2s ease-out;
+}
+
+.modal.right.fade {
+    right: 0;
+    transition: right 0.2s ease-out;
 }
 
 .btn-close-modal {
@@ -705,7 +723,7 @@ template {
     font-weight: var(--item-title-link-font-weight);
 }
 
-.item-status-read .item-title a {
+.item-status-read:not(.item-starred) .item-title a {
     color: var(--item-status-read-title-link-color);
 }
 
@@ -721,7 +739,7 @@ template {
 
 .item-meta a:hover,
 .item-meta a:focus {
-    color: #333;
+    color: var(--link-hover-color);
 }
 
 .item-meta ul {
@@ -902,6 +920,7 @@ article.category-has-unread {
 .entry-content video,
 .entry-content img {
     max-width: 100%;
+    background-color: white;
 }
 
 .entry-content figure {
@@ -1107,4 +1126,190 @@ audio, video {
 
 .integration-form details .form-section {
     margin-top: 15px;
+}
+
+a.disabled {
+    pointer-events: none;
+    text-decoration: none;
+    opacity: 0.7;
+}
+
+textarea {
+    min-width: 100%;
+    min-height: 400px;
+}
+
+textarea.small {
+    min-width: 100%;
+    min-height: 100px;
+}
+
+@media (min-width: 620px) {
+    .header li.mobile-only {
+        display: none;
+    }
+}
+
+/* Statistics List */
+.statistics-list ul,
+.statistics-list li {
+    list-style-type: none;
+}
+
+.statistics-list .list-header {
+    padding: 0.5em;
+    color: var(--category-color);
+}
+
+.statistics-list .list-item {
+    border: solid var(--header-list-border-color);
+    border-width: 0 0 1px 0;
+    padding: 0.5em;
+    line-height: 2.5em;
+}
+
+.statistics-list a {
+    text-decoration: none;
+}
+
+.statistics-list .list-item:last-child {
+    border-width: 0;
+}
+
+.statistics-list .list-item .title {
+    display: inline-block;
+    /* fix line-height for inline-block */
+    /* https://stackoverflow.com/questions/5373400/why-does-setting-line-height-for-one-of-two-inline-block-sibling-divs-effect-bot */
+    vertical-align: top;
+    width: 80%;
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+}
+
+.statistics-list .list-item .count {
+    float: right;
+    width: 20%;
+    text-align: right;
+}
+
+@media (min-width: 620px) {
+    .statistics-list .list-item {
+        line-height: 1.5em;
+    }
+}
+
+/* masonry view */
+.masonry .item, .masonry .item-sizer {
+    width: 100%;
+}
+
+@media (min-width: 620px) {
+    .masonry .item-sizer, .masonry .item {
+        width: calc((100% - 10px)/2);
+    }
+    .masonry.col-1 .item-sizer, .masonry.col-1 .item {
+        width: 100%;
+    }
+    .masonry.col-2 .item-sizer, .masonry.col-2 .item {
+        width: calc((100% - 10px)/2);
+    }
+    .masonry.col-3 .item-sizer, .masonry.col-3 .item {
+        width: calc((100% - 20px)/3);
+    }
+    .masonry.col-4 .item-sizer, .masonry.col-4 .item {
+        width: calc((100% - 30px)/4);
+    }
+}
+
+.thumbnail {
+    margin-top: 10px;
+    display: none;
+}
+
+.masonry .thumbnail{
+    display: inherit;
+}
+
+.masonry .thumbnail a {
+    text-decoration: none;
+}
+
+.masonry .thumbnail .image {
+    width: 100%;
+    max-height: 640px;
+    overflow: hidden;
+}
+
+.masonry .thumbnail img {
+    width: 100%;
+    background-color: white;
+}
+
+.masonry .thumbnail .badge {
+    font-size: 0.75em;
+    color: var(--counter-color);
+    background: var(--modal-background);
+    text-align: right;
+    padding: 0.2em 0.5em;
+}
+
+.masonry .item-status-read:not(.item-starred) .thumbnail{
+    opacity: 0.2;
+}
+
+/* Tabs */
+
+.tabs {
+    margin-bottom: 10px;
+    margin-top: 5px;
+}
+
+.tab-head li {
+    list-style: none;
+    border: solid var(--panel-border-color) 1px;
+    padding: 2px 8px;
+    margin: 0;
+    float: left;
+    text-align: center;
+    cursor: pointer;
+}
+
+.clearfix::after{
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.tab-head .active {
+    background-color: var(--panel-border-color);
+}
+
+.tab-body .tab-content{
+    display: none;
+}
+
+.tab-body .tab-content.active{
+    display: block;
+}
+
+/* Action Menus */
+.action-menus {
+    position: absolute;
+    width: 100%;
+    bottom: 100px;
+}
+
+.action-menus ul {
+    margin: 2.5em 0;
+}
+
+.action-menus li {
+    margin: 0.5em 1em;
+    list-style-type: none;
+    font-size: 1.3em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
 }

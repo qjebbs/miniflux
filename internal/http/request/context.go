@@ -24,6 +24,7 @@ const (
 	FlashErrorMessageContextKey
 	PocketRequestTokenContextKey
 	ClientIPContextKey
+	NSFWContextKey
 	GoogleReaderToken
 )
 
@@ -72,6 +73,11 @@ func UserTheme(r *http.Request) string {
 		theme = "system_serif"
 	}
 	return theme
+}
+
+// IsNSFWEnabled returns the current NSFW setting.
+func IsNSFWEnabled(r *http.Request) bool {
+	return getContextStringValue(r, NSFWContextKey) == "hide"
 }
 
 // CSRF returns the current CSRF token.

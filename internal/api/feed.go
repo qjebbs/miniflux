@@ -150,7 +150,7 @@ func (h *handler) getCategoryFeeds(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	feeds, err := h.store.FeedsByCategoryWithCounters(userID, categoryID)
+	feeds, err := h.store.FeedsByCategoryWithCounters(userID, categoryID, false)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -160,7 +160,7 @@ func (h *handler) getCategoryFeeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) getFeeds(w http.ResponseWriter, r *http.Request) {
-	feeds, err := h.store.Feeds(request.UserID(r))
+	feeds, err := h.store.Feeds(request.UserID(r), false)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return

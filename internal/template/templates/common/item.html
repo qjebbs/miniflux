@@ -1,0 +1,36 @@
+{{ define "item" }}
+<article role="article" class="item entry-item {{ if .user.EntrySwipe }}entry-swipe{{ end }} item-status-{{ .entry.Status }}{{ if .entry.Starred }} item-starred{{ end }}" data-id="{{ .entry.ID }}">
+    <div class="item-header" dir="auto">
+        <span class="item-title">
+            {{ if ne .entry.Feed.Icon.IconID 0 }}
+                <img src="{{ route "icon" "iconID" .entry.Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .entry.Feed.Title }}">
+            {{ end }}
+            <a target="_blank" data-set-read="{{ .user.MarkReadOnView }}" data-no-request="true" href="{{ .href }}">{{ .entry.Title }}</a>
+        </span>
+        {{ if .pageEntriesType }}
+            {{ if eq .pageEntriesType "all" }}
+            <span class="category"><a href="{{ route "categoryEntriesAll" "categoryID" .entry.Feed.Category.ID }}">{{ .entry.Feed.Category.Title }}</a></span>
+            {{ else if eq .pageEntriesType "starred" }}
+            <span class="category"><a href="{{ route "categoryEntriesStarred" "categoryID" .entry.Feed.Category.ID }}">{{ .entry.Feed.Category.Title }}</a></span>
+            {{ else }}
+            <span class="category"><a href="{{ route "categoryEntries" "categoryID" .entry.Feed.Category.ID }}">{{ .entry.Feed.Category.Title }}</a></span>
+            {{ end }}
+        {{ else }}
+        <span class="category"><a href="{{ route "categoryEntries" "categoryID" .entry.Feed.Category.ID }}">{{ .entry.Feed.Category.Title }}</a></span>
+        {{ end }}
+    </div>
+    {{ template "item_meta" . }}
+    {{ if and (eq .view "masonry") (ne .entry.CoverImage "") }}
+    <div class="thumbnail">
+        <a target="_blank" data-set-read="{{ .user.MarkReadOnView }}" data-no-request="true" href="{{ .href }}">
+            <div class="image">
+                <img class="lazy" src="" data-src="{{ proxyURL (or .entry.Feed.ProxifyMedia .entry.Feed.CacheMedia) .entry.CoverImage }}">
+                {{ if gt .entry.ImageCount 1 }}
+            </div>
+            <p class="badge">{{ t "entry.more_images" .entry.ImageCount }}</p>
+            {{ end }}
+        </a>
+    </div>
+    {{ end }}
+</article>
+{{ end }}

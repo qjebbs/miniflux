@@ -53,9 +53,13 @@ type Feed struct {
 	Entries                     Entries   `json:"entries,omitempty"`
 	IconURL                     string    `json:"icon_url"`
 	Icon                        *FeedIcon `json:"icon"`
-	HideGlobally                bool      `json:"hide_globally"`
+	NSFW                        bool      `json:"nsfw"`
 	UnreadCount                 int       `json:"-"`
 	ReadCount                   int       `json:"-"`
+
+	View         string `json:"view"`
+	CacheMedia   bool   `json:"cache_media"`
+	ProxifyMedia bool   `json:"-"`
 }
 
 type FeedCounters struct {
@@ -143,7 +147,7 @@ type FeedCreationRequest struct {
 	RewriteRules                string `json:"rewrite_rules"`
 	BlocklistRules              string `json:"blocklist_rules"`
 	KeeplistRules               string `json:"keeplist_rules"`
-	HideGlobally                bool   `json:"hide_globally"`
+	NSFW                        bool   `json:"nsfw"`
 	UrlRewriteRules             string `json:"urlrewrite_rules"`
 }
 
@@ -168,7 +172,11 @@ type FeedModificationRequest struct {
 	IgnoreHTTPCache             *bool   `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates *bool   `json:"allow_self_signed_certificates"`
 	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
-	HideGlobally                *bool   `json:"hide_globally"`
+	NSFW                        *bool   `json:"nsfw"`
+
+	View         *string `json:"view"`
+	ProxifyMedia *bool   `json:"proxify_media"`
+	CacheMedia   *bool   `json:"cache_media"`
 }
 
 // Patch updates a feed with modified values.
@@ -249,8 +257,20 @@ func (f *FeedModificationRequest) Patch(feed *Feed) {
 		feed.FetchViaProxy = *f.FetchViaProxy
 	}
 
-	if f.HideGlobally != nil {
-		feed.HideGlobally = *f.HideGlobally
+	if f.View != nil {
+		feed.View = *f.View
+	}
+
+	if f.NSFW != nil {
+		feed.NSFW = *f.NSFW
+	}
+
+	if f.CacheMedia != nil {
+		feed.CacheMedia = *f.CacheMedia
+	}
+
+	if f.ProxifyMedia != nil {
+		feed.ProxifyMedia = *f.ProxifyMedia
 	}
 }
 

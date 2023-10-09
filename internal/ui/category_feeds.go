@@ -19,6 +19,7 @@ func (h *handler) showCategoryFeedsPage(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	categoryID := request.RouteInt64Param(r, "categoryID")
 	category, err := h.store.Category(request.UserID(r), categoryID)
 	if err != nil {
@@ -31,7 +32,7 @@ func (h *handler) showCategoryFeedsPage(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	feeds, err := h.store.FeedsByCategoryWithCounters(user.ID, categoryID)
+	feeds, err := h.store.FeedsByCategoryWithCounters(user.ID, categoryID, nsfw)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
@@ -44,8 +45,8 @@ func (h *handler) showCategoryFeedsPage(w http.ResponseWriter, r *http.Request) 
 	view.Set("total", len(feeds))
 	view.Set("menu", "categories")
 	view.Set("user", user)
-	view.Set("countUnread", h.store.CountUnreadEntries(user.ID))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID))
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	html.OK(w, r, view.Render("category_feeds"))
 }

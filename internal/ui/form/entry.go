@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"miniflux.app/v2/internal/errors"
+	"miniflux.app/v2/internal/locale"
 	"miniflux.app/v2/internal/model"
 )
 
@@ -27,18 +27,18 @@ type EntryForm struct {
 }
 
 // Validate makes sure the form values are valid.
-func (e *EntryForm) Validate() error {
+func (e *EntryForm) Validate() *locale.LocalizedError {
 	if e.URL == "" || e.FeedID == 0 {
-		return errors.NewLocalizedError("error.entry_mandatory_fields")
+		return locale.NewLocalizedError("error.entry_mandatory_fields")
 	}
 
 	return nil
 }
 
 // ValidateModification validates EntryForm fields
-func (e EntryForm) ValidateModification() error {
+func (e EntryForm) ValidateModification() *locale.LocalizedError {
 	if e.Content == "" || e.URL == "" || e.Title == "" || e.FeedID == 0 {
-		return errors.NewLocalizedError("error.fields_mandatory")
+		return locale.NewLocalizedError("error.fields_mandatory")
 	}
 	return nil
 }

@@ -6,18 +6,15 @@ package scraper // import "miniflux.app/v2/internal/reader/scraper"
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"io"
-	"strings"
 	"time"
 
+	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/crypto"
-	"miniflux.app/v2/internal/logger"
+	"miniflux.app/v2/internal/metric"
 
-	"miniflux.app/v2/internal/http/client"
 	"miniflux.app/v2/internal/model"
-	"miniflux.app/v2/internal/reader/readability"
+	"miniflux.app/v2/internal/reader/fetcher"
 	"miniflux.app/v2/internal/reader/sanitizer"
 
 	"github.com/PuerkitoBio/goquery"
@@ -25,60 +22,40 @@ import (
 
 // FetchEntry downloads a web page and returns an Entry.
 func FetchEntry(websiteURL, rules, userAgent string, cookie string) (*model.Entry, error) {
-	clt := client.New(websiteURL)
+	requestBuilder := fetcher.NewRequestBuilder()
 	if userAgent != "" {
-		clt.WithUserAgent(userAgent)
+		requestBuilder.WithUserAgent(userAgent, config.Opts.HTTPClientUserAgent())
 	}
-
 	if cookie != "" {
-		clt.WithCookie(cookie)
+		requestBuilder.WithCookie(cookie)
 	}
 
-	response, err := clt.Get()
+	startTime := time.Now()
+	r, err := ScrapeWebsite(
+		requestBuilder,
+		websiteURL,
+		rules,
+	)
+
+	if config.Opts.HasMetricsCollector() {
+		status := "success"
+		if err != nil {
+			status = "error"
+		}
+		metric.ScraperRequestDuration.WithLabelValues(status).Observe(time.Since(startTime).Seconds())
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	if response.HasServerFailure() {
-		return nil, errors.New("scraper: unable to download web page")
-	}
-
-	if !isAllowedContentType(response.ContentType) {
-		return nil, fmt.Errorf("scraper: this resource is not a HTML document (%s)", response.ContentType)
-	}
-
-	if err = response.EnsureUnicodeBody(); err != nil {
-		return nil, err
-	}
-
-	// The entry URL could redirect somewhere else.
-	websiteURL = response.EffectiveURL
-
-	if rules == "" {
-		rules = getPredefinedScraperRules(websiteURL)
-	}
-
 	var title string
-	var content string
-
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	content = buf.String()
-	reader := strings.NewReader(content)
+	reader := bytes.NewReader(r.Body)
 	title, err = findTitle(reader)
 	if err != nil {
 		return nil, err
 	}
-
-	reader.Reset(content)
-	if rules != "" {
-		logger.Debug(`[Scraper] Using rules %q for %q`, rules, websiteURL)
-		content, err = scrapContent(reader, rules)
-	} else {
-		logger.Debug(`[Scraper] Using readability for %q`, websiteURL)
-		content, err = readability.ExtractContent(reader)
-	}
-	content = sanitizer.Sanitize(websiteURL, content)
+	content := sanitizer.Sanitize(websiteURL, r.Content)
 	entry := &model.Entry{
 		URL:     websiteURL,
 		Title:   title,

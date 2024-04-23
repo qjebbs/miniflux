@@ -4,21 +4,24 @@
 package ui // import "miniflux.app/v2/internal/ui"
 
 import (
+	"log/slog"
 	"net/http"
+	"strings"
 
 	"miniflux.app/v2/internal/config"
-	"miniflux.app/v2/internal/http/client"
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/html"
 	"miniflux.app/v2/internal/http/route"
-	"miniflux.app/v2/internal/logger"
+	"miniflux.app/v2/internal/locale"
+	"miniflux.app/v2/internal/reader/fetcher"
 	"miniflux.app/v2/internal/reader/opml"
 	"miniflux.app/v2/internal/ui/session"
 	"miniflux.app/v2/internal/ui/view"
 )
 
 func (h *handler) uploadOPML(w http.ResponseWriter, r *http.Request) {
-	user, err := h.store.UserByID(request.UserID(r))
+	loggedUserID := request.UserID(r)
+	user, err := h.store.UserByID(loggedUserID)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
@@ -26,17 +29,20 @@ func (h *handler) uploadOPML(w http.ResponseWriter, r *http.Request) {
 
 	file, fileHeader, err := r.FormFile("file")
 	if err != nil {
-		logger.Error("[UI:UploadOPML] %v", err)
+		slog.Error("OPML file upload error",
+			slog.Int64("user_id", loggedUserID),
+			slog.Any("error", err),
+		)
+
 		html.Redirect(w, r, route.Path(h.router, "import"))
 		return
 	}
 	defer file.Close()
 
-	logger.Debug(
-		"[UI:UploadOPML] User #%d uploaded this file: %s (%d bytes)",
-		user.ID,
-		fileHeader.Filename,
-		fileHeader.Size,
+	slog.Info("OPML file uploaded",
+		slog.Int64("user_id", loggedUserID),
+		slog.String("file_name", fileHeader.Filename),
+		slog.Int64("file_size", fileHeader.Size),
 	)
 
 	nsfw := request.IsNSFWEnabled(r)
@@ -48,7 +54,7 @@ func (h *handler) uploadOPML(w http.ResponseWriter, r *http.Request) {
 	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	if fileHeader.Size == 0 {
-		view.Set("errorMessage", "error.empty_file")
+		view.Set("errorMessage", locale.NewLocalizedError("error.empty_file").Translate(user.Language))
 		html.OK(w, r, view.Render("import"))
 		return
 	}
@@ -63,22 +69,22 @@ func (h *handler) uploadOPML(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) fetchOPML(w http.ResponseWriter, r *http.Request) {
-	user, err := h.store.UserByID(request.UserID(r))
+	loggedUserID := request.UserID(r)
+	user, err := h.store.UserByID(loggedUserID)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
 	}
 
-	url := r.FormValue("url")
-	if url == "" {
+	opmlFileURL := strings.TrimSpace(r.FormValue("url"))
+	if opmlFileURL == "" {
 		html.Redirect(w, r, route.Path(h.router, "import"))
 		return
 	}
 
-	logger.Debug(
-		"[UI:FetchOPML] User #%d fetching this URL: %s",
-		user.ID,
-		url,
+	slog.Info("Fetching OPML file remotely",
+		slog.Int64("user_id", loggedUserID),
+		slog.String("opml_file_url", opmlFileURL),
 	)
 
 	nsfw := request.IsNSFWEnabled(r)
@@ -89,15 +95,21 @@ func (h *handler) fetchOPML(w http.ResponseWriter, r *http.Request) {
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
-	clt := client.NewClientWithConfig(url, config.Opts)
-	resp, err := clt.Get()
-	if err != nil {
-		view.Set("errorMessage", err)
+	requestBuilder := fetcher.NewRequestBuilder()
+	requestBuilder.WithTimeout(config.Opts.HTTPClientTimeout())
+	requestBuilder.WithProxy(config.Opts.HTTPClientProxy())
+
+	responseHandler := fetcher.NewResponseHandler(requestBuilder.ExecuteRequest(opmlFileURL))
+	defer responseHandler.Close()
+
+	if localizedError := responseHandler.LocalizedError(); localizedError != nil {
+		slog.Warn("Unable to fetch OPML file", slog.String("opml_file_url", opmlFileURL), slog.Any("error", localizedError.Error()))
+		view.Set("errorMessage", localizedError.Translate(user.Language))
 		html.OK(w, r, view.Render("import"))
 		return
 	}
 
-	if impErr := opml.NewHandler(h.store).Import(user.ID, resp.Body); impErr != nil {
+	if impErr := opml.NewHandler(h.store).Import(user.ID, responseHandler.Body(config.Opts.HTTPClientMaxBodySize())); impErr != nil {
 		view.Set("errorMessage", impErr)
 		html.OK(w, r, view.Render("import"))
 		return

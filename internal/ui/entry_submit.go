@@ -13,7 +13,6 @@ import (
 
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/html"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/ui/form"
 	"miniflux.app/v2/internal/ui/session"
 	"miniflux.app/v2/internal/ui/view"
@@ -55,15 +54,14 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 	v.Set("defaultUserAgent", config.Opts.HTTPClientUserAgent())
 
 	if err := entryForm.Validate(); err != nil {
-		v.Set("errorMessage", err.Error())
+		v.Set("errorMessage", err.Translate(user.Language))
 		html.OK(w, r, v.Render("add_entry"))
 		return
 	}
 
 	entry, err := scraper.FetchEntry(entryForm.URL, "", entryForm.UserAgent, entryForm.Cookies)
 	if err != nil {
-		logger.Error("[UI:ProcessEntryWebPage] %s", err)
-		v.Set("errorMessage", err)
+		v.Set("errorMessage", err.Error())
 		html.OK(w, r, v.Render("add_entry"))
 		return
 	}

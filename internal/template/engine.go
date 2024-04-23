@@ -7,12 +7,11 @@ import (
 	"bytes"
 	"embed"
 	"html/template"
+	"log/slog"
 	"strings"
 	"time"
 
-	"miniflux.app/v2/internal/errors"
 	"miniflux.app/v2/internal/locale"
-	"miniflux.app/v2/internal/logger"
 
 	"github.com/gorilla/mux"
 )
@@ -73,7 +72,10 @@ func (e *Engine) ParseTemplates() error {
 		templateContents.WriteString(commonTemplateContents.String())
 		templateContents.Write(fileData)
 
-		logger.Debug("[Template] Parsing: %s", templateName)
+		slog.Debug("Parsing template",
+			slog.String("template_name", templateName),
+		)
+
 		e.templates[templateName] = template.Must(template.New("main").Funcs(e.funcMap.Map()).Parse(templateContents.String()))
 	}
 
@@ -89,7 +91,9 @@ func (e *Engine) ParseTemplates() error {
 			return err
 		}
 
-		logger.Debug("[Template] Parsing: %s", templateName)
+		slog.Debug("Parsing template",
+			slog.String("template_name", templateName),
+		)
 		e.templates[templateName] = template.Must(template.New("base").Funcs(e.funcMap.Map()).Parse(string(fileData)))
 	}
 
@@ -100,7 +104,7 @@ func (e *Engine) ParseTemplates() error {
 func (e *Engine) Render(name string, data map[string]interface{}) []byte {
 	tpl, ok := e.templates[name]
 	if !ok {
-		logger.Fatal("[Template] The template %s does not exists", name)
+		panic("This template does not exists: " + name)
 	}
 
 	printer := locale.NewPrinter(data["language"].(string))
@@ -114,10 +118,6 @@ func (e *Engine) Render(name string, data map[string]interface{}) []byte {
 			switch k := key.(type) {
 			case string:
 				return printer.Printf(k, args...)
-			case errors.LocalizedError:
-				return k.Localize(printer)
-			case *errors.LocalizedError:
-				return k.Localize(printer)
 			case error:
 				return k.Error()
 			default:
@@ -132,7 +132,7 @@ func (e *Engine) Render(name string, data map[string]interface{}) []byte {
 	var b bytes.Buffer
 	err := tpl.ExecuteTemplate(&b, "base", data)
 	if err != nil {
-		logger.Fatal("[Template] Unable to render template: %v", err)
+		panic(err)
 	}
 
 	return b.Bytes()

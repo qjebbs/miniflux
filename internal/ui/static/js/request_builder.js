@@ -9,7 +9,7 @@ class RequestBuilder {
             body: null,
             headers: new Headers({
                 "Content-Type": "application/json",
-                "X-Csrf-Token": this.getCsrfToken()
+                "X-Csrf-Token": getCsrfToken()
             })
         };
     }
@@ -47,15 +47,6 @@ class RequestBuilder {
     withCallback(callback) {
         this.callback = callback;
         return this;
-    }
-
-    getCsrfToken() {
-        let element = document.querySelector("body[data-csrf-token]");
-        if (element !== null) {
-            return element.dataset.csrfToken;
-        }
-
-        return "";
     }
 
     execute() {

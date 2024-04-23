@@ -9,9 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"miniflux.app/v2/internal/errors"
-
 	"miniflux.app/v2/internal/crypto"
+	"miniflux.app/v2/internal/locale"
 
 	"miniflux.app/v2/internal/model"
 	"miniflux.app/v2/internal/reader/readability"
@@ -20,7 +19,6 @@ import (
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/html"
 	"miniflux.app/v2/internal/http/route"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/ui/form"
 	"miniflux.app/v2/internal/ui/session"
 	"miniflux.app/v2/internal/ui/view"
@@ -59,7 +57,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	if err := entryForm.ValidateModification(); err != nil {
-		view.Set("errorMessage", err.Error())
+		view.Set("errorMessage", err.Translate(user.Language))
 		html.OK(w, r, view.Render("edit_entry"))
 		return
 	}
@@ -103,7 +101,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 				html.OK(w, r, view.Render("edit_entry"))
 				return
 			}
-			view.Set("errorMessage", errors.NewLocalizedError("error.entry_existed"))
+			view.Set("errorMessage", locale.NewLocalizedError("error.entry_existed"))
 			view.Set("errorAction", route.Path(h.router, "editEntry", "entryID", entry.ID))
 			html.OK(w, r, view.Render("edit_entry"))
 			return
@@ -130,7 +128,6 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 
 	err = h.store.EditEntry(entryForm.Merge(entry))
 	if err != nil {
-		logger.Error("[UI:UpdateEntry] %v", err)
 		view.Set("errorMessage", err.Error())
 		html.OK(w, r, view.Render("edit_entry"))
 		return

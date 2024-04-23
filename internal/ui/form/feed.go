@@ -35,6 +35,7 @@ type FeedForm struct {
 	NoMediaPlayer               bool
 	NSFW                        bool
 	ProxifyMedia                bool
+	AppriseServiceURLs          string
 }
 
 // Merge updates the fields of the given feed.
@@ -64,6 +65,7 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.NoMediaPlayer = f.NoMediaPlayer
 	feed.NSFW = f.NSFW
 	feed.ProxifyMedia = f.ProxifyMedia
+	feed.AppriseServiceURLs = f.AppriseServiceURLs
 	return feed
 }
 
@@ -101,5 +103,6 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		NoMediaPlayer:               r.FormValue("no_media_player") == "1",
 		NSFW:                        r.FormValue("nsfw") == "1",
 		ProxifyMedia:                r.FormValue("proxify_media") == "1",
+		AppriseServiceURLs:          r.FormValue("apprise_service_urls"),
 	}
 }

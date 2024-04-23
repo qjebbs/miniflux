@@ -3,6 +3,7 @@ package media // import "miniflux.app/v2/internal/reader/media"
 import (
 	"fmt"
 	"io/ioutil"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"miniflux.app/v2/internal/crypto"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/model"
 )
 
@@ -31,7 +31,7 @@ func FindMedia(media *model.Media) error {
 		return fmt.Errorf("refuse to cache 'data' scheme media")
 	}
 
-	logger.Debug("[FindMedia] Fetching media => %s", media.URL)
+	slog.Debug("fetching media", slog.String("url", media.URL))
 	resp, err := FetchMedia(media, nil)
 	if err != nil {
 		return err

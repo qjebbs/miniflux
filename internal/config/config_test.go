@@ -8,6 +8,181 @@ import (
 	"testing"
 )
 
+func TestLogFileDefaultValue(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogFile() != defaultLogFile {
+		t.Fatalf(`Unexpected log file value, got %q`, opts.LogFile())
+	}
+}
+
+func TestLogFileWithCustomFilename(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("LOG_FILE", "foobar.log")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+	if opts.LogFile() != "foobar.log" {
+		t.Fatalf(`Unexpected log file value, got %q`, opts.LogFile())
+	}
+}
+
+func TestLogFileWithEmptyValue(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("LOG_FILE", "")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogFile() != defaultLogFile {
+		t.Fatalf(`Unexpected log file value, got %q`, opts.LogFile())
+	}
+}
+
+func TestLogLevelDefaultValue(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogLevel() != defaultLogLevel {
+		t.Fatalf(`Unexpected log level value, got %q`, opts.LogLevel())
+	}
+}
+
+func TestLogLevelWithCustomValue(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("LOG_LEVEL", "warning")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogLevel() != "warning" {
+		t.Fatalf(`Unexpected log level value, got %q`, opts.LogLevel())
+	}
+}
+
+func TestLogLevelWithInvalidValue(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("LOG_LEVEL", "invalid")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogLevel() != defaultLogLevel {
+		t.Fatalf(`Unexpected log level value, got %q`, opts.LogLevel())
+	}
+}
+
+func TestLogDateTimeDefaultValue(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogDateTime() != defaultLogDateTime {
+		t.Fatalf(`Unexpected log date time value, got %v`, opts.LogDateTime())
+	}
+}
+
+func TestLogDateTimeWithCustomValue(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("LOG_DATETIME", "false")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogDateTime() != false {
+		t.Fatalf(`Unexpected log date time value, got %v`, opts.LogDateTime())
+	}
+}
+
+func TestLogDateTimeWithInvalidValue(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("LOG_DATETIME", "invalid")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogDateTime() != defaultLogDateTime {
+		t.Fatalf(`Unexpected log date time value, got %v`, opts.LogDateTime())
+	}
+}
+
+func TestLogFormatDefaultValue(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogFormat() != defaultLogFormat {
+		t.Fatalf(`Unexpected log format value, got %q`, opts.LogFormat())
+	}
+}
+
+func TestLogFormatWithCustomValue(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("LOG_FORMAT", "json")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogFormat() != "json" {
+		t.Fatalf(`Unexpected log format value, got %q`, opts.LogFormat())
+	}
+}
+
+func TestLogFormatWithInvalidValue(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("LOG_FORMAT", "invalid")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	if opts.LogFormat() != defaultLogFormat {
+		t.Fatalf(`Unexpected log format value, got %q`, opts.LogFormat())
+	}
+}
+
 func TestDebugModeOn(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("DEBUG", "1")
@@ -18,8 +193,8 @@ func TestDebugModeOn(t *testing.T) {
 		t.Fatalf(`Parsing failure: %v`, err)
 	}
 
-	if !opts.HasDebugMode() {
-		t.Fatalf(`Unexpected debug mode value, got "%v"`, opts.HasDebugMode())
+	if opts.LogLevel() != "debug" {
+		t.Fatalf(`Unexpected debug mode value, got %q`, opts.LogLevel())
 	}
 }
 
@@ -32,8 +207,8 @@ func TestDebugModeOff(t *testing.T) {
 		t.Fatalf(`Parsing failure: %v`, err)
 	}
 
-	if opts.HasDebugMode() {
-		t.Fatalf(`Unexpected debug mode value, got "%v"`, opts.HasDebugMode())
+	if opts.LogLevel() != "info" {
+		t.Fatalf(`Unexpected debug mode value, got %q`, opts.LogLevel())
 	}
 }
 
@@ -704,7 +879,7 @@ func TestPollingScheduler(t *testing.T) {
 	}
 }
 
-func TestDefautSchedulerCountBasedMaxIntervalValue(t *testing.T) {
+func TestDefautSchedulerEntryFrequencyMaxIntervalValue(t *testing.T) {
 	os.Clearenv()
 
 	parser := NewParser()
@@ -721,7 +896,7 @@ func TestDefautSchedulerCountBasedMaxIntervalValue(t *testing.T) {
 	}
 }
 
-func TestDefautSchedulerCountBasedMaxInterval(t *testing.T) {
+func TestSchedulerEntryFrequencyMaxInterval(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("SCHEDULER_ENTRY_FREQUENCY_MAX_INTERVAL", "30")
 
@@ -739,7 +914,7 @@ func TestDefautSchedulerCountBasedMaxInterval(t *testing.T) {
 	}
 }
 
-func TestDefautSchedulerCountBasedMinIntervalValue(t *testing.T) {
+func TestDefautSchedulerEntryFrequencyMinIntervalValue(t *testing.T) {
 	os.Clearenv()
 
 	parser := NewParser()
@@ -756,7 +931,7 @@ func TestDefautSchedulerCountBasedMinIntervalValue(t *testing.T) {
 	}
 }
 
-func TestDefautSchedulerCountBasedMinInterval(t *testing.T) {
+func TestSchedulerEntryFrequencyMinInterval(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("SCHEDULER_ENTRY_FREQUENCY_MIN_INTERVAL", "30")
 
@@ -771,6 +946,76 @@ func TestDefautSchedulerCountBasedMinInterval(t *testing.T) {
 
 	if result != expected {
 		t.Fatalf(`Unexpected SCHEDULER_ENTRY_FREQUENCY_MIN_INTERVAL value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestDefautSchedulerEntryFrequencyFactorValue(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := defaultSchedulerEntryFrequencyFactor
+	result := opts.SchedulerEntryFrequencyFactor()
+
+	if result != expected {
+		t.Fatalf(`Unexpected SCHEDULER_ENTRY_FREQUENCY_FACTOR value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestSchedulerEntryFrequencyFactor(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("SCHEDULER_ENTRY_FREQUENCY_FACTOR", "2")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := 2
+	result := opts.SchedulerEntryFrequencyFactor()
+
+	if result != expected {
+		t.Fatalf(`Unexpected SCHEDULER_ENTRY_FREQUENCY_FACTOR value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestDefaultSchedulerRoundRobinValue(t *testing.T) {
+	os.Clearenv()
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := defaultSchedulerRoundRobinMinInterval
+	result := opts.SchedulerRoundRobinMinInterval()
+
+	if result != expected {
+		t.Fatalf(`Unexpected SCHEDULER_ROUND_ROBIN_MIN_INTERVAL value, got %v instead of %v`, result, expected)
+	}
+}
+
+func TestSchedulerRoundRobin(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("SCHEDULER_ROUND_ROBIN_MIN_INTERVAL", "15")
+
+	parser := NewParser()
+	opts, err := parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	expected := 15
+	result := opts.SchedulerRoundRobinMinInterval()
+
+	if result != expected {
+		t.Fatalf(`Unexpected SCHEDULER_ROUND_ROBIN_MIN_INTERVAL value, got %v instead of %v`, result, expected)
 	}
 }
 
@@ -932,7 +1177,7 @@ func TestDefaultOAuth2RedirectURLValue(t *testing.T) {
 	}
 }
 
-func TestOAuth2OidcDiscoveryEndpoint(t *testing.T) {
+func TestOAuth2OIDCDiscoveryEndpoint(t *testing.T) {
 	os.Clearenv()
 	os.Setenv("OAUTH2_OIDC_DISCOVERY_ENDPOINT", "http://example.org")
 
@@ -943,14 +1188,14 @@ func TestOAuth2OidcDiscoveryEndpoint(t *testing.T) {
 	}
 
 	expected := "http://example.org"
-	result := opts.OAuth2OidcDiscoveryEndpoint()
+	result := opts.OIDCDiscoveryEndpoint()
 
 	if result != expected {
 		t.Fatalf(`Unexpected OAUTH2_OIDC_DISCOVERY_ENDPOINT value, got %q instead of %q`, result, expected)
 	}
 }
 
-func TestDefaultOAuth2OidcDiscoveryEndpointValue(t *testing.T) {
+func TestDefaultOIDCDiscoveryEndpointValue(t *testing.T) {
 	os.Clearenv()
 
 	parser := NewParser()
@@ -960,10 +1205,10 @@ func TestDefaultOAuth2OidcDiscoveryEndpointValue(t *testing.T) {
 	}
 
 	expected := defaultOAuth2OidcDiscoveryEndpoint
-	result := opts.OAuth2OidcDiscoveryEndpoint()
+	result := opts.OIDCDiscoveryEndpoint()
 
 	if result != expected {
-		t.Fatalf(`Unexpected OAUTH2_REDIRECT_URL value, got %q instead of %q`, result, expected)
+		t.Fatalf(`Unexpected OAUTH2_OIDC_DISCOVERY_ENDPOINT value, got %q instead of %q`, result, expected)
 	}
 }
 
@@ -1643,8 +1888,8 @@ Invalid text
 		t.Errorf(`Parsing failure: %v`, err)
 	}
 
-	if opts.HasDebugMode() != true {
-		t.Errorf(`Unexpected debug mode value, got "%v"`, opts.HasDebugMode())
+	if opts.LogLevel() != "debug" {
+		t.Errorf(`Unexpected debug mode value, got %q`, opts.LogLevel())
 	}
 
 	expected := ">#1234"

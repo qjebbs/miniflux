@@ -174,7 +174,7 @@ func getExtraAttributes(tagName string) ([]string, []string) {
 	case "video", "audio":
 		return []string{"controls"}, []string{"controls"}
 	case "iframe":
-		return []string{"sandbox", "loading"}, []string{`sandbox="allow-scripts allow-same-origin allow-popups"`, `loading="lazy"`}
+		return []string{"sandbox", "loading"}, []string{`sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"`, `loading="lazy"`}
 	case "img":
 		return []string{"loading"}, []string{`loading="lazy"`}
 	default:
@@ -297,6 +297,10 @@ func hasValidURIScheme(src string) bool {
 		"tel:",
 		"webcal://",
 		"xmpp:",
+
+		// iOS Apps
+		"opener://", // https://www.opener.link
+		"hack://",   // https://apps.apple.com/it/app/hack-for-hacker-news-reader/id1464477788?l=en-GB
 	}
 
 	for _, prefix := range whitelist {
@@ -347,6 +351,7 @@ func isValidIframeSource(baseURL, src string) bool {
 		"https://bandcamp.com",
 		"https://cdn.embedly.com",
 		"https://player.bilibili.com",
+		"https://player.twitch.tv",
 	}
 
 	// allow iframe from same origin

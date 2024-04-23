@@ -122,6 +122,7 @@ func GenerateJavascriptBundles() error {
 			"js/action_menu_handler.js",
 			"js/lazy_load_handler.js",
 			"js/app.js",
+			"js/webauthn_handler.js",
 			"js/bootstrap.js",
 			"js/masonry.pkgd.min.js",
 			"js/imagesloaded.pkgd.min.js",

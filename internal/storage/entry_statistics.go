@@ -2,16 +2,12 @@ package storage // import "miniflux.app/v2/internal/storage"
 
 import (
 	"fmt"
-	"time"
 
 	"miniflux.app/v2/internal/model"
-
-	"miniflux.app/v2/internal/timer"
 )
 
 // UnreadStatByFeed returns unread count of feeds.
 func (s *Storage) UnreadStatByFeed(userID int64, nsfw bool) (stat model.EntryStat, err error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:UnreadStatByFeed]")
 	query := `
 		SELECT f.id, f.title, max(fi.icon_id) icon, count(e.id) u_count
 		FROM feeds f
@@ -38,7 +34,6 @@ func (s *Storage) UnreadStatByFeed(userID int64, nsfw bool) (stat model.EntrySta
 
 // StarredStatByFeed returns starred count of feeds.
 func (s *Storage) StarredStatByFeed(userID int64, nsfw bool) (stat model.EntryStat, err error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:StarredStatByFeed]")
 	query := `
 		SELECT f.id, f.title, max(fi.icon_id) icon, count(e.id) s_count
 		FROM feeds f
@@ -58,7 +53,6 @@ func (s *Storage) StarredStatByFeed(userID int64, nsfw bool) (stat model.EntrySt
 
 // UnreadStatByCategory returns unread count of categories.
 func (s *Storage) UnreadStatByCategory(userID int64, nsfw bool) (stat model.EntryStat, err error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:UnreadStatByCategory]")
 	query := `
 		SELECT c.id, c.title, count(e.id) u_count
 		FROM categories c
@@ -85,7 +79,6 @@ func (s *Storage) UnreadStatByCategory(userID int64, nsfw bool) (stat model.Entr
 
 // StarredStatByCategory returns starred count of categories.
 func (s *Storage) StarredStatByCategory(userID int64, nsfw bool) (stat model.EntryStat, err error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:StarredStatByCategory]")
 	query := `
 		SELECT c.id, c.title, count(e.id) s_count
 		FROM categories c

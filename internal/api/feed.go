@@ -5,9 +5,11 @@ package api // import "miniflux.app/v2/internal/api"
 
 import (
 	json_parser "encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 
+	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/json"
 	"miniflux.app/v2/internal/model"
@@ -24,14 +26,24 @@ func (h *handler) createFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Make the feed category optional for clients who don't support categories.
+	if feedCreationRequest.CategoryID == 0 {
+		category, err := h.store.FirstCategory(userID)
+		if err != nil {
+			json.ServerError(w, r, err)
+			return
+		}
+		feedCreationRequest.CategoryID = category.ID
+	}
+
 	if validationErr := validator.ValidateFeedCreation(h.store, userID, &feedCreationRequest); validationErr != nil {
 		json.BadRequest(w, r, validationErr.Error())
 		return
 	}
 
-	feed, err := feedHandler.CreateFeed(h.store, userID, &feedCreationRequest)
-	if err != nil {
-		json.ServerError(w, r, err)
+	feed, localizedError := feedHandler.CreateFeed(h.store, userID, &feedCreationRequest)
+	if localizedError != nil {
+		json.ServerError(w, r, localizedError.Error())
 		return
 	}
 
@@ -47,9 +59,9 @@ func (h *handler) refreshFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := feedHandler.RefreshFeed(h.store, userID, feedID, false)
-	if err != nil {
-		json.ServerError(w, r, err)
+	localizedError := feedHandler.RefreshFeed(h.store, userID, feedID, false)
+	if localizedError != nil {
+		json.ServerError(w, r, localizedError.Error())
 		return
 	}
 
@@ -58,15 +70,26 @@ func (h *handler) refreshFeed(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) refreshAllFeeds(w http.ResponseWriter, r *http.Request) {
 	userID := request.UserID(r)
-	jobs, err := h.store.NewUserBatch(userID, h.store.CountFeeds(userID))
+
+	batchBuilder := h.store.NewBatchBuilder()
+	batchBuilder.WithErrorLimit(config.Opts.PollingParsingErrorLimit())
+	batchBuilder.WithoutDisabledFeeds()
+	batchBuilder.WithNextCheckExpired()
+	batchBuilder.WithUserID(userID)
+
+	jobs, err := batchBuilder.FetchJobs()
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
 	}
 
-	go func() {
-		h.pool.Push(jobs)
-	}()
+	slog.Info(
+		"Triggered a manual refresh of all feeds from the API",
+		slog.Int64("user_id", userID),
+		slog.Int("nb_jobs", len(jobs)),
+	)
+
+	go h.pool.Push(jobs)
 
 	json.NoContent(w, r)
 }

@@ -5,14 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strconv"
-	"time"
 
 	"miniflux.app/v2/internal/filesystem"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/model"
 	"miniflux.app/v2/internal/reader/media"
-	"miniflux.app/v2/internal/timer"
 )
 
 const maxCachingError = 3
@@ -27,7 +25,7 @@ func (s *Storage) CacheMedias() error {
 	count := 0
 	failedCount := 0
 	defer func() {
-		logger.Info("%d media newly cached, %d failed", count, failedCount)
+		slog.Info("cache medias", slog.Int("cached", count), slog.Int("failed", failedCount))
 	}()
 
 	var (
@@ -40,15 +38,14 @@ func (s *Storage) CacheMedias() error {
 		if err != nil {
 			return err
 		}
-		for i, m := range medias {
-			logger.Debug("[Storage:CacheMedias] caching media (%d of %d) #%d: %s", i+1, len(medias), m.ID, m.URL)
+		for _, m := range medias {
 			entries, _ := mEntries[m.ID]
 			if !m.Cached {
 				// try load media from disk cache first
 				if err = filesystem.MediaFromCache(m); err != nil {
-					logger.Debug("[Storage:CacheMedias] unable to load disk cache: %v", err)
+					slog.Debug("[Storage:CacheMedias] unable to load disk cache: %v", err)
 					if err = media.FindMedia(m); err != nil {
-						logger.Error("[Storage:CacheMedias] unable to fetch media %s: %v", m.URL, err)
+						slog.Error("[Storage:CacheMedias] unable to fetch media %s: %v", m.URL, err)
 						m.ErrorCount++
 						if err = s.UpdateMediaError(m); err != nil {
 							return fmt.Errorf("[Storage:CacheMedias] unable to update media error #%d: %v", m.ID, err)
@@ -62,8 +59,6 @@ func (s *Storage) CacheMedias() error {
 						failedCount++
 						continue
 					}
-				} else {
-					logger.Debug("[Storage:CacheMedias] loaded from disk cache: %s", m.URLHash)
 				}
 				m.Cached = true
 				// reset error count on success
@@ -166,20 +161,17 @@ func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
 	var buf bytes.Buffer
 	for _, m := range medias {
 		if !m.Cached {
-			logger.Debug("[Storage:CacheEntryMedias] caching media #%d: %v", m.ID, m.URL)
 			// try load media from disk cache first
 			if err = filesystem.MediaFromCache(m); err != nil {
-				logger.Debug("[Storage:CacheEntryMedias] unable to load disk cache: %v", err)
+				slog.Debug("[Storage:CacheEntryMedias] unable to load disk cache: %v", err)
 				if err = media.FindMedia(m); err != nil {
-					logger.Error("[Storage:CacheEntryMedias] unable to fetch media %s: %v", m.URL, err)
+					slog.Error("[Storage:CacheEntryMedias] unable to fetch media %s: %v", m.URL, err)
 					m.ErrorCount++
 					if err = s.UpdateMediaError(m); err != nil {
 						return fmt.Errorf("[Storage:CacheEntryMedias] unable to update media error #%d: %v", m.ID, err)
 					}
 					continue
 				}
-			} else {
-				logger.Debug("[Storage:CacheEntryMedias] loaded from disk cache: %s", m.URLHash)
 			}
 			m.Cached = true
 			m.ErrorCount = 0
@@ -237,8 +229,6 @@ func (s *Storage) getEntryMedias(userID, EntryID int64) (model.Medias, error) {
 // It doesn't really remove the caches in database or disk.
 // Unclaimed caches will be remove by CleanMediaCaches() later.
 func (s *Storage) RemoveFeedCaches(userID, feedID int64) error {
-	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:RemoveFeedCaches] userID=%d, feedID=%d", userID, feedID))
-
 	result, err := s.db.Exec(`
 		UPDATE entry_medias 
 		SET use_cache ='f'
@@ -268,7 +258,6 @@ func (s *Storage) RemoveFeedCaches(userID, feedID int64) error {
 
 // CleanMediaCaches removes caches that no entry claims to use.
 func (s *Storage) CleanMediaCaches() error {
-	defer timer.ExecutionTime(time.Now(), "[Storage:CleanMediaCaches]")
 	// Step 1: clean media which has no 'use cache' reference, which applies to 2 cases:
 	// 1. media which has reference records, but no 'use cache' record.
 	// 2. media which has no reference record at all.
@@ -298,18 +287,18 @@ func (s *Storage) CleanMediaCaches() error {
 		var urlHash string
 		err := rows.Scan(&urlHash)
 		if err != nil {
-			logger.Error("unable to fetch unused cache info: %v", err)
+			slog.Error("unable to fetch unused cache info: %v", err)
 			continue
 		}
 		err = filesystem.RemoveMediaFile(urlHash)
 		if err != nil {
-			logger.Error("unable to remove cache file (%s): %v", urlHash, err)
+			slog.Error("unable to remove cache file (%s): %v", urlHash, err)
 			continue
 		}
 		count++
 	}
 
-	logger.Info("%d media cache removed.", count)
+	slog.Info("remove unused media cache.", slog.Int("count", count))
 
 	// step 2: Remove media records which has no reference record at all.
 	err = s.cleanMediaRecords()
@@ -324,8 +313,6 @@ func (s *Storage) CleanMediaCaches() error {
 // Usually, since toggle off doesn't really remove the caches,
 // it just update the use_cache flag to true with very low cost
 func (s *Storage) ToggleEntryCache(userID int64, entryID int64) error {
-	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:ToggleEntryCache] userID=%d, entryID=%d", userID, entryID))
-
 	if s.HasEntryCache(entryID) {
 		query := `
 			UPDATE entry_medias SET use_cache='f' WHERE entry_id in (
@@ -394,7 +381,7 @@ func (s *Storage) MoveCacheToDisk() error {
 	if err != nil {
 		return fmt.Errorf("unable to clear data base cache: %v", err)
 	}
-	logger.Info("%d cache(s) moved to disk, %d unused cache(s) removed", countSaved, countAll-countSaved)
+	slog.Info("cache moved to disk", slog.Int64("count", countSaved), slog.Int64("removed", countAll-countSaved))
 	return nil
 }
 
@@ -403,10 +390,10 @@ func (s *Storage) ValidateCaches() error {
 	var count int64
 	defer func() {
 		if count > 0 {
-			logger.Info("tagged %d invalid cache(s) as uncached", count)
+			slog.Info("invalid caches found ", slog.Int64("count", count))
 			return
 		}
-		// logger.Info("caches are good :)")
+		// slog.Info("caches are good :)")
 	}()
 	var offset int64
 	var limit int64 = 5000

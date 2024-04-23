@@ -1,7 +1,8 @@
 package cli
 
 import (
-	"miniflux.app/v2/internal/logger"
+	"log/slog"
+
 	"miniflux.app/v2/internal/model"
 	"miniflux.app/v2/internal/storage"
 )
@@ -36,13 +37,16 @@ func fixEntries(store *storage.Storage, q *storage.EntryQueryBuilder) error {
 			if entry.CoverImage != "" {
 				continue
 			}
-			if err := store.UpdateEntryContent(entry); err != nil {
+			if err := store.UpdateEntryTitleAndContent(entry); err != nil {
 				return err
 			}
 		}
 		offset += 100
-		logger.Info("fixed %d entries out of %d", offset, count)
+		slog.Info(
+			"fix entries",
+			slog.Int("fixed", offset), slog.Int("all", count),
+		)
 	}
-	logger.Info("all %d covers fixed", count)
+	slog.Info("all covers fixed")
 	return nil
 }

@@ -4,22 +4,18 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"strings"
-	"time"
 
 	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/filesystem"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/model"
 	"miniflux.app/v2/internal/reader/media"
-	"miniflux.app/v2/internal/timer"
 )
 
 // MediaByURL returns an Media by the url.
 // it returns a cached media first if any, remember to check Media.Cached.
 func (s *Storage) MediaByURL(URL string) (*model.Media, error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:MediaByURL]")
-
 	m := &model.Media{URLHash: media.URLHash(URL)}
 	err := s.MediaByHash(m)
 	return m, err
@@ -28,8 +24,6 @@ func (s *Storage) MediaByURL(URL string) (*model.Media, error) {
 // MediaByHash returns an Media by the url hash (checksum).
 // it returns a cached media first if any, remember to check Media.Cached.
 func (s *Storage) MediaByHash(media *model.Media) error {
-	defer timer.ExecutionTime(time.Now(), "[Storage:MediaByHash]")
-
 	useCache := false
 	err := s.db.QueryRow(`
 	SELECT m.id, m.url, m.mime_type, m.content, m.cached, e.url, em.use_cache
@@ -64,8 +58,6 @@ func (s *Storage) MediaByHash(media *model.Media) error {
 // Notice the media fetched could be an unsucessfully cached one.
 // Remember to check Media.Cached.
 func (s *Storage) UserMediaByURL(URL string, userID int64) (*model.Media, error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:UserMediaByURL]")
-
 	m := &model.Media{URLHash: media.URLHash(URL)}
 	err := s.UserMediaByHash(m, userID)
 	return m, err
@@ -75,8 +67,6 @@ func (s *Storage) UserMediaByURL(URL string, userID int64) (*model.Media, error)
 // Notice the media fetched could be an unsucessfully cached one.
 // Remember to check Media.Cached.
 func (s *Storage) UserMediaByHash(media *model.Media, userID int64) error {
-	defer timer.ExecutionTime(time.Now(), "[Storage:UserMediaByHash]")
-
 	useCache := false
 	// "ORDER BY use_cache DESC" is important.
 	// It makes sure the result of use_cache in this query would be true
@@ -116,7 +106,6 @@ func (s *Storage) UserMediaByHash(media *model.Media, userID int64) error {
 
 // CreateMedia creates a new media item.
 func (s *Storage) CreateMedia(media *model.Media) error {
-	defer timer.ExecutionTime(time.Now(), "[Storage:CreateMedia]")
 	query := `
 	INSERT INTO medias
 	(url, url_hash, mime_type, content, size, cached)
@@ -279,7 +268,6 @@ func (s *Storage) CreateEntriesMedia(tx *sql.Tx, entries model.Entries) error {
 
 // UpdateMedia updates a media cache.
 func (s *Storage) UpdateMedia(media *model.Media) error {
-	defer timer.ExecutionTime(time.Now(), "[Storage:UpdateMedia]")
 	query := `
 	UPDATE medias
 	SET mime_type=$2, content=$3, size=$4, cached=$5, error_count=$6
@@ -343,7 +331,6 @@ func (s *Storage) UpdateMediaError(m *model.Media) (err error) {
 
 // Medias returns all media caches tht belongs to a user.
 func (s *Storage) Medias(userID int64) (model.Medias, error) {
-	defer timer.ExecutionTime(time.Now(), fmt.Sprintf("[Storage:Medias] userID=%d", userID))
 	query := `
 		SELECT
 		m.id, m.url_hash, m.mime_type, m.content
@@ -374,7 +361,6 @@ func (s *Storage) Medias(userID int64) (model.Medias, error) {
 
 // updateEntryMedia updates media records for given entries
 func (s *Storage) updateEntryMedia(tx *sql.Tx, entry *model.Entry) error {
-	defer timer.ExecutionTime(time.Now(), "[Storage:updateEntryMedia]")
 	if entry.ID == 0 || entry.Status == "" {
 		err := tx.QueryRow(
 			`SELECT id, status FROM entries WHERE user_id=$1 AND feed_id=$2 AND hash=$3`,
@@ -429,7 +415,7 @@ func (s *Storage) cleanMediaReferences() error {
 	if err != nil {
 		return fmt.Errorf(`store:unable to clean media references: %v`, err)
 	}
-	logger.Info("%d unused media references removed.", count)
+	slog.Info("unused media references removed.", slog.Int64("count", count))
 
 	return nil
 }
@@ -455,6 +441,6 @@ func (s *Storage) cleanMediaRecords() error {
 		return fmt.Errorf("unable to clean media records: %v", err)
 	}
 
-	logger.Info("%d unused media records removed.", count)
+	slog.Info("unused media records removed.", slog.Int64("count", count))
 	return nil
 }

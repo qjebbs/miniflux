@@ -7,11 +7,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"runtime"
+	"log/slog"
 	"sort"
 
 	"miniflux.app/v2/internal/config"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/model"
 )
 
@@ -86,17 +85,6 @@ func (s *Storage) CountAllFeeds() map[string]int64 {
 
 	results["total"] = results["disabled"] + results["enabled"]
 	return results
-}
-
-// CountFeeds returns the number of feeds that belongs to the given user.
-func (s *Storage) CountFeeds(userID int64) int {
-	var result int
-	err := s.db.QueryRow(`SELECT count(*) FROM feeds WHERE user_id=$1`, userID).Scan(&result)
-	if err != nil {
-		return 0
-	}
-
-	return result
 }
 
 // CountUserFeedsWithErrors returns the number of feeds with parse errors that belong to the given user.
@@ -194,9 +182,15 @@ func (s *Storage) FeedsByCategoryWithCounters(userID, categoryID int64, nsfw boo
 
 // WeeklyFeedEntryCount returns the weekly entry count for a feed.
 func (s *Storage) WeeklyFeedEntryCount(userID, feedID int64) (int, error) {
+	// Calculate a virtual weekly count based on the average updating frequency.
+	// This helps after just adding a high volume feed.
+	// Return 0 when the 'count(*)' is zero(0) or one(1).
 	query := `
 		SELECT
-			count(*)
+			COALESCE(CAST(CEIL(
+				(EXTRACT(epoch from interval '1 week'))	/
+				NULLIF((EXTRACT(epoch from (max(published_at)-min(published_at))/NULLIF((count(*)-1), 0) )), 0)
+			) AS BIGINT), 0)
 		FROM
 			entries
 		WHERE
@@ -260,10 +254,11 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			fetch_via_proxy,
 			nsfw,
 			url_rewrite_rules,
-			no_media_player
+			no_media_player,
+			apprise_service_urls
 		)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
 		RETURNING
 			id
 	`
@@ -292,6 +287,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.NSFW,
 		feed.UrlRewriteRules,
 		feed.NoMediaPlayer,
+		feed.AppriseServiceURLs,
 	).Scan(&feed.ID)
 	if err != nil {
 		return fmt.Errorf(`store: unable to create feed %q: %v`, feed.FeedURL, err)
@@ -365,9 +361,10 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			no_media_player=$26,
 			cache_media=$27,
 			view=$28,
-			proxify_media=$29
+			proxify_media=$29,
+			apprise_service_urls=$30
 		WHERE
-			id=$30 AND user_id=$31
+			id=$31 AND user_id=$32
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -399,6 +396,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.CacheMedia,
 		feed.View,
 		feed.ProxifyMedia,
+		feed.AppriseServiceURLs,
 		feed.ID,
 		feed.UserID,
 	)
@@ -477,7 +475,11 @@ func (s *Storage) RemoveFeed(userID, feedID int64) error {
 			return fmt.Errorf(`store: unable to read user feed entry ID: %v`, err)
 		}
 
-		logger.Debug(`[FEED DELETION] Deleting entry #%d of feed #%d for user #%d (%d GoRoutines)`, entryID, feedID, userID, runtime.NumGoroutine())
+		slog.Debug("Deleting entry",
+			slog.Int64("user_id", userID),
+			slog.Int64("feed_id", feedID),
+			slog.Int64("entry_id", entryID),
+		)
 
 		if _, err := s.db.Exec(`DELETE FROM entries WHERE id=$1 AND user_id=$2`, entryID, userID); err != nil {
 			return fmt.Errorf(`store: unable to delete user feed entries #%d: %v`, entryID, err)

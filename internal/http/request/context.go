@@ -3,7 +3,12 @@
 
 package request // import "miniflux.app/v2/internal/http/request"
 
-import "net/http"
+import (
+	"net/http"
+	"strconv"
+
+	"miniflux.app/v2/internal/model"
+)
 
 // ContextKey represents a context key.
 type ContextKey int
@@ -20,13 +25,29 @@ const (
 	SessionIDContextKey
 	CSRFContextKey
 	OAuth2StateContextKey
+	OAuth2CodeVerifierContextKey
 	FlashMessageContextKey
 	FlashErrorMessageContextKey
 	PocketRequestTokenContextKey
+	LastForceRefreshContextKey
 	ClientIPContextKey
 	NSFWContextKey
 	GoogleReaderToken
+	WebAuthnDataContextKey
 )
+
+func WebAuthnSessionData(r *http.Request) *model.WebAuthnSession {
+	if v := r.Context().Value(WebAuthnDataContextKey); v != nil {
+		value, valid := v.(model.WebAuthnSession)
+		if !valid {
+			return nil
+		}
+
+		return &value
+	}
+
+	return nil
+}
 
 // GoolgeReaderToken returns the google reader token if it exists.
 func GoolgeReaderToken(r *http.Request) string {
@@ -100,6 +121,10 @@ func OAuth2State(r *http.Request) string {
 	return getContextStringValue(r, OAuth2StateContextKey)
 }
 
+func OAuth2CodeVerifier(r *http.Request) string {
+	return getContextStringValue(r, OAuth2CodeVerifierContextKey)
+}
+
 // FlashMessage returns the message message if any.
 func FlashMessage(r *http.Request) string {
 	return getContextStringValue(r, FlashMessageContextKey)
@@ -113,6 +138,16 @@ func FlashErrorMessage(r *http.Request) string {
 // PocketRequestToken returns the Pocket Request Token if any.
 func PocketRequestToken(r *http.Request) string {
 	return getContextStringValue(r, PocketRequestTokenContextKey)
+}
+
+// LastForceRefresh returns the last force refresh timestamp.
+func LastForceRefresh(r *http.Request) int64 {
+	jsonStringValue := getContextStringValue(r, LastForceRefreshContextKey)
+	timestamp, err := strconv.ParseInt(jsonStringValue, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return timestamp
 }
 
 // ClientIP returns the client IP address stored in the context.

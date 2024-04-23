@@ -4,16 +4,16 @@
 package cli // import "miniflux.app/v2/internal/cli"
 
 import (
+	"log/slog"
 	"time"
 
 	"miniflux.app/v2/internal/config"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/storage"
 	"miniflux.app/v2/internal/worker"
 )
 
 func runScheduler(store *storage.Storage, pool *worker.Pool) {
-	logger.Info(`Starting background scheduler...`)
+	slog.Debug(`Starting background scheduler...`)
 
 	go store.CreateMediasRunOnce()
 
@@ -22,6 +22,7 @@ func runScheduler(store *storage.Storage, pool *worker.Pool) {
 		pool,
 		config.Opts.PollingFrequency(),
 		config.Opts.BatchSize(),
+		config.Opts.PollingParsingErrorLimit(),
 	)
 
 	go cleanupScheduler(
@@ -34,13 +35,21 @@ func runScheduler(store *storage.Storage, pool *worker.Pool) {
 	}
 }
 
-func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency, batchSize int) {
+func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency, batchSize, errorLimit int) {
 	for range time.Tick(time.Duration(frequency) * time.Minute) {
-		jobs, err := store.NewBatch(batchSize)
-		logger.Info("[Scheduler:Feed] Pushing %d jobs to the queue", len(jobs))
-		if err != nil {
-			logger.Error("[Scheduler:Feed] %v", err)
-		} else {
+		// Generate a batch of feeds for any user that has feeds to refresh.
+		batchBuilder := store.NewBatchBuilder()
+		batchBuilder.WithBatchSize(batchSize)
+		batchBuilder.WithErrorLimit(errorLimit)
+		batchBuilder.WithoutDisabledFeeds()
+		batchBuilder.WithNextCheckExpired()
+
+		if jobs, err := batchBuilder.FetchJobs(); err != nil {
+			slog.Error("Unable to fetch jobs from database", slog.Any("error", err))
+		} else if len(jobs) > 0 {
+			slog.Info("Created a batch of feeds",
+				slog.Int("nb_jobs", len(jobs)),
+			)
 			pool.Push(jobs)
 		}
 	}
@@ -56,10 +65,10 @@ func cacheScheduler(store *storage.Storage, frequency int) {
 	c := time.Tick(time.Duration(frequency) * time.Hour)
 	for range c {
 		if err := store.ValidateCaches(); err != nil {
-			logger.Error("[Scheduler:ValidateCaches] %v", err)
+			slog.Error("scheduler: unable to validate csaches]", slog.Any("error", err))
 		}
 		if err := store.CacheMedias(); err != nil {
-			logger.Error("[Scheduler:CacheMedias] %v", err)
+			slog.Error("scheduler: unable to cache medias", slog.Any("error", err))
 		}
 	}
 }

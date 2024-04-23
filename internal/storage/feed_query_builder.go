@@ -145,6 +145,7 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			f.last_modified_header,
 			f.user_id,
 			f.checked_at at time zone u.timezone,
+			f.next_check_at at time zone u.timezone,
 			f.parsing_error_count,
 			f.parsing_error_msg,
 			f.scraper_rules,
@@ -169,7 +170,8 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			f.category_id,
 			c.title as category_title,
 			fi.icon_id,
-			u.timezone
+			u.timezone,
+			f.apprise_service_urls
 		FROM
 			feeds f
 		LEFT JOIN
@@ -211,6 +213,7 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			&feed.LastModifiedHeader,
 			&feed.UserID,
 			&feed.CheckedAt,
+			&feed.NextCheckAt,
 			&feed.ParsingErrorCount,
 			&feed.ParsingErrorMsg,
 			&feed.ScraperRules,
@@ -236,6 +239,7 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			&feed.Category.Title,
 			&iconID,
 			&tz,
+			&feed.AppriseServiceURLs,
 		)
 
 		if err != nil {
@@ -259,7 +263,9 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			}
 		}
 
+		feed.NumberOfVisibleEntries = feed.ReadCount + feed.UnreadCount
 		feed.CheckedAt = timezone.Convert(tz, feed.CheckedAt)
+		feed.NextCheckAt = timezone.Convert(tz, feed.NextCheckAt)
 		feed.Category.UserID = feed.UserID
 		feeds = append(feeds, &feed)
 	}

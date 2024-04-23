@@ -2,12 +2,9 @@ package storage // import "miniflux.app/v2/internal/storage"
 
 import (
 	"database/sql"
-	"time"
-
-	"miniflux.app/v2/internal/logger"
+	"log/slog"
 
 	"miniflux.app/v2/internal/model"
-	"miniflux.app/v2/internal/timer"
 )
 
 // CreateMediasRunOnce create media records for starred and unread entries,
@@ -15,8 +12,6 @@ import (
 // First, system has just migrated to media cache feature support.
 // Second, database has just restored from backup, since user may not want to include huge medias into backup.
 func (s *Storage) CreateMediasRunOnce() {
-	defer timer.ExecutionTime(time.Now(), "[Storage:CreateMediasRunOnce]")
-
 	has, err := hasMediaRecord(s.db)
 	if has || err != nil {
 		return
@@ -30,7 +25,7 @@ func (s *Storage) CreateMediasRunOnce() {
 	for {
 		entries, err := getEntriesForCreateMediasRunOnce(s.db, startID)
 		if err != nil {
-			logger.Error("[Storage:CreateMediasRunOnce] Error: %v", err)
+			slog.Error("[Storage:CreateMediasRunOnce] Error: %v", err)
 			break
 		}
 		if len(entries) == 0 {
@@ -38,7 +33,7 @@ func (s *Storage) CreateMediasRunOnce() {
 		}
 		err = s.CreateEntriesMedia(tx, entries)
 		if err != nil {
-			logger.Error("[Storage:CreateMediasRunOnce] Error: %v", err)
+			slog.Error("[Storage:CreateMediasRunOnce] Error: %v", err)
 		}
 		startID = entries[len(entries)-1].ID
 	}
@@ -47,7 +42,6 @@ func (s *Storage) CreateMediasRunOnce() {
 
 // hasMediaRecord returns if entry_medias has at least one record.
 func hasMediaRecord(db *sql.DB) (bool, error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:HasMediaCache]")
 	var result int
 	query := `SELECT count(*) FROM (SELECT * FROM entry_medias LIMIT 1) as m`
 	err := db.QueryRow(query).Scan(&result)

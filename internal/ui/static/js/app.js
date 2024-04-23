@@ -218,14 +218,10 @@ function markEntryAsRead(element) {
 // Send the Ajax request to refresh all feeds in the background
 function handleRefreshAllFeeds() {
     let url = document.body.dataset.refreshAllFeedsUrl;
-    let request = new RequestBuilder(url);
 
-    request.withCallback(() => {
-        window.location.reload();
-    });
-
-    request.withHttpMethod("GET");
-    request.execute();
+    if (url) {
+        window.location.href = url;
+    }
 }
 
 // Send the Ajax request to change entries statuses.
@@ -453,7 +449,10 @@ function handleFetchOriginalContent() {
         response.json().then((data) => {
             if (data.hasOwnProperty("content") && data.hasOwnProperty("reading_time")) {
                 document.querySelector(".entry-content").innerHTML = data.content;
-                document.querySelector(".entry-reading-time").innerHTML = data.reading_time;
+                let entryReadingtimeElement = document.querySelector(".entry-reading-time");
+                if (entryReadingtimeElement) {
+                    entryReadingtimeElement.innerHTML = data.reading_time;
+                }
             }
         });
     });
@@ -858,4 +857,13 @@ function checkShareAPI(title, url) {
         console.error(err);
         window.location.reload();
     }
+}
+
+function getCsrfToken() {
+    let element = document.querySelector("body[data-csrf-token]");
+    if (element !== null) {
+        return element.dataset.csrfToken;
+    }
+
+    return "";
 }

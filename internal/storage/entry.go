@@ -7,10 +7,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"miniflux.app/v2/internal/crypto"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/model"
 
 	"github.com/lib/pq"
@@ -59,7 +59,10 @@ func (s *Storage) CountUnreadEntries(userID int64, nsfw bool) int {
 	}
 	n, err := builder.CountEntries()
 	if err != nil {
-		logger.Error(`store: unable to count unread entries for user #%d: %v`, userID, err)
+		slog.Error("Unable to count unread entries",
+			slog.Int64("user_id", userID),
+			slog.Any("error", err),
+		)
 		return 0
 	}
 
@@ -71,8 +74,8 @@ func (s *Storage) NewEntryQueryBuilder(userID int64) *EntryQueryBuilder {
 	return NewEntryQueryBuilder(s, userID)
 }
 
-// UpdateEntryContent updates entry content.
-func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
+// UpdateEntryTitleAndContent updates entry content.
+func (s *Storage) UpdateEntryTitleAndContent(entry *model.Entry) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -88,13 +91,16 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 		UPDATE
 			entries
 		SET
-			content=$1, reading_time=$2,
-			cover_image=$3, image_count=$4
+			title=$1,	
+			content=$2, 
+			reading_time=$3,
+			cover_image=$4, 
+			image_count=$5
 		WHERE
-			id=$5 AND user_id=$6
+			id=$6 AND user_id=$7
 	`
 	_, err = tx.Exec(
-		query, entry.Content, entry.ReadingTime,
+		query, entry.Title, entry.Content, entry.ReadingTime,
 		entry.CoverImage, entry.ImageCount,
 		entry.ID, entry.UserID,
 	)
@@ -117,7 +123,7 @@ func (s *Storage) UpdateEntryContent(entry *model.Entry) error {
 		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 // CreateEntry add a new entry.
@@ -156,7 +162,7 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 				$11
 			)
 		RETURNING
-			id, status
+			id, status, created_at, changed_at
 	`
 	err := tx.QueryRow(
 		query,
@@ -171,7 +177,12 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.FeedID,
 		entry.ReadingTime,
 		pq.Array(removeDuplicates(entry.Tags)),
-	).Scan(&entry.ID, &entry.Status)
+	).Scan(
+		&entry.ID,
+		&entry.Status,
+		&entry.CreatedAt,
+		&entry.ChangedAt,
+	)
 
 	if err != nil {
 		return fmt.Errorf(`store: unable to create entry %q (feed #%d): %v`, entry.URL, entry.FeedID, err)
@@ -257,7 +268,7 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		enclosure.EntryID = entry.ID
 	}
 
-	return s.updateEnclosures(tx, entry.UserID, entry.ID, entry.Enclosures)
+	return s.updateEnclosures(tx, entry)
 }
 
 // EditEntry updates an entry when a feed is edited.
@@ -351,7 +362,7 @@ func (s *Storage) cleanupEntries(feedID int64, entryHashes []string) error {
 }
 
 // RefreshFeedEntries updates feed entries while refreshing a feed.
-func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries, updateExistingEntries bool) (err error) {
+func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries, updateExistingEntries bool) (newEntries model.Entries, err error) {
 	var entryHashes []string
 
 	for _, entry := range entries {
@@ -360,15 +371,15 @@ func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries
 
 		tx, err := s.db.Begin()
 		if err != nil {
-			return fmt.Errorf(`store: unable to start transaction: %v`, err)
+			return nil, fmt.Errorf(`store: unable to start transaction: %v`, err)
 		}
 
 		entryExists, err := s.entryExists(tx, entry)
 		if err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				return fmt.Errorf(`store: unable to rollback transaction: %v (rolled back due to: %v)`, rollbackErr, err)
+				return nil, fmt.Errorf(`store: unable to rollback transaction: %v (rolled back due to: %v)`, rollbackErr, err)
 			}
-			return err
+			return nil, err
 		}
 
 		if entryExists {
@@ -377,17 +388,20 @@ func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries
 			}
 		} else {
 			err = s.CreateEntry(tx, entry)
+			if err == nil {
+				newEntries = append(newEntries, entry)
+			}
 		}
 
 		if err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				return fmt.Errorf(`store: unable to rollback transaction: %v (rolled back due to: %v)`, rollbackErr, err)
+				return nil, fmt.Errorf(`store: unable to rollback transaction: %v (rolled back due to: %v)`, rollbackErr, err)
 			}
-			return err
+			return nil, err
 		}
 
 		if err := tx.Commit(); err != nil {
-			return fmt.Errorf(`store: unable to commit transaction: %v`, err)
+			return nil, fmt.Errorf(`store: unable to commit transaction: %v`, err)
 		}
 
 		entryHashes = append(entryHashes, entry.Hash)
@@ -395,11 +409,15 @@ func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries
 
 	go func() {
 		if err := s.cleanupEntries(feedID, entryHashes); err != nil {
-			logger.Error(`store: feed #%d: %v`, feedID, err)
+			slog.Error("Unable to cleanup entries",
+				slog.Int64("user_id", userID),
+				slog.Int64("feed_id", feedID),
+				slog.Any("error", err),
+			)
 		}
 	}()
 
-	return nil
+	return newEntries, nil
 }
 
 // ArchiveEntries changes the status of entries to "removed" after the given number of days.
@@ -412,12 +430,12 @@ func (s *Storage) ArchiveEntries(status string, days, limit int) (int64, error) 
 		UPDATE
 			entries
 		SET
-			status='removed'
+			status=$1
 		WHERE
-			id=ANY(SELECT id FROM entries WHERE status=$1 AND starred is false AND share_code='' AND created_at < now () - '%d days'::interval ORDER BY created_at ASC LIMIT %d)
+			id=ANY(SELECT id FROM entries WHERE status=$2 AND starred is false AND share_code='' AND created_at < now () - '%d days'::interval ORDER BY created_at ASC LIMIT %d)
 	`
 
-	result, err := s.db.Exec(fmt.Sprintf(query, days, limit), status)
+	result, err := s.db.Exec(fmt.Sprintf(query, days, limit), model.EntryStatusRemoved, status)
 	if err != nil {
 		return 0, fmt.Errorf(`store: unable to archive %s entries: %v`, status, err)
 	}
@@ -495,7 +513,7 @@ func (s *Storage) ToggleBookmark(userID int64, entryID int64) error {
 	return nil
 }
 
-// FlushHistory set all entries with the status "read" to "removed".
+// FlushHistory changes all entries with the status "read" to "removed".
 func (s *Storage) FlushHistory(userID int64) error {
 	query := `
 		UPDATE
@@ -523,7 +541,10 @@ func (s *Storage) MarkAllAsRead(userID int64) error {
 	}
 
 	count, _ := result.RowsAffected()
-	logger.Debug("[Storage:MarkAllAsRead] %d items marked as read", count)
+	slog.Debug("Marked all entries as read",
+		slog.Int64("user_id", userID),
+		slog.Int64("nb_entries", count),
+	)
 
 	return nil
 }
@@ -546,7 +567,10 @@ func (s *Storage) MarkAllAsReadExceptNSFW(userID int64) error {
 	}
 
 	count, _ := result.RowsAffected()
-	logger.Debug("[Storage:MarkAllAsRead] %d items marked as read", count)
+	slog.Debug(
+		"Storage:MarkAllAsReadExceptNSFW",
+		slog.Int64("user_id", userID), slog.Int64("nb_entries", count),
+	)
 
 	return nil
 }
@@ -568,7 +592,11 @@ func (s *Storage) MarkFeedAsRead(userID, feedID int64, before time.Time) error {
 	}
 
 	count, _ := result.RowsAffected()
-	logger.Debug("[Storage:MarkFeedAsRead] %d items marked as read", count)
+	slog.Debug("Marked feed entries as read",
+		slog.Int64("user_id", userID),
+		slog.Int64("feed_id", feedID),
+		slog.Int64("nb_entries", count),
+	)
 
 	return nil
 }
@@ -596,7 +624,11 @@ func (s *Storage) MarkCategoryAsRead(userID, categoryID int64, before time.Time)
 	}
 
 	count, _ := result.RowsAffected()
-	logger.Debug("[Storage:MarkCategoryAsRead] %d items marked as read", count)
+	slog.Debug("Marked category entries as read",
+		slog.Int64("user_id", userID),
+		slog.Int64("category_id", categoryID),
+		slog.Int64("nb_entries", count),
+	)
 
 	return nil
 }

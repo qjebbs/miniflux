@@ -4,7 +4,9 @@
 package session // import "miniflux.app/v2/internal/ui/session"
 
 import (
-	"miniflux.app/v2/internal/crypto"
+	"time"
+
+	"miniflux.app/v2/internal/model"
 	"miniflux.app/v2/internal/storage"
 )
 
@@ -14,11 +16,21 @@ type Session struct {
 	sessionID string
 }
 
-// NewOAuth2State generates a new OAuth2 state and stores the value into the database.
-func (s *Session) NewOAuth2State() string {
-	state := crypto.GenerateRandomString(32)
+// New returns a new session handler.
+func New(store *storage.Storage, sessionID string) *Session {
+	return &Session{store, sessionID}
+}
+
+func (s *Session) SetLastForceRefresh() {
+	s.store.UpdateAppSessionField(s.sessionID, "last_force_refresh", time.Now().UTC().Unix())
+}
+
+func (s *Session) SetOAuth2State(state string) {
 	s.store.UpdateAppSessionField(s.sessionID, "oauth2_state", state)
-	return state
+}
+
+func (s *Session) SetOAuth2CodeVerifier(codeVerfier string) {
+	s.store.UpdateAppSessionField(s.sessionID, "oauth2_code_verifier", codeVerfier)
 }
 
 // NewFlashMessage creates a new flash message.
@@ -67,7 +79,6 @@ func (s *Session) SetPocketRequestToken(requestToken string) {
 	s.store.UpdateAppSessionField(s.sessionID, "pocket_request_token", requestToken)
 }
 
-// New returns a new session handler.
-func New(store *storage.Storage, sessionID string) *Session {
-	return &Session{store, sessionID}
+func (s *Session) SetWebAuthnSessionData(sessionData *model.WebAuthnSession) {
+	s.store.UpdateAppSessionObjectField(s.sessionID, "webauthn_session_data", sessionData)
 }

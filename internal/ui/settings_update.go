@@ -10,7 +10,6 @@ import (
 	"miniflux.app/v2/internal/http/response/html"
 	"miniflux.app/v2/internal/http/route"
 	"miniflux.app/v2/internal/locale"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/model"
 	"miniflux.app/v2/internal/ui/form"
 	"miniflux.app/v2/internal/ui/session"
@@ -47,8 +46,8 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 	view.Set("countUnread", h.store.CountUnreadEntries(loggedUser.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID, nsfw))
 
-	if err := settingsForm.Validate(); err != nil {
-		view.Set("errorMessage", err.Error())
+	if validationErr := settingsForm.Validate(); validationErr != nil {
+		view.Set("errorMessage", validationErr.Translate(loggedUser.Language))
 		html.OK(w, r, view.Render("settings"))
 		return
 	}
@@ -69,16 +68,14 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if validationErr := validator.ValidateUserModification(h.store, loggedUser.ID, userModificationRequest); validationErr != nil {
-		view.Set("errorMessage", validationErr.TranslationKey)
+		view.Set("errorMessage", validationErr.Translate(loggedUser.Language))
 		html.OK(w, r, view.Render("settings"))
 		return
 	}
 
 	err = h.store.UpdateUser(settingsForm.Merge(loggedUser))
 	if err != nil {
-		logger.Error("[UI:UpdateSettings] %v", err)
-		view.Set("errorMessage", "error.unable_to_update_user")
-		html.OK(w, r, view.Render("settings"))
+		html.ServerError(w, r, err)
 		return
 	}
 

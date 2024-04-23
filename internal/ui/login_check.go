@@ -4,6 +4,7 @@
 package ui // import "miniflux.app/v2/internal/ui"
 
 import (
+	"log/slog"
 	"net/http"
 
 	"miniflux.app/v2/internal/config"
@@ -11,7 +12,7 @@ import (
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/html"
 	"miniflux.app/v2/internal/http/route"
-	"miniflux.app/v2/internal/logger"
+	"miniflux.app/v2/internal/locale"
 	"miniflux.app/v2/internal/ui/form"
 	"miniflux.app/v2/internal/ui/session"
 	"miniflux.app/v2/internal/ui/view"
@@ -23,17 +24,30 @@ func (h *handler) checkLogin(w http.ResponseWriter, r *http.Request) {
 	authForm := form.NewAuthForm(r)
 
 	view := view.New(h.tpl, r, sess)
-	view.Set("errorMessage", "error.bad_credentials")
+	view.Set("errorMessage", locale.NewLocalizedError("error.bad_credentials").Translate(request.UserLanguage(r)))
 	view.Set("form", authForm)
 
-	if err := authForm.Validate(); err != nil {
-		logger.Error("[UI:CheckLogin] %v", err)
+	if validationErr := authForm.Validate(); validationErr != nil {
+		translatedErrorMessage := validationErr.Translate(request.UserLanguage(r))
+		slog.Warn("Validation error during login check",
+			slog.Bool("authentication_failed", true),
+			slog.String("client_ip", clientIP),
+			slog.String("user_agent", r.UserAgent()),
+			slog.String("username", authForm.Username),
+			slog.Any("error", translatedErrorMessage),
+		)
 		html.OK(w, r, view.Render("login"))
 		return
 	}
 
 	if err := h.store.CheckPassword(authForm.Username, authForm.Password); err != nil {
-		logger.Error("[UI:CheckLogin] [ClientIP=%s] %v", clientIP, err)
+		slog.Warn("Incorrect username or password",
+			slog.Bool("authentication_failed", true),
+			slog.String("client_ip", clientIP),
+			slog.String("user_agent", r.UserAgent()),
+			slog.String("username", authForm.Username),
+			slog.Any("error", err),
+		)
 		html.OK(w, r, view.Render("login"))
 		return
 	}
@@ -44,7 +58,14 @@ func (h *handler) checkLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info("[UI:CheckLogin] username=%s just logged in", authForm.Username)
+	slog.Info("User authenticated successfully with username/password",
+		slog.Bool("authentication_successful", true),
+		slog.String("client_ip", clientIP),
+		slog.String("user_agent", r.UserAgent()),
+		slog.Int64("user_id", userID),
+		slog.String("username", authForm.Username),
+	)
+
 	h.store.SetLastLogin(userID)
 
 	user, err := h.store.UserByID(userID)

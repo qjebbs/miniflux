@@ -44,6 +44,26 @@ func TestParseImageDataURLWithNoEncoding(t *testing.T) {
 	}
 }
 
+func TestParseImageWithRawSVGEncodedInUTF8(t *testing.T) {
+	iconURL := `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 456 456'><circle></circle></svg>`
+	icon, err := parseImageDataURL(iconURL)
+	if err != nil {
+		t.Fatalf(`We should be able to parse valid data URL: %v`, err)
+	}
+
+	if icon.MimeType != "image/svg+xml" {
+		t.Fatal(`Invalid mime type parsed`)
+	}
+
+	if icon.Hash == "" {
+		t.Fatal(`Image hash should be computed`)
+	}
+
+	if string(icon.Content) != `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 456 456'><circle></circle></svg>` {
+		t.Fatal(`Invalid SVG content`)
+	}
+}
+
 func TestParseImageDataURLWithNoMediaTypeAndNoEncoding(t *testing.T) {
 	iconURL := `data:,Hello%2C%20World%21`
 	_, err := parseImageDataURL(iconURL)
@@ -92,12 +112,16 @@ func TestParseDocumentWithWhitespaceIconURL(t *testing.T) {
 		/static/img/favicon.ico
 	">`
 
-	iconURL, err := parseDocument("http://www.example.org/", strings.NewReader(html))
+	iconURLs, err := findIconURLsFromHTMLDocument(strings.NewReader(html), "text/html")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if iconURL != "http://www.example.org/static/img/favicon.ico" {
-		t.Errorf(`Invalid icon URL, got %q`, iconURL)
+	if len(iconURLs) != 1 {
+		t.Fatalf(`Invalid number of icon URLs, got %d`, len(iconURLs))
+	}
+
+	if iconURLs[0] != "/static/img/favicon.ico" {
+		t.Errorf(`Invalid icon URL, got %q`, iconURLs[0])
 	}
 }

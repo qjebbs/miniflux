@@ -6,15 +6,16 @@ package rss // import "miniflux.app/v2/internal/reader/rss"
 import (
 	"encoding/xml"
 	"html"
+	"log/slog"
 	"path"
 	"strconv"
 	"strings"
 	"time"
 
 	"miniflux.app/v2/internal/crypto"
-	"miniflux.app/v2/internal/logger"
 	"miniflux.app/v2/internal/model"
 	"miniflux.app/v2/internal/reader/date"
+	"miniflux.app/v2/internal/reader/dublincore"
 	"miniflux.app/v2/internal/reader/media"
 	"miniflux.app/v2/internal/reader/sanitizer"
 	"miniflux.app/v2/internal/urllib"
@@ -32,8 +33,26 @@ type rssFeed struct {
 	PubDate        string    `xml:"channel>pubDate"`
 	ManagingEditor string    `xml:"channel>managingEditor"`
 	Webmaster      string    `xml:"channel>webMaster"`
+	TimeToLive     rssTTL    `xml:"channel>ttl"`
 	Items          []rssItem `xml:"channel>item"`
 	PodcastFeedElement
+}
+
+type rssTTL struct {
+	Data string `xml:",chardata"`
+}
+
+func (r *rssTTL) Value() int {
+	if r.Data == "" {
+		return 0
+	}
+
+	value, err := strconv.Atoi(r.Data)
+	if err != nil {
+		return 0
+	}
+
+	return value
 }
 
 func (r *rssFeed) Transform(baseURL string) *model.Feed {
@@ -59,6 +78,7 @@ func (r *rssFeed) Transform(baseURL string) *model.Feed {
 	}
 
 	feed.IconURL = strings.TrimSpace(r.ImageURL)
+	feed.TTL = r.TimeToLive.Value()
 
 	for _, item := range r.Items {
 		entry := item.Transform()
@@ -182,14 +202,14 @@ type rssItem struct {
 	CommentLinks   []rssCommentLink `xml:"comments"`
 	EnclosureLinks []rssEnclosure   `xml:"enclosure"`
 	Categories     []rssCategory    `xml:"category"`
-	DublinCoreElement
+	dublincore.DublinCoreItemElement
 	FeedBurnerElement
 	PodcastEntryElement
 	media.Element
 }
 
 func (r *rssItem) Transform() *model.Entry {
-	entry := new(model.Entry)
+	entry := model.NewEntry()
 	entry.URL = r.entryURL()
 	entry.CommentsURL = r.entryCommentsURL()
 	entry.Date = r.entryDate()
@@ -215,7 +235,11 @@ func (r *rssItem) entryDate() time.Time {
 	if value != "" {
 		result, err := date.Parse(value)
 		if err != nil {
-			logger.Error("rss: %v (entry GUID = %s)", err, r.GUID)
+			slog.Debug("Unable to parse date from RSS feed",
+				slog.String("date", value),
+				slog.String("guid", r.GUID.Data),
+				slog.Any("error", err),
+			)
 			return time.Now()
 		}
 
@@ -250,7 +274,7 @@ func (r *rssItem) entryAuthor() string {
 	}
 
 	if author == "" {
-		author = r.DublinCoreCreator
+		author = r.GetSanitizedCreator()
 	}
 
 	return sanitizer.StripTags(strings.TrimSpace(author))
@@ -387,7 +411,7 @@ func (r *rssItem) entryEnclosures() model.EnclosureList {
 }
 
 func (r *rssItem) entryCategories() []string {
-	var categoryList []string
+	categoryList := make([]string, 0)
 
 	for _, rssCategory := range r.Categories {
 		if strings.Contains(rssCategory.Inner, "<![CDATA[") {

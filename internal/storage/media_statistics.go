@@ -2,15 +2,10 @@ package storage // import "miniflux.app/v2/internal/storage"
 
 import (
 	"fmt"
-	"time"
-
-	"miniflux.app/v2/internal/timer"
 )
 
 // MediaStatisticsAll returns media count and cached size of the whole miniflux service.
 func (s *Storage) MediaStatisticsAll() (count int, cacheCount int, cacheSize int, err error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:MediaStatisticsAll]")
-
 	err = s.db.QueryRow(`SELECT count(id) count FROM medias`).Scan(&count)
 
 	if err != nil || count == 0 {
@@ -28,24 +23,18 @@ func (s *Storage) MediaStatisticsAll() (count int, cacheCount int, cacheSize int
 
 // MediaStatisticsByFeed returns media count and cached size of a feed.
 func (s *Storage) MediaStatisticsByFeed(feedID int64) (count int, cacheCount int, cacheSize int, err error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:MediaStatisticsByFeed]")
-
 	cond := fmt.Sprintf(`f.id=%d`, feedID)
 	return s.mediaStatisticsByCond(cond)
 }
 
 // MediaStatisticsByUser returns media count and cached size of a user.
 func (s *Storage) MediaStatisticsByUser(userID int64) (count int, cacheCount int, cacheSize int, err error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:MediaStatisticsByUser]")
-
 	cond := fmt.Sprintf(`f.user_id=%d`, userID)
 	return s.mediaStatisticsByCond(cond)
 }
 
 // MediaStatisticsByEntry returns media count and cached size of an entry.
 func (s *Storage) MediaStatisticsByEntry(entryID int64) (count int, cacheCount int, cacheSize int, err error) {
-	defer timer.ExecutionTime(time.Now(), "[Storage:MediaStatisticsByEntry]")
-
 	cond := fmt.Sprintf(`e.id=%d`, entryID)
 	return s.mediaStatisticsByCond(cond)
 }

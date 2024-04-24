@@ -4,12 +4,12 @@
 package config // import "miniflux.app/v2/internal/config"
 
 import (
-	"crypto/rand"
 	"fmt"
 	"sort"
 	"strings"
 	"time"
 
+	"miniflux.app/v2/internal/crypto"
 	"miniflux.app/v2/internal/version"
 )
 
@@ -27,8 +27,9 @@ const (
 	defaultBaseURL                            = "http://localhost"
 	defaultRootURL                            = "http://localhost"
 	defaultBasePath                           = ""
-	defaultWorkerPoolSize                     = 5
+	defaultWorkerPoolSize                     = 16
 	defaultPollingFrequency                   = 60
+	defaultForceRefreshInterval               = 30
 	defaultBatchSize                          = 100
 	defaultPollingScheduler                   = "round_robin"
 	defaultSchedulerEntryFrequencyMinInterval = 5
@@ -50,10 +51,11 @@ const (
 	defaultCleanupArchiveUnreadDays           = 180
 	defaultCleanupArchiveBatchSize            = 10000
 	defaultCleanupRemoveSessionsDays          = 30
-	defaultProxyHTTPClientTimeout             = 120
-	defaultProxyOption                        = "http-only"
-	defaultProxyMediaTypes                    = "image"
-	defaultProxyUrl                           = ""
+	defaultMediaProxyHTTPClientTimeout        = 120
+	defaultMediaProxyMode                     = "http-only"
+	defaultMediaResourceTypes                 = "image"
+	defaultMediaProxyURL                      = ""
+	defaultFilterEntryMaxAgeDays              = 0
 	defaultFetchOdyseeWatchTime               = false
 	defaultFetchYouTubeWatchTime              = false
 	defaultYouTubeEmbedUrlOverride            = "https://www.youtube-nocookie.com/embed/"
@@ -126,6 +128,7 @@ type Options struct {
 	cleanupArchiveBatchSize            int
 	cleanupRemoveSessionsDays          int
 	pollingFrequency                   int
+	forceRefreshInterval               int
 	batchSize                          int
 	pollingScheduler                   string
 	schedulerEntryFrequencyMinInterval int
@@ -137,12 +140,13 @@ type Options struct {
 	createAdmin                        bool
 	adminUsername                      string
 	adminPassword                      string
-	proxyHTTPClientTimeout             int
-	proxyOption                        string
-	proxyMediaTypes                    []string
-	proxyUrl                           string
+	mediaProxyHTTPClientTimeout        int
+	mediaProxyMode                     string
+	mediaProxyResourceTypes            []string
+	mediaProxyCustomURL                string
 	fetchOdyseeWatchTime               bool
 	fetchYouTubeWatchTime              bool
+	filterEntryMaxAgeDays              int
 	youTubeEmbedUrlOverride            string
 	oauth2UserCreationAllowed          bool
 	oauth2ClientID                     string
@@ -171,15 +175,12 @@ type Options struct {
 	metricsPassword                    string
 	watchdog                           bool
 	invidiousInstance                  string
-	proxyPrivateKey                    []byte
+	mediaProxyPrivateKey               []byte
 	webAuthn                           bool
 }
 
 // NewOptions returns Options with default values.
 func NewOptions() *Options {
-	randomKey := make([]byte, 16)
-	rand.Read(randomKey)
-
 	return &Options{
 		HTTPS:                              defaultHTTPS,
 		logFile:                            defaultLogFile,
@@ -208,6 +209,7 @@ func NewOptions() *Options {
 		cleanupArchiveBatchSize:            defaultCleanupArchiveBatchSize,
 		cleanupRemoveSessionsDays:          defaultCleanupRemoveSessionsDays,
 		pollingFrequency:                   defaultPollingFrequency,
+		forceRefreshInterval:               defaultForceRefreshInterval,
 		batchSize:                          defaultBatchSize,
 		pollingScheduler:                   defaultPollingScheduler,
 		schedulerEntryFrequencyMinInterval: defaultSchedulerEntryFrequencyMinInterval,
@@ -217,10 +219,11 @@ func NewOptions() *Options {
 		pollingParsingErrorLimit:           defaultPollingParsingErrorLimit,
 		workerPoolSize:                     defaultWorkerPoolSize,
 		createAdmin:                        defaultCreateAdmin,
-		proxyHTTPClientTimeout:             defaultProxyHTTPClientTimeout,
-		proxyOption:                        defaultProxyOption,
-		proxyMediaTypes:                    []string{defaultProxyMediaTypes},
-		proxyUrl:                           defaultProxyUrl,
+		mediaProxyHTTPClientTimeout:        defaultMediaProxyHTTPClientTimeout,
+		mediaProxyMode:                     defaultMediaProxyMode,
+		mediaProxyResourceTypes:            []string{defaultMediaResourceTypes},
+		mediaProxyCustomURL:                defaultMediaProxyURL,
+		filterEntryMaxAgeDays:              defaultFilterEntryMaxAgeDays,
 		fetchOdyseeWatchTime:               defaultFetchOdyseeWatchTime,
 		fetchYouTubeWatchTime:              defaultFetchYouTubeWatchTime,
 		youTubeEmbedUrlOverride:            defaultYouTubeEmbedUrlOverride,
@@ -251,7 +254,7 @@ func NewOptions() *Options {
 		metricsPassword:                    defaultMetricsPassword,
 		watchdog:                           defaultWatchdog,
 		invidiousInstance:                  defaultInvidiousInstance,
-		proxyPrivateKey:                    randomKey,
+		mediaProxyPrivateKey:               crypto.GenerateRandomBytes(16),
 		webAuthn:                           defaultWebAuthn,
 	}
 }
@@ -400,6 +403,11 @@ func (o *Options) PollingFrequency() int {
 	return o.pollingFrequency
 }
 
+// ForceRefreshInterval returns the force refresh interval
+func (o *Options) ForceRefreshInterval() int {
+	return o.forceRefreshInterval
+}
+
 // BatchSize returns the number of feeds to send for background processing.
 func (o *Options) BatchSize() int {
 	return o.batchSize
@@ -506,24 +514,29 @@ func (o *Options) FetchOdyseeWatchTime() bool {
 	return o.fetchOdyseeWatchTime
 }
 
-// ProxyOption returns "none" to never proxy, "http-only" to proxy non-HTTPS, "all" to always proxy.
-func (o *Options) ProxyOption() string {
-	return o.proxyOption
+// MediaProxyMode returns "none" to never proxy, "http-only" to proxy non-HTTPS, "all" to always proxy.
+func (o *Options) MediaProxyMode() string {
+	return o.mediaProxyMode
 }
 
-// ProxyMediaTypes returns a slice of media types to proxy.
-func (o *Options) ProxyMediaTypes() []string {
-	return o.proxyMediaTypes
+// MediaProxyResourceTypes returns a slice of resource types to proxy.
+func (o *Options) MediaProxyResourceTypes() []string {
+	return o.mediaProxyResourceTypes
 }
 
-// ProxyUrl returns a string of a URL to use to proxy image requests
-func (o *Options) ProxyUrl() string {
-	return o.proxyUrl
+// MediaCustomProxyURL returns the custom proxy URL for medias.
+func (o *Options) MediaCustomProxyURL() string {
+	return o.mediaProxyCustomURL
 }
 
-// ProxyHTTPClientTimeout returns the time limit in seconds before the proxy HTTP client cancel the request.
-func (o *Options) ProxyHTTPClientTimeout() int {
-	return o.proxyHTTPClientTimeout
+// MediaProxyHTTPClientTimeout returns the time limit in seconds before the proxy HTTP client cancel the request.
+func (o *Options) MediaProxyHTTPClientTimeout() int {
+	return o.mediaProxyHTTPClientTimeout
+}
+
+// MediaProxyPrivateKey returns the private key used by the media proxy.
+func (o *Options) MediaProxyPrivateKey() []byte {
+	return o.mediaProxyPrivateKey
 }
 
 // HasHTTPService returns true if the HTTP service is enabled.
@@ -629,14 +642,14 @@ func (o *Options) InvidiousInstance() string {
 	return o.invidiousInstance
 }
 
-// ProxyPrivateKey returns the private key used by the media proxy
-func (o *Options) ProxyPrivateKey() []byte {
-	return o.proxyPrivateKey
-}
-
 // WebAuthn returns true if WebAuthn logins are supported
 func (o *Options) WebAuthn() bool {
 	return o.webAuthn
+}
+
+// FilterEntryMaxAgeDays returns the number of days after which entries should be retained.
+func (o *Options) FilterEntryMaxAgeDays() int {
+	return o.filterEntryMaxAgeDays
 }
 
 // SortedOptions returns options as a list of key value pairs, sorted by keys.
@@ -668,6 +681,7 @@ func (o *Options) SortedOptions(redactSecret bool) []*Option {
 		"DISABLE_HTTP_SERVICE":                   !o.httpService,
 		"DISABLE_SCHEDULER_SERVICE":              !o.schedulerService,
 		"DISK_STORAGE_ROOT":                      o.diskStorageRoot,
+		"FILTER_ENTRY_MAX_AGE_DAYS":              o.filterEntryMaxAgeDays,
 		"FETCH_YOUTUBE_WATCH_TIME":               o.fetchYouTubeWatchTime,
 		"FETCH_ODYSEE_WATCH_TIME":                o.fetchOdyseeWatchTime,
 		"HTTPS":                                  o.HTTPS,
@@ -699,13 +713,14 @@ func (o *Options) SortedOptions(redactSecret bool) []*Option {
 		"OAUTH2_USER_CREATION":                   o.oauth2UserCreationAllowed,
 		"POCKET_CONSUMER_KEY":                    redactSecretValue(o.pocketConsumerKey, redactSecret),
 		"POLLING_FREQUENCY":                      o.pollingFrequency,
+		"FORCE_REFRESH_INTERVAL":                 o.forceRefreshInterval,
 		"POLLING_PARSING_ERROR_LIMIT":            o.pollingParsingErrorLimit,
 		"POLLING_SCHEDULER":                      o.pollingScheduler,
-		"PROXY_HTTP_CLIENT_TIMEOUT":              o.proxyHTTPClientTimeout,
-		"PROXY_MEDIA_TYPES":                      o.proxyMediaTypes,
-		"PROXY_OPTION":                           o.proxyOption,
-		"PROXY_PRIVATE_KEY":                      redactSecretValue(string(o.proxyPrivateKey), redactSecret),
-		"PROXY_URL":                              o.proxyUrl,
+		"MEDIA_PROXY_HTTP_CLIENT_TIMEOUT":        o.mediaProxyHTTPClientTimeout,
+		"MEDIA_PROXY_RESOURCE_TYPES":             o.mediaProxyResourceTypes,
+		"MEDIA_PROXY_MODE":                       o.mediaProxyMode,
+		"MEDIA_PROXY_PRIVATE_KEY":                redactSecretValue(string(o.mediaProxyPrivateKey), redactSecret),
+		"MEDIA_PROXY_CUSTOM_URL":                 o.mediaProxyCustomURL,
 		"ROOT_URL":                               o.rootURL,
 		"RUN_MIGRATIONS":                         o.runMigrations,
 		"SCHEDULER_ENTRY_FREQUENCY_MAX_INTERVAL": o.schedulerEntryFrequencyMaxInterval,

@@ -1,0 +1,43 @@
+{{ define "title"}}{{ t "page.search.title" }} ({{ .total }}){{ end }}
+
+{{ define "page_header"}}
+<section class="page-header" aria-labelledby="page-header-title">
+    <h1 id="page-header-title">{{ t "page.search.title" }} ({{ .total }})</h1>
+</section>
+{{ end }}
+
+{{ define "content"}}
+<search role="search">
+    <form action="{{ route "search" }}" aria-labelledby="search-input-label">
+        <input type="search" name="q" id="search-input" aria-label="{{ t "search.label" }}" placeholder="{{ t "search.placeholder" }}" {{ if $.searchQuery }}value="{{ .searchQuery }}"{{ else }}autofocus{{ end }} required>
+        <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.loading" }}">{{ t "search.submit" }}</button>
+    </form>
+</search>
+
+{{ if $.searchQuery }}
+    {{ if not .entries }}
+        <p role="alert" class="alert alert-info">{{ t "alert.no_search_result" }}</p>
+    {{ else }}
+        <div class="pagination-top">
+            {{ template "pagination" .pagination }}
+        </div>
+        <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
+            <div class="item-sizer"></div>
+            {{ range .entries }}
+            {{ 
+                template "item" 
+                dict "user" $.user 
+                    "entry" . 
+                    "view" $.view
+                    "hasSaveEntry" $.hasSaveEntry 
+                    "pageEntriesType" $.pageEntriesType 
+                    "href" (printf "%s?q=%s" (route "searchEntry" "entryID" .ID) $.searchQuery)
+            }}
+            {{ end }}
+        </div>
+        <div class="pagination-bottom">
+            {{ template "pagination" .pagination }}
+        </div>
+    {{ end }}
+{{ end }}
+{{ end }}

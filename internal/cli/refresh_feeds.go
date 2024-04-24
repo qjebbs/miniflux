@@ -45,7 +45,7 @@ func refreshFeeds(store *storage.Storage) {
 		slog.Int("nb_workers", config.Opts.WorkerPoolSize()),
 	)
 
-	for i := 0; i < config.Opts.WorkerPoolSize(); i++ {
+	for i := range config.Opts.WorkerPoolSize() {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
@@ -56,7 +56,7 @@ func refreshFeeds(store *storage.Storage) {
 					slog.Int("worker_id", workerID),
 				)
 
-				if localizedError := feedHandler.RefreshFeed(store, job.UserID, job.FeedID, false); err != nil {
+				if localizedError := feedHandler.RefreshFeed(store, job.UserID, job.FeedID, false); localizedError != nil {
 					slog.Warn("Unable to refresh feed",
 						slog.Int64("feed_id", job.FeedID),
 						slog.Int64("user_id", job.UserID),

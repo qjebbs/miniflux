@@ -68,6 +68,7 @@ func CreateFeedFromSubscriptionDiscovery(store *storage.Storage, userID int64, f
 	subscription.EtagHeader = feedCreationRequest.ETag
 	subscription.LastModifiedHeader = feedCreationRequest.LastModified
 	subscription.FeedURL = feedCreationRequest.FeedURL
+	subscription.DisableHTTP2 = feedCreationRequest.DisableHTTP2
 	subscription.WithCategoryID(feedCreationRequest.CategoryID)
 	subscription.CheckedNow()
 
@@ -91,6 +92,7 @@ func CreateFeedFromSubscriptionDiscovery(store *storage.Storage, userID int64, f
 	requestBuilder.WithProxy(config.Opts.HTTPClientProxy())
 	requestBuilder.UseProxy(feedCreationRequest.FetchViaProxy)
 	requestBuilder.IgnoreTLSErrors(feedCreationRequest.AllowSelfSignedCertificates)
+	requestBuilder.DisableHTTP2(feedCreationRequest.DisableHTTP2)
 
 	checkFeedIcon(
 		store,
@@ -127,6 +129,7 @@ func CreateFeed(store *storage.Storage, userID int64, feedCreationRequest *model
 	requestBuilder.WithProxy(config.Opts.HTTPClientProxy())
 	requestBuilder.UseProxy(feedCreationRequest.FetchViaProxy)
 	requestBuilder.IgnoreTLSErrors(feedCreationRequest.AllowSelfSignedCertificates)
+	requestBuilder.DisableHTTP2(feedCreationRequest.DisableHTTP2)
 
 	responseHandler := fetcher.NewResponseHandler(requestBuilder.ExecuteRequest(feedCreationRequest.FeedURL))
 	defer responseHandler.Close()
@@ -160,6 +163,7 @@ func CreateFeed(store *storage.Storage, userID int64, feedCreationRequest *model
 	subscription.Disabled = feedCreationRequest.Disabled
 	subscription.IgnoreHTTPCache = feedCreationRequest.IgnoreHTTPCache
 	subscription.AllowSelfSignedCertificates = feedCreationRequest.AllowSelfSignedCertificates
+	subscription.DisableHTTP2 = feedCreationRequest.DisableHTTP2
 	subscription.FetchViaProxy = feedCreationRequest.FetchViaProxy
 	subscription.ScraperRules = feedCreationRequest.ScraperRules
 	subscription.RewriteRules = feedCreationRequest.RewriteRules
@@ -233,12 +237,17 @@ func RefreshFeed(store *storage.Storage, userID, feedID int64, forceRefresh bool
 	requestBuilder.WithUsernameAndPassword(originalFeed.Username, originalFeed.Password)
 	requestBuilder.WithUserAgent(originalFeed.UserAgent, config.Opts.HTTPClientUserAgent())
 	requestBuilder.WithCookie(originalFeed.Cookie)
-	requestBuilder.WithETag(originalFeed.EtagHeader)
-	requestBuilder.WithLastModified(originalFeed.LastModifiedHeader)
 	requestBuilder.WithTimeout(config.Opts.HTTPClientTimeout())
 	requestBuilder.WithProxy(config.Opts.HTTPClientProxy())
 	requestBuilder.UseProxy(originalFeed.FetchViaProxy)
 	requestBuilder.IgnoreTLSErrors(originalFeed.AllowSelfSignedCertificates)
+	requestBuilder.DisableHTTP2(originalFeed.DisableHTTP2)
+
+	ignoreHTTPCache := originalFeed.IgnoreHTTPCache || forceRefresh
+	if !ignoreHTTPCache {
+		requestBuilder.WithETag(originalFeed.EtagHeader)
+		requestBuilder.WithLastModified(originalFeed.LastModifiedHeader)
+	}
 
 	responseHandler := fetcher.NewResponseHandler(requestBuilder.ExecuteRequest(originalFeed.FeedURL))
 	defer responseHandler.Close()
@@ -257,7 +266,7 @@ func RefreshFeed(store *storage.Storage, userID, feedID int64, forceRefresh bool
 		return localizedError
 	}
 
-	if originalFeed.IgnoreHTTPCache || responseHandler.IsModified(originalFeed.EtagHeader, originalFeed.LastModifiedHeader) {
+	if ignoreHTTPCache || responseHandler.IsModified(originalFeed.EtagHeader, originalFeed.LastModifiedHeader) {
 		slog.Debug("Feed modified",
 			slog.Int64("user_id", userID),
 			slog.Int64("feed_id", feedID),
@@ -271,7 +280,7 @@ func RefreshFeed(store *storage.Storage, userID, feedID int64, forceRefresh bool
 
 		updatedFeed, parseErr := parser.ParseFeed(responseHandler.EffectiveURL(), bytes.NewReader(responseBody))
 		if parseErr != nil {
-			localizedError := locale.NewLocalizedErrorWrapper(parseErr, "error.unable_to_parse_feed")
+			localizedError := locale.NewLocalizedErrorWrapper(parseErr, "error.unable_to_parse_feed", parseErr)
 
 			if errors.Is(parseErr, parser.ErrFeedFormatNotDetected) {
 				localizedError = locale.NewLocalizedErrorWrapper(parseErr, "error.feed_format_not_detected", parseErr)

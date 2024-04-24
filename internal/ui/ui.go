@@ -58,7 +58,7 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/starred/entry/{entryID}", handler.showStarredEntryPage).Name("starredEntry").Methods(http.MethodGet)
 
 	// Search pages.
-	uiRouter.HandleFunc("/search", handler.showSearchEntriesPage).Name("searchEntries").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/search", handler.showSearchPage).Name("search").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/search/entry/{entryID}", handler.showSearchEntryPage).Name("searchEntry").Methods(http.MethodGet)
 
 	// Entry editing pages.
@@ -82,6 +82,7 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 	uiRouter.HandleFunc("/feed/{feedID}/entries/all", handler.showFeedEntriesAllPage).Name("feedEntriesAll").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/{feedID}/entries/starred", handler.showFeedEntriesStarredPage).Name("feedEntriesStarred").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/{feedID}/entry/{entryID}", handler.showFeedEntryPage).Name("feedEntry").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/unread/feed/{feedID}/entry/{entryID}", handler.showUnreadFeedEntryPage).Name("unreadFeedEntry").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/icon/{iconID}", handler.showIcon).Name("icon").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/feed/{feedID}/media/cache/remove", handler.removeFeedMediaCache).Name("removeFeedCache").Methods(http.MethodPost)
 	uiRouter.HandleFunc("/feed/{feedID}/view", handler.updateFeedView).Name("updateFeedView").Methods(http.MethodPost)
@@ -89,6 +90,7 @@ func Serve(router *mux.Router, store *storage.Storage, pool *worker.Pool) {
 
 	// Category pages.
 	uiRouter.HandleFunc("/category/{categoryID}/entry/{entryID}", handler.showCategoryEntryPage).Name("categoryEntry").Methods(http.MethodGet)
+	uiRouter.HandleFunc("/unread/category/{categoryID}/entry/{entryID}", handler.showUnreadCategoryEntryPage).Name("unreadCategoryEntry").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/categories", handler.showCategoryListPage).Name("categories").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/category/create", handler.showCreateCategoryPage).Name("createCategory").Methods(http.MethodGet)
 	uiRouter.HandleFunc("/category/save", handler.saveCategory).Name("saveCategory").Methods(http.MethodPost)

@@ -5,9 +5,10 @@ package static // import "miniflux.app/v2/internal/ui/static"
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"embed"
 	"fmt"
+
+	"miniflux.app/v2/internal/crypto"
 
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
@@ -48,7 +49,7 @@ func CalculateBinaryFileChecksums() error {
 			return err
 		}
 
-		binaryFileChecksums[dirEntry.Name()] = fmt.Sprintf("%x", sha256.Sum256(data))
+		binaryFileChecksums[dirEntry.Name()] = crypto.HashFromBytes(data)
 	}
 
 	return nil
@@ -102,7 +103,7 @@ func GenerateStylesheetsBundles() error {
 		}
 
 		StylesheetBundles[bundle] = minifiedData
-		StylesheetBundleChecksums[bundle] = fmt.Sprintf("%x", sha256.Sum256(minifiedData))
+		StylesheetBundleChecksums[bundle] = crypto.HashFromBytes(minifiedData)
 	}
 
 	return nil
@@ -112,6 +113,7 @@ func GenerateStylesheetsBundles() error {
 func GenerateJavascriptBundles() error {
 	var bundles = map[string][]string{
 		"app": {
+			"js/tt.js", // has to be first
 			"js/dom_helper.js",
 			"js/touch_handler.js",
 			"js/keyboard_handler.js",
@@ -122,10 +124,11 @@ func GenerateJavascriptBundles() error {
 			"js/action_menu_handler.js",
 			"js/lazy_load_handler.js",
 			"js/app.js",
-			"js/webauthn_handler.js",
-			"js/bootstrap.js",
+			"js/app2.js",
 			"js/masonry.pkgd.min.js",
 			"js/imagesloaded.pkgd.min.js",
+			"js/webauthn_handler.js",
+			"js/bootstrap.js",
 		},
 		"service-worker": {
 			"js/service_worker.js",
@@ -143,8 +146,10 @@ func GenerateJavascriptBundles() error {
 	JavascriptBundles = make(map[string][]byte)
 	JavascriptBundleChecksums = make(map[string]string)
 
+	jsMinifier := js.Minifier{Version: 2017}
+
 	minifier := minify.New()
-	minifier.AddFunc("text/javascript", js.Minify)
+	minifier.AddFunc("text/javascript", jsMinifier.Minify)
 
 	for bundle, srcFiles := range bundles {
 		var buffer bytes.Buffer
@@ -166,13 +171,15 @@ func GenerateJavascriptBundles() error {
 			buffer.WriteString(suffix)
 		}
 
-		minifiedData, err := minifier.Bytes("text/javascript", buffer.Bytes())
-		if err != nil {
-			return err
-		}
+		// minifiedData, err := minifier.Bytes("text/javascript", buffer.Bytes())
+		// if err != nil {
+		// 	return err
+		// }
+
+		minifiedData := buffer.Bytes()
 
 		JavascriptBundles[bundle] = minifiedData
-		JavascriptBundleChecksums[bundle] = fmt.Sprintf("%x", sha256.Sum256(minifiedData))
+		JavascriptBundleChecksums[bundle] = crypto.HashFromBytes(minifiedData)
 	}
 
 	return nil

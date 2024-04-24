@@ -1,9 +1,12 @@
 {{ define "title"}}{{ t "page.stat.title" }}{{ end }}
 
-{{ define "content"}}
+{{ define "page_header"}}
 <section class="page-header no-back-forward-cache">
     <h1>{{ t "page.stat.title" }}</h1>
 </section>
+{{ end }}
+
+{{ define "content"}}
 {{ if and (eq .countUnread 0) (eq .countStarred 0) }}
     <p class="alert alert-info">{{ t "alert.no_unread_entry" }}</p>
 {{ else }}

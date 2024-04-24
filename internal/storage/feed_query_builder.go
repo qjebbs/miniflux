@@ -97,25 +97,25 @@ func (f *FeedQueryBuilder) buildCounterCondition() string {
 }
 
 func (f *FeedQueryBuilder) buildSorting() string {
-	var parts []string
+	var parts string
 
 	if len(f.sortExpressions) > 0 {
-		parts = append(parts, fmt.Sprintf(`ORDER BY %s`, strings.Join(f.sortExpressions, ", ")))
+		parts += fmt.Sprintf(" ORDER BY %s", strings.Join(f.sortExpressions, ", "))
 	}
 
 	if len(parts) > 0 {
-		parts = append(parts, ", lower(f.title) ASC")
+		parts += ", lower(f.title) ASC"
 	}
 
 	if f.limit > 0 {
-		parts = append(parts, fmt.Sprintf(`LIMIT %d`, f.limit))
+		parts += fmt.Sprintf(" LIMIT %d", f.limit)
 	}
 
 	if f.offset > 0 {
-		parts = append(parts, fmt.Sprintf(`OFFSET %d`, f.offset))
+		parts += fmt.Sprintf(" OFFSET %d", f.offset)
 	}
 
-	return strings.Join(parts, " ")
+	return parts
 }
 
 // GetFeed returns a single feed that match the condition.
@@ -171,7 +171,8 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			c.title as category_title,
 			fi.icon_id,
 			u.timezone,
-			f.apprise_service_urls
+			f.apprise_service_urls,
+			f.disable_http2
 		FROM
 			feeds f
 		LEFT JOIN
@@ -180,7 +181,7 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			feed_icons fi ON fi.feed_id=f.id
 		LEFT JOIN
 			users u ON u.id=f.user_id
-		WHERE %s 
+		WHERE %s
 		%s
 	`
 
@@ -240,6 +241,7 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			&iconID,
 			&tz,
 			&feed.AppriseServiceURLs,
+			&feed.DisableHTTP2,
 		)
 
 		if err != nil {
@@ -284,9 +286,9 @@ func (f *FeedQueryBuilder) fetchFeedCounter() (unreadCounters map[int64]int, rea
 			count(*)
 		FROM
 			entries e
-		%s 
+		%s
 		WHERE
-			%s 
+			%s
 		GROUP BY
 			e.feed_id, e.status
 	`

@@ -1,11 +1,13 @@
 {{ define "title"}}{{ t "page.add_feed.title" }}{{ end }}
 
-{{ define "content"}}
-<section class="page-header">
-    <h1>{{ t "page.add_feed.title" }}</h1>
+{{ define "page_header"}}
+<section class="page-header" aria-labelledby="page-header-title">
+    <h1 id="page-header-title">{{ t "page.add_feed.title" }}</h1>
     {{ template "feed_menu" }}
 </section>
+{{ end }}
 
+{{ define "content"}}
 <form action="{{ route "chooseSubscription" }}" method="POST">
     <input type="hidden" name="csrf" value="{{ .csrf }}">
     <input type="hidden" name="category_id" value="{{ .form.CategoryID }}">
@@ -26,6 +28,9 @@
     {{ end }}
     {{ if .form.AllowSelfSignedCertificates }}
         <input type="hidden" name="allow_self_signed_certificates" value="1">
+    {{ end }}
+    {{ if .form.DisableHTTP2 }}
+        <input type="hidden" name="disable_http2" value="1">
     {{ end }}
 
     <h3>{{ t "page.add_feed.choose_feed" }}</h3>

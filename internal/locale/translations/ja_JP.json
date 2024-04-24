@@ -1,4 +1,5 @@
 {
+    "skip_to_content": "Skip to content",
     "confirm.question": "よろしいですか?",
     "confirm.question.refresh": "強制的に更新しますか？",
     "confirm.yes": "はい",
@@ -21,7 +22,8 @@
     "action.home_screen": "ホームスクリーンに追加",
     "tooltip.keyboard_shortcuts": "キーボードショートカット: %s",
     "tooltip.logged_user": "%s としてログイン中",
-    "menu.home": "Home",
+    "menu.title": "Menu",
+    "menu.home_page": "Home",
     "menu.stat": "Default Homepage",
     "menu.unread": "未読",
     "menu.starred": "星付き",
@@ -37,6 +39,7 @@
     "menu.about": "ソフトウェア情報",
     "menu.export": "エクスポート",
     "menu.import": "インポート",
+    "menu.search": "検索",
     "menu.create_category": "カテゴリを作成",
     "menu.mark_page_as_read": "このページを既読にする",
     "menu.mark_all_as_read": "すべて既読にする",
@@ -57,6 +60,7 @@
     "menu.shared_entries": "共有エントリ",
     "search.label": "検索",
     "search.placeholder": "…を検索",
+    "search.submit": "Search",
     "pagination.next": "次",
     "pagination.previous": "前",
     "entry.status.unread": "未読にする",
@@ -101,36 +105,50 @@
     "entry.shared_entry.title": "公開リンクを開く",
     "entry.shared_entry.label": "共有する",
     "entry.estimated_reading_time": [
-        "%d 分で読めます",
         "%d 分で読めます"
     ],
     "entry.tags.label": "タグ:",
     "page.shared_entries.title": "共有エントリ",
+    "page.shared_entries_count": [
+        "%d shared entry"
+    ],
     "page.unread.title": "未読",
+    "page.unread_entry_count": [
+        "%d unread entry"
+    ],
+    "page.total_entry_count": [
+        "%d entry in total"
+    ],
     "page.starred.title": "星付き",
+    "page.starred_entry_count": [
+        "%d starred entry"
+    ],
     "page.categories.title": "カテゴリ",
     "page.categories.no_feed": "フィードはありません。",
     "page.categories.entries": "記事一覧",
     "page.categories.feeds": "フィード一覧",
     "page.categories.feed_count": [
-        "%d 件のフィードがあります。",
         "%d 件のフィードがあります。"
     ],
-    "page.categories.unread_counter": "未読記事の数",
+    "page.categories_count": [
+        "%d category"
+    ],
     "page.new_category.title": "新規カテゴリ",
     "page.new_user.title": "新規ユーザー",
     "page.edit_category.title": "カテゴリを編集: %s",
     "page.edit_user.title": "ユーザーを編集: %s",
     "page.feeds.title": "フィード一覧",
+    "page.category_label": "Category: %s",
     "page.feeds.last_check": "最終チェック:",
     "page.feeds.next_check": "Next check:",
-    "page.feeds.unread_counter": "未読記事の数",
     "page.feeds.read_counter": "既読記事の数",
     "page.feeds.error_count": [
-        "%d 個のエラー",
         "%d 個のエラー"
     ],
     "page.history.title": "履歴",
+    "page.read_entry_count": [
+        "%d read entry"
+    ],
     "page.import.title": "インポート",
     "page.search.title": "検索結果",
     "page.about.title": "ソフトウェア情報",
@@ -186,6 +204,8 @@
     "page.keyboard_shortcuts.go_to_feed": "フィード",
     "page.keyboard_shortcuts.go_to_previous_page": "前のページ",
     "page.keyboard_shortcuts.go_to_next_page": "次のページ",
+    "page.keyboard_shortcuts.go_to_bottom_item": "一番下の項目に移動",
+    "page.keyboard_shortcuts.go_to_top_item": "先頭の項目に移動",
     "page.keyboard_shortcuts.open_item": "選択されたアイテムを開く",
     "page.keyboard_shortcuts.open_original": "オリジナルのリンクを開く",
     "page.keyboard_shortcuts.open_original_same_window": "現在のタブでオリジナルのリンクを開く",
@@ -225,7 +245,6 @@
     "page.settings.webauthn.register": "パスキーを登録する",
     "page.settings.webauthn.register.error": "パスキーを登録できません",
     "page.settings.webauthn.delete": [
-        "%d 個のパスキーを削除",
         "%d 個のパスキーを削除"
     ],
     "page.login.title": "ログイン",
@@ -360,6 +379,7 @@
     "form.feed.label.apprise_service_urls": "Comma separated list of Apprise service URLs",
     "form.feed.label.ignore_http_cache": "HTTPキャッシュを無視",
     "form.feed.label.allow_self_signed_certificates": "自己署名証明書または無効な証明書を許可する",
+    "form.feed.label.disable_http2": "Disable HTTP/2 to avoid fingerprinting",
     "form.feed.label.fetch_via_proxy": "プロキシ経由で取得",
     "form.feed.label.disabled": "このフィードを更新しない",
     "form.feed.label.no_media_player": "No media player (audio/video)",
@@ -469,16 +489,30 @@
     "form.integration.telegram_bot_disable_web_page_preview": "Disable web page preview",
     "form.integration.telegram_bot_disable_notification": "Disable notification",
     "form.integration.telegram_bot_disable_buttons": "Disable buttons",
+    "form.integration.linkace_activate": "Save entries to LinkAce",
+    "form.integration.linkace_endpoint": "LinkAce API Endpoint",
+    "form.integration.linkace_api_key": "LinkAce API key",
+    "form.integration.linkace_tags": "LinkAce Tags",
+    "form.integration.linkace_is_private": "Mark link as private",
+    "form.integration.linkace_check_disabled": "Disable link check",
     "form.integration.linkding_activate": "Linkding に記事を保存する",
     "form.integration.linkding_endpoint": "Linkding の API Endpoint",
     "form.integration.linkding_api_key": "Linkding の API key",
     "form.integration.linkding_tags": "Linkding Tags",
     "form.integration.linkding_bookmark": "ブックマークを未読にする",
+    "form.integration.linkwarden_activate": "Linkwarden に記事を保存する",
+    "form.integration.linkwarden_endpoint": "Linkwarden の API Endpoint",
+    "form.integration.linkwarden_api_key": "Linkwarden の API key",
     "form.integration.matrix_bot_activate": "新しい記事をMatrixに転送する",
     "form.integration.matrix_bot_user": "Matrixのユーザー名",
     "form.integration.matrix_bot_password": "Matrixユーザ用パスワード",
     "form.integration.matrix_bot_url": "MatrixサーバーのURL",
     "form.integration.matrix_bot_chat_id": "MatrixルームのID",
+    "form.integration.readeck_activate": "Readeck に記事を保存する",
+    "form.integration.readeck_endpoint": "Readeck の API Endpoint",
+    "form.integration.readeck_api_key": "Readeck の API key",
+    "form.integration.readeck_labels": "Readeck Labels",
+    "form.integration.readeck_only_url": "URL のみを送信 (完全なコンテンツではなく)",
     "form.integration.shiori_activate": "Shiori に記事を保存する",
     "form.integration.shiori_endpoint": "Shiori の API Endpoint",
     "form.integration.shiori_username": "Shiori の ユーザー名",
@@ -498,36 +532,32 @@
     "time_elapsed.yesterday": "昨日",
     "time_elapsed.now": "今",
     "time_elapsed.minutes": [
-        "%d 分前",
         "%d 分前"
     ],
     "time_elapsed.hours": [
-        "%d 時間前",
         "%d 時間前"
     ],
     "time_elapsed.days": [
-        "%d 日前",
         "%d 日前"
     ],
     "time_elapsed.weeks": [
-        "%d 週間前",
         "%d 週間前"
     ],
     "time_elapsed.months": [
-        "%d か月前",
         "%d か月前"
     ],
     "time_elapsed.years": [
-        "%d 年前",
         "%d 年前"
     ],
-    "alert.too_many_feeds_refresh": "You have triggered too many feed refreshes. Please wait 30 minutes before trying again.",
+    "alert.too_many_feeds_refresh": [
+        "You have triggered too many feed refreshes. Please wait %d minute before trying again."
+    ],
     "alert.background_feed_refresh": "All feeds are being refreshed in the background. You can continue to use Miniflux while this process is running.",
     "error.http_response_too_large": "The HTTP response is too large. You could increase the HTTP response size limit in the global settings (requires a server restart).",
     "error.http_body_read": "Unable to read the HTTP body: %v.",
     "error.http_empty_response_body": "The HTTP response body is empty.",
     "error.http_empty_response": "The HTTP response is empty. Perhaps, this website is using a bot protection mechanism?",
-    "error.tls_error": "TLS error: %v. You could disable TLS verification in the feed settings if you would like.",
+    "error.tls_error": "TLS error: %q. You could disable TLS verification in the feed settings if you would like.",
     "error.network_operation": "Miniflux is not able to reach this website due to a network error: %v.",
     "error.network_timeout": "This website is too slow and the request timed out: %v",
     "error.http_client_error": "HTTP client error: %v.",
@@ -546,5 +576,7 @@
     "error.unable_to_parse_feed": "Unable to parse this feed: %v.",
     "error.feed_not_found": "This feed does not exist or does not belong to this user.",
     "error.unable_to_detect_rssbridge": "Unable to detect feed using RSS-Bridge: %v.",
-    "error.feed_format_not_detected": "Unable to detect feed format: %v."
+    "error.feed_format_not_detected": "Unable to detect feed format: %v.",
+    "form.prefs.label.media_playback_rate": "オーディオ/ビデオの再生速度",
+    "error.settings_media_playback_rate_range": "再生速度が範囲外"
 }

@@ -1,5 +1,11 @@
 {{ define "title"}}{{ .form.Title }}{{ end }}
 
+{{ define "page_header"}}
+<section class="page-header" aria-labelledby="page-header-title">
+    <h1 id="page-header-title" dir="auto">{{ .form.Title }}</h1>
+</section>
+{{ end }}
+
 {{ define "content"}}
 {{ if not .feeds }}
     <p class="alert alert-error">{{ t "alert.no_feed" }}</p>

@@ -1,12 +1,17 @@
 {{ define "item" }}
-<article role="article" class="item entry-item {{ if .user.EntrySwipe }}entry-swipe{{ end }} item-status-{{ .entry.Status }}{{ if .entry.Starred }} item-starred{{ end }}" data-id="{{ .entry.ID }}">
-    <div class="item-header" dir="auto">
-        <span class="item-title">
+<article 
+    class="item entry-item {{ if .user.EntrySwipe }}entry-swipe{{ end }} item-status-{{ .entry.Status }}{{ if .entry.Starred }} item-starred{{ end }}" 
+    data-id="{{ .entry.ID }}"
+    aria-labelledby="entry-title-{{ .entry.ID }}"
+    tabindex="-1"
+>
+    <header class="item-header" dir="auto">
+        <h2 id="entry-title-{{ .ID }}" span class="item-title">
             {{ if ne .entry.Feed.Icon.IconID 0 }}
                 <img src="{{ route "icon" "iconID" .entry.Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .entry.Feed.Title }}">
             {{ end }}
             <a target="_blank" data-set-read="{{ .user.MarkReadOnView }}" data-no-request="true" href="{{ .href }}">{{ .entry.Title }}</a>
-        </span>
+        </h2>
         {{ if .pageEntriesType }}
             {{ if eq .pageEntriesType "all" }}
             <span class="category"><a href="{{ route "categoryEntriesAll" "categoryID" .entry.Feed.Category.ID }}">{{ .entry.Feed.Category.Title }}</a></span>
@@ -18,7 +23,7 @@
         {{ else }}
         <span class="category"><a href="{{ route "categoryEntries" "categoryID" .entry.Feed.Category.ID }}">{{ .entry.Feed.Category.Title }}</a></span>
         {{ end }}
-    </div>
+    </header>
     {{ template "item_meta" . }}
     {{ if and (eq .view "masonry") (ne .entry.CoverImage "") }}
     <div class="thumbnail">

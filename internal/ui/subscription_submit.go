@@ -21,10 +21,6 @@ import (
 )
 
 func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
-	nsfw := request.IsNSFWEnabled(r)
-	sess := session.New(h.store, request.SessionID(r))
-	v := view.New(h.tpl, r, sess)
-
 	user, err := h.store.UserByID(request.UserID(r))
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -37,6 +33,9 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
+	sess := session.New(h.store, request.SessionID(r))
+	v := view.New(h.tpl, r, sess)
 	v.Set("categories", categories)
 	v.Set("menu", "feeds")
 	v.Set("user", user)
@@ -66,6 +65,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 	requestBuilder.WithUsernameAndPassword(subscriptionForm.Username, subscriptionForm.Password)
 	requestBuilder.UseProxy(subscriptionForm.FetchViaProxy)
 	requestBuilder.IgnoreTLSErrors(subscriptionForm.AllowSelfSignedCertificates)
+	requestBuilder.DisableHTTP2(subscriptionForm.DisableHTTP2)
 
 	subscriptionFinder := subscription.NewSubscriptionFinder(requestBuilder)
 	subscriptions, localizedError := subscriptionFinder.FindSubscriptions(
@@ -87,24 +87,27 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 		html.OK(w, r, v.Render("add_subscription"))
 	case n == 1 && subscriptionFinder.IsFeedAlreadyDownloaded():
 		feed, localizedError := feedHandler.CreateFeedFromSubscriptionDiscovery(h.store, user.ID, &model.FeedCreationRequestFromSubscriptionDiscovery{
-			Content:                     subscriptionFinder.FeedResponseInfo().Content,
-			ETag:                        subscriptionFinder.FeedResponseInfo().ETag,
-			LastModified:                subscriptionFinder.FeedResponseInfo().LastModified,
-			CategoryID:                  subscriptionForm.CategoryID,
-			FeedURL:                     subscriptions[0].URL,
-			Crawler:                     subscriptionForm.Crawler,
-			AllowSelfSignedCertificates: subscriptionForm.AllowSelfSignedCertificates,
-			UserAgent:                   subscriptionForm.UserAgent,
-			Cookie:                      subscriptionForm.Cookie,
-			Username:                    subscriptionForm.Username,
-			Password:                    subscriptionForm.Password,
-			ScraperRules:                subscriptionForm.ScraperRules,
-			RewriteRules:                subscriptionForm.RewriteRules,
-			BlocklistRules:              subscriptionForm.BlocklistRules,
-			KeeplistRules:               subscriptionForm.KeeplistRules,
-			UrlRewriteRules:             subscriptionForm.UrlRewriteRules,
-			FetchViaProxy:               subscriptionForm.FetchViaProxy,
-			NSFW:                        subscriptionForm.NSFW,
+			Content:      subscriptionFinder.FeedResponseInfo().Content,
+			ETag:         subscriptionFinder.FeedResponseInfo().ETag,
+			LastModified: subscriptionFinder.FeedResponseInfo().LastModified,
+			FeedCreationRequest: model.FeedCreationRequest{
+				CategoryID:                  subscriptionForm.CategoryID,
+				FeedURL:                     subscriptions[0].URL,
+				AllowSelfSignedCertificates: subscriptionForm.AllowSelfSignedCertificates,
+				Crawler:                     subscriptionForm.Crawler,
+				UserAgent:                   subscriptionForm.UserAgent,
+				Cookie:                      subscriptionForm.Cookie,
+				Username:                    subscriptionForm.Username,
+				Password:                    subscriptionForm.Password,
+				ScraperRules:                subscriptionForm.ScraperRules,
+				RewriteRules:                subscriptionForm.RewriteRules,
+				BlocklistRules:              subscriptionForm.BlocklistRules,
+				KeeplistRules:               subscriptionForm.KeeplistRules,
+				UrlRewriteRules:             subscriptionForm.UrlRewriteRules,
+				FetchViaProxy:               subscriptionForm.FetchViaProxy,
+				NSFW:                        subscriptionForm.NSFW,
+				DisableHTTP2:                subscriptionForm.DisableHTTP2,
+			},
 		})
 		if localizedError != nil {
 			v.Set("form", subscriptionForm)
@@ -130,6 +133,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 			KeeplistRules:               subscriptionForm.KeeplistRules,
 			UrlRewriteRules:             subscriptionForm.UrlRewriteRules,
 			FetchViaProxy:               subscriptionForm.FetchViaProxy,
+			DisableHTTP2:                subscriptionForm.DisableHTTP2,
 		})
 		if localizedError != nil {
 			v.Set("form", subscriptionForm)
@@ -140,15 +144,16 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 
 		html.Redirect(w, r, route.Path(h.router, "feedEntries", "feedID", feed.ID))
 	case n > 1:
-		v := view.New(h.tpl, r, sess)
-		v.Set("subscriptions", subscriptions)
-		v.Set("form", subscriptionForm)
-		v.Set("menu", "feeds")
-		v.Set("user", user)
-		v.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
-		v.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
-		v.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
+		nsfw := request.IsNSFWEnabled(r)
+		view := view.New(h.tpl, r, sess)
+		view.Set("subscriptions", subscriptions)
+		view.Set("form", subscriptionForm)
+		view.Set("menu", "feeds")
+		view.Set("user", user)
+		view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+		view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
+		view.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
 
-		html.OK(w, r, v.Render("choose_subscription"))
+		html.OK(w, r, view.Render("choose_subscription"))
 	}
 }

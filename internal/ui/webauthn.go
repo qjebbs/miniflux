@@ -57,7 +57,7 @@ func (u WebAuthnUser) WebAuthnCredentials() []webauthn.Credential {
 	return creds
 }
 
-func newWebAuthn(h *handler) (*webauthn.WebAuthn, error) {
+func newWebAuthn() (*webauthn.WebAuthn, error) {
 	url, err := url.Parse(config.Opts.BaseURL())
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func newWebAuthn(h *handler) (*webauthn.WebAuthn, error) {
 }
 
 func (h *handler) beginRegistration(w http.ResponseWriter, r *http.Request) {
-	web, err := newWebAuthn(h)
+	web, err := newWebAuthn()
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -117,7 +117,7 @@ func (h *handler) beginRegistration(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) finishRegistration(w http.ResponseWriter, r *http.Request) {
-	web, err := newWebAuthn(h)
+	web, err := newWebAuthn()
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -152,7 +152,7 @@ func (h *handler) finishRegistration(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) beginLogin(w http.ResponseWriter, r *http.Request) {
-	web, err := newWebAuthn(h)
+	web, err := newWebAuthn()
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -195,7 +195,7 @@ func (h *handler) beginLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) finishLogin(w http.ResponseWriter, r *http.Request) {
-	web, err := newWebAuthn(h)
+	web, err := newWebAuthn()
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -301,7 +301,6 @@ func (h *handler) finishLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) renameCredential(w http.ResponseWriter, r *http.Request) {
-	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 
@@ -330,6 +329,7 @@ func (h *handler) renameCredential(w http.ResponseWriter, r *http.Request) {
 
 	webauthnForm := form.WebauthnForm{Name: cred.Name}
 
+	nsfw := request.IsNSFWEnabled(r)
 	view.Set("form", webauthnForm)
 	view.Set("cred", cred)
 	view.Set("menu", "settings")

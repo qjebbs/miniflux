@@ -1,4 +1,5 @@
 {
+    "skip_to_content": "Skip to content",
     "confirm.question": "Oletko varma?",
     "confirm.question.refresh": "Haluatko pakottaa päivityksen?",
     "confirm.yes": "kyllä",
@@ -18,7 +19,8 @@
     "action.home_screen": "Lisää aloitusnäytölle",
     "tooltip.keyboard_shortcuts": "Pikanäppäin: %s",
     "tooltip.logged_user": "Kirjautunut %s-käyttäjänä",
-    "menu.home": "Home",
+    "menu.title": "Menu",
+    "menu.home_page": "Home",
     "menu.stat": "Default Homepage",
     "menu.unread": "Lukemattomat",
     "menu.starred": "Suosikit",
@@ -34,6 +36,7 @@
     "menu.about": "Tietoja",
     "menu.export": "Vie",
     "menu.import": "Tuo",
+    "menu.search": "Haku",
     "menu.create_category": "Luo kategoria",
     "menu.mark_page_as_read": "Merkitse tämä sivu luetuksi",
     "menu.mark_all_as_read": "Merkitse kaikki luetuksi",
@@ -52,6 +55,7 @@
     "menu.shared_entries": "Jaetut artikkelit",
     "search.label": "Haku",
     "search.placeholder": "Hae...",
+    "search.submit": "Search",
     "pagination.next": "Seuraava",
     "pagination.previous": "Edellinen",
     "entry.status.unread": "Lukematon",
@@ -97,8 +101,24 @@
     ],
     "entry.tags.label": "Tags:",
     "page.shared_entries.title": "Jaetut artikkelit",
+    "page.shared_entries_count": [
+        "%d shared entry",
+        "%d shared entries"
+    ],
     "page.unread.title": "Lukemattomat",
+    "page.unread_entry_count": [
+        "%d unread entry",
+        "%d unread entries"
+    ],
+    "page.total_entry_count": [
+        "%d entry in total",
+        "%d entries in total"
+    ],
     "page.starred.title": "Suosikit",
+    "page.starred_entry_count": [
+        "%d starred entry",
+        "%d starred entries"
+    ],
     "page.categories.title": "Kategoriat",
     "page.categories.no_feed": "Ei syötettä.",
     "page.categories.entries": "Artikkelit",
@@ -107,21 +127,28 @@
         "On %d syöte.",
         "On %d syötettä."
     ],
-    "page.categories.unread_counter": "Lukemattomien artikkeleiden määrä",
+    "page.categories_count": [
+        "%d category",
+        "%d categories"
+    ],
     "page.new_category.title": "Uusi kategoria",
     "page.new_user.title": "Uusi käyttäjä",
     "page.edit_category.title": "Muokkaa kategoria: %s",
     "page.edit_user.title": "Muokkaa käyttäjä: %s",
     "page.feeds.title": "Syötteet",
+    "page.category_label": "Category: %s",
     "page.feeds.last_check": "Viimeisin tarkistus:",
     "page.feeds.next_check": "Next check:",
-    "page.feeds.unread_counter": "Lukemattomien artikkeleiden määrä",
     "page.feeds.read_counter": "Luettujen artikkeleiden määrä",
     "page.feeds.error_count": [
         "%d virhe",
         "%d virhettä"
     ],
     "page.history.title": "Historia",
+    "page.read_entry_count": [
+        "%d read entry",
+        "%d read entries"
+    ],
     "page.import.title": "Tuo",
     "page.search.title": "Hakutulokset",
     "page.about.title": "Tietoja",
@@ -163,6 +190,8 @@
     "page.keyboard_shortcuts.go_to_feed": "Siirry syötteeseen",
     "page.keyboard_shortcuts.go_to_previous_page": "Siirry edelliselle sivulle",
     "page.keyboard_shortcuts.go_to_next_page": "Siirry seuraavalle sivulle",
+    "page.keyboard_shortcuts.go_to_bottom_item": "Siirry alimpaan kohtaan",
+    "page.keyboard_shortcuts.go_to_top_item": "Siirry alkuun",
     "page.keyboard_shortcuts.open_item": "Avaa valittu kohde",
     "page.keyboard_shortcuts.open_original": "Avaa alkuperäinen linkki",
     "page.keyboard_shortcuts.open_original_same_window": "Avaa alkuperäinen linkki nykyisessä välilehdessä",
@@ -313,6 +342,7 @@
     "form.feed.label.keeplist_rules": "Keep-säännöt",
     "form.feed.label.ignore_http_cache": "Ohita HTTP-välimuisti",
     "form.feed.label.allow_self_signed_certificates": "Salli itseallekirjoitetut tai virheelliset varmenteet",
+    "form.feed.label.disable_http2": "Disable HTTP/2 to avoid fingerprinting",
     "form.feed.label.fetch_via_proxy": "Nouda välityspalvelimen kautta",
     "form.feed.label.disabled": "Älä päivitä tätä syötettä",
     "form.feed.label.no_media_player": "No media player (audio/video)",
@@ -414,16 +444,30 @@
     "form.integration.telegram_bot_disable_web_page_preview": "Disable web page preview",
     "form.integration.telegram_bot_disable_notification": "Disable notification",
     "form.integration.telegram_bot_disable_buttons": "Disable buttons",
+    "form.integration.linkace_activate": "Save entries to LinkAce",
+    "form.integration.linkace_endpoint": "LinkAce API Endpoint",
+    "form.integration.linkace_api_key": "LinkAce API key",
+    "form.integration.linkace_tags": "LinkAce Tags",
+    "form.integration.linkace_is_private": "Mark link as private",
+    "form.integration.linkace_check_disabled": "Disable link check",
     "form.integration.linkding_activate": "Tallenna artikkelit Linkkiin",
     "form.integration.linkding_endpoint": "Linkding API-päätepiste",
     "form.integration.linkding_api_key": "Linkding API-avain",
     "form.integration.linkding_tags": "Linkding Tags",
     "form.integration.linkding_bookmark": "Merkitse kirjanmerkki lukemattomaksi",
+    "form.integration.linkwarden_activate": "Tallenna artikkelit Linkkiin",
+    "form.integration.linkwarden_endpoint": "Linkwarden API-päätepiste",
+    "form.integration.linkwarden_api_key": "Linkwarden API-avain",
     "form.integration.matrix_bot_activate": "Siirrä uudet artikkelit Matrixiin",
     "form.integration.matrix_bot_user": "Matrixin käyttäjätunnus",
     "form.integration.matrix_bot_password": "Matrix-käyttäjän salasana",
     "form.integration.matrix_bot_url": "Matrix-palvelimen URL-osoite",
     "form.integration.matrix_bot_chat_id": "Matrix-huoneen tunnus",
+    "form.integration.readeck_activate": "Tallenna artikkelit Readeckiin",
+    "form.integration.readeck_endpoint": "Readeck API-päätepiste",
+    "form.integration.readeck_api_key": "Readeck API-avain",
+    "form.integration.readeck_labels": "Readeck Labels",
+    "form.integration.readeck_only_url": "Lähetä vain URL-osoite (koko sisällön sijaan)",
     "form.integration.shiori_activate": "Save articles to Shiori",
     "form.integration.shiori_endpoint": "Shiori API Endpoint",
     "form.integration.shiori_username": "Shiori Username",
@@ -466,13 +510,16 @@
         "%d vuosi sitten",
         "%d vuotta sitten"
     ],
-    "alert.too_many_feeds_refresh": "You have triggered too many feed refreshes. Please wait 30 minutes before trying again.",
+    "alert.too_many_feeds_refresh": [
+        "You have triggered too many feed refreshes. Please wait %d minute before trying again.",
+        "You have triggered too many feed refreshes. Please wait %d minutes before trying again."
+    ],
     "alert.background_feed_refresh": "All feeds are being refreshed in the background. You can continue to use Miniflux while this process is running.",
     "error.http_response_too_large": "The HTTP response is too large. You could increase the HTTP response size limit in the global settings (requires a server restart).",
     "error.http_body_read": "Unable to read the HTTP body: %v.",
     "error.http_empty_response_body": "The HTTP response body is empty.",
     "error.http_empty_response": "The HTTP response is empty. Perhaps, this website is using a bot protection mechanism?",
-    "error.tls_error": "TLS error: %v. You could disable TLS verification in the feed settings if you would like.",
+    "error.tls_error": "TLS error: %q. You could disable TLS verification in the feed settings if you would like.",
     "error.network_operation": "Miniflux is not able to reach this website due to a network error: %v.",
     "error.network_timeout": "This website is too slow and the request timed out: %v",
     "error.http_client_error": "HTTP client error: %v.",
@@ -491,5 +538,7 @@
     "error.unable_to_parse_feed": "Unable to parse this feed: %v.",
     "error.feed_not_found": "This feed does not exist or does not belong to this user.",
     "error.unable_to_detect_rssbridge": "Unable to detect feed using RSS-Bridge: %v.",
-    "error.feed_format_not_detected": "Unable to detect feed format: %v."
+    "error.feed_format_not_detected": "Unable to detect feed format: %v.",
+    "form.prefs.label.media_playback_rate": "Äänen/videon toistonopeus",
+    "error.settings_media_playback_rate_range": "Toistonopeus on alueen ulkopuolella"
 }

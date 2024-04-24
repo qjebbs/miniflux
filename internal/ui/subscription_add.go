@@ -15,10 +15,6 @@ import (
 )
 
 func (h *handler) showAddSubscriptionPage(w http.ResponseWriter, r *http.Request) {
-	nsfw := request.IsNSFWEnabled(r)
-	sess := session.New(h.store, request.SessionID(r))
-	view := view.New(h.tpl, r, sess)
-
 	user, err := h.store.UserByID(request.UserID(r))
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -31,6 +27,9 @@ func (h *handler) showAddSubscriptionPage(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
+	sess := session.New(h.store, request.SessionID(r))
+	view := view.New(h.tpl, r, sess)
 	view.Set("categories", categories)
 	view.Set("menu", "feeds")
 	view.Set("user", user)

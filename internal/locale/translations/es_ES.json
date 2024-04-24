@@ -1,4 +1,5 @@
 {
+    "skip_to_content": "Skip to content",
     "confirm.question": "¿Estás seguro?",
     "confirm.question.refresh": "¿Quieres forzar la actualización?",
     "confirm.yes": "sí",
@@ -21,7 +22,8 @@
     "action.home_screen": "Añadir a la pantalla principal",
     "tooltip.keyboard_shortcuts": "Atajo de teclado: %s",
     "tooltip.logged_user": "Registrado como %s",
-    "menu.home": "Casa",
+    "menu.title": "Menu",
+    "menu.home_page": "Casa",
     "menu.stat": "Default Homepage",
     "menu.unread": "No leídos",
     "menu.starred": "Marcadores",
@@ -37,6 +39,7 @@
     "menu.about": "Acerca de",
     "menu.export": "Exportar",
     "menu.import": "Importar",
+    "menu.search": "Buscar",
     "menu.create_category": "Crear una categoría",
     "menu.mark_page_as_read": "Marcar esta página como leída",
     "menu.mark_all_as_read": "Marcar todos como leídos",
@@ -57,6 +60,7 @@
     "menu.shared_entries": "Artículos compartidos",
     "search.label": "Buscar",
     "search.placeholder": "Búsqueda...",
+    "search.submit": "Search",
     "pagination.next": "Siguiente",
     "pagination.previous": "Anterior",
     "entry.status.unread": "No leído",
@@ -103,11 +107,27 @@
     "entry.estimated_reading_time": [
         "%d minuto de lectura",
         "%d minutos de lectura"
-    ],    
+    ],
     "entry.tags.label": "Etiquetas:",
     "page.shared_entries.title": "Artículos compartidos",
+    "page.shared_entries_count": [
+        "%d shared entry",
+        "%d shared entries"
+    ],
     "page.unread.title": "No leídos",
+    "page.unread_entry_count": [
+        "%d unread entry",
+        "%d unread entries"
+    ],
+    "page.total_entry_count": [
+        "%d entry in total",
+        "%d entries in total"
+    ],
     "page.starred.title": "Marcadores",
+    "page.starred_entry_count": [
+        "%d starred entry",
+        "%d starred entries"
+    ],
     "page.categories.title": "Categorías",
     "page.categories.no_feed": "Sin fuente.",
     "page.categories.entries": "Artículos",
@@ -116,21 +136,28 @@
         "Hay %d fuente.",
         "Hay %d fuentes."
     ],
-    "page.categories.unread_counter": "Número de artículos no leídos",
+    "page.categories_count": [
+        "%d category",
+        "%d categories"
+    ],
     "page.new_category.title": "Nueva categoría",
     "page.new_user.title": "Nuevo usuario",
     "page.edit_category.title": "Editar categoría: %s",
     "page.edit_user.title": "Editar usuario: %s",
     "page.feeds.title": "Fuentes",
+    "page.category_label": "Category: %s",
     "page.feeds.last_check": "Última verificación:",
     "page.feeds.next_check": "Next check:",
-    "page.feeds.unread_counter": "Número de artículos no leídos",
     "page.feeds.read_counter": "Número de artículos leídos",
     "page.feeds.error_count": [
         "%d error",
         "%d errores"
     ],
     "page.history.title": "Historial",
+    "page.read_entry_count": [
+        "%d read entry",
+        "%d read entries"
+    ],
     "page.import.title": "Importar",
     "page.search.title": "Resultados de la búsqueda",
     "page.about.title": "Acerca de",
@@ -186,6 +213,8 @@
     "page.keyboard_shortcuts.go_to_feed": "Ir a la fuente",
     "page.keyboard_shortcuts.go_to_previous_page": "Ir al página anterior",
     "page.keyboard_shortcuts.go_to_next_page": "Ir al página siguiente",
+    "page.keyboard_shortcuts.go_to_bottom_item": "Ir al elemento inferior",
+    "page.keyboard_shortcuts.go_to_top_item": "Ir al elemento superior",
     "page.keyboard_shortcuts.open_item": "Abrir el elemento seleccionado",
     "page.keyboard_shortcuts.open_original": "Abrir el enlace original",
     "page.keyboard_shortcuts.open_original_same_window": "Abrir enlace original en la pestaña actual",
@@ -360,6 +389,7 @@
     "form.feed.label.urlrewrite_rules": "Reglas de Filtrado(reescritura)",
     "form.feed.label.ignore_http_cache": "Ignorar caché HTTP",
     "form.feed.label.allow_self_signed_certificates": "Permitir certificados autofirmados o no válidos",
+    "form.feed.label.disable_http2": "Disable HTTP/2 to avoid fingerprinting",
     "form.feed.label.fetch_via_proxy": "Buscar a través de proxy",
     "form.feed.label.disabled": "No actualice este feed",
     "form.feed.label.no_media_player": "No media player (audio/video)",
@@ -461,16 +491,30 @@
     "form.integration.telegram_bot_disable_web_page_preview": "Disable web page preview",
     "form.integration.telegram_bot_disable_notification": "Disable notification",
     "form.integration.telegram_bot_disable_buttons": "Disable buttons",
+    "form.integration.linkace_activate": "Save entries to LinkAce",
+    "form.integration.linkace_endpoint": "LinkAce API Endpoint",
+    "form.integration.linkace_api_key": "LinkAce API key",
+    "form.integration.linkace_tags": "LinkAce Tags",
+    "form.integration.linkace_is_private": "Mark link as private",
+    "form.integration.linkace_check_disabled": "Disable link check",
     "form.integration.linkding_activate": "Enviar artículos a Linkding",
     "form.integration.linkding_endpoint": "Acceso API de Linkding",
     "form.integration.linkding_api_key": "Clave de API de Linkding",
     "form.integration.linkding_tags": "Linkding Tags",
     "form.integration.linkding_bookmark": "Marcar marcador como no leído",
+    "form.integration.linkwarden_activate": "Enviar artículos a Linkwarden",
+    "form.integration.linkwarden_endpoint": "Acceso API de Linkwarden",
+    "form.integration.linkwarden_api_key": "Clave de API de Linkwarden",
     "form.integration.matrix_bot_activate": "Transferir nuevos artículos a Matrix",
     "form.integration.matrix_bot_user": "Nombre de usuario para Matrix",
     "form.integration.matrix_bot_password": "Contraseña para el usuario de Matrix",
     "form.integration.matrix_bot_url": "URL del servidor de Matrix",
     "form.integration.matrix_bot_chat_id": "ID de la sala de Matrix",
+    "form.integration.readeck_activate": "Enviar artículos a Readeck",
+    "form.integration.readeck_endpoint": "Acceso API de Readeck",
+    "form.integration.readeck_api_key": "Clave de API de Readeck",
+    "form.integration.readeck_labels": "Readeck Labels",
+    "form.integration.readeck_only_url": "Enviar solo URL (en lugar de contenido completo)",
     "form.integration.shiori_activate": "Guardar artículos a Shiori",
     "form.integration.shiori_endpoint": "Extremo de API de Shiori",
     "form.integration.shiori_username": "Nombre de usuario de Shiori",
@@ -513,13 +557,16 @@
         "hace %d año",
         "hace %d años"
     ],
-    "alert.too_many_feeds_refresh": "You have triggered too many feed refreshes. Please wait 30 minutes before trying again.",
+    "alert.too_many_feeds_refresh": [
+        "You have triggered too many feed refreshes. Please wait %d minute before trying again.",
+        "You have triggered too many feed refreshes. Please wait %d minutes before trying again."
+    ],
     "alert.background_feed_refresh": "All feeds are being refreshed in the background. You can continue to use Miniflux while this process is running.",
     "error.http_response_too_large": "The HTTP response is too large. You could increase the HTTP response size limit in the global settings (requires a server restart).",
     "error.http_body_read": "Unable to read the HTTP body: %v.",
     "error.http_empty_response_body": "The HTTP response body is empty.",
     "error.http_empty_response": "The HTTP response is empty. Perhaps, this website is using a bot protection mechanism?",
-    "error.tls_error": "TLS error: %v. You could disable TLS verification in the feed settings if you would like.",
+    "error.tls_error": "TLS error: %q. You could disable TLS verification in the feed settings if you would like.",
     "error.network_operation": "Miniflux is not able to reach this website due to a network error: %v.",
     "error.network_timeout": "This website is too slow and the request timed out: %v",
     "error.http_client_error": "HTTP client error: %v.",
@@ -538,5 +585,7 @@
     "error.unable_to_parse_feed": "Unable to parse this feed: %v.",
     "error.feed_not_found": "This feed does not exist or does not belong to this user.",
     "error.unable_to_detect_rssbridge": "Unable to detect feed using RSS-Bridge: %v.",
-    "error.feed_format_not_detected": "Unable to detect feed format: %v."
+    "error.feed_format_not_detected": "Unable to detect feed format: %v.",
+    "form.prefs.label.media_playback_rate": "Velocidad de reproducción del audio/vídeo",
+    "error.settings_media_playback_rate_range": "La velocidad de reproducción está fuera de rango"
 }

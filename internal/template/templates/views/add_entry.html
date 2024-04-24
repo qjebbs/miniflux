@@ -1,10 +1,12 @@
 {{ define "title"}}{{ t "page.add_entry.title" }}{{ end }}
 
-{{ define "content"}}
+{{ define "page_header"}}
 <section class="page-header">
     <h1>{{ t "page.add_entry.title" }}</h1>
 </section>
+{{ end }}
 
+{{ define "content"}}
 {{ if not .feeds }}
     <p class="alert alert-error">{{ t "page.categories.no_feeds" }}</p>
 {{ else }}

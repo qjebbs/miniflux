@@ -1,4 +1,5 @@
 {
+    "skip_to_content": "Skip to content",
     "confirm.question": "Czy jesteś pewny?",
     "confirm.question.refresh": "Czy chcesz wymusić odświeżenie?",
     "confirm.yes": "tak",
@@ -21,7 +22,8 @@
     "action.home_screen": "Dodaj do ekranu głównego",
     "tooltip.keyboard_shortcuts": "Skróty klawiszowe: %s",
     "tooltip.logged_user": "Zalogowany jako %s",
-    "menu.home": "Dom",
+    "menu.title": "Menu",
+    "menu.home_page": "Dom",
     "menu.stat": "Default Homepage",
     "menu.unread": "Nieprzeczytane",
     "menu.starred": "Ulubione",
@@ -37,6 +39,7 @@
     "menu.about": "O stronie",
     "menu.export": "Eksportuj",
     "menu.import": "Importuj",
+    "menu.search": "Szukaj",
     "menu.create_category": "Utwórz kategorię",
     "menu.mark_page_as_read": "Oznacz jako przeczytane",
     "menu.mark_all_as_read": "Oznacz wszystko jako przeczytane",
@@ -57,6 +60,7 @@
     "menu.shared_entries": "Udostępnione wpisy",
     "search.label": "Szukaj",
     "search.placeholder": "Szukaj...",
+    "search.submit": "Search",
     "pagination.next": "Następny",
     "pagination.previous": "Poprzedni",
     "entry.status.unread": "Nieprzeczytane",
@@ -94,10 +98,16 @@
     "entry.shared_entry.label": "Udostępnianie",
     "entry.estimated_reading_time": [
         "%d minuta czytania",
+        "%d minuty czytania",
         "%d minut czytania"
     ],
     "entry.tags.label": "Tagi:",
     "page.shared_entries.title": "Udostępnione wpisy",
+    "page.shared_entries_count": [
+        "%d shared entry",
+        "%d shared entry",
+        "%d shared entries"
+    ],
     "page.unread.title": "Nieprzeczytane",
     "page.stat.title": "Czytnik Miniflux",
     "page.stat.articles": "Artykuły",
@@ -107,7 +117,22 @@
     "page.stat.categories.starred": "Oznaczone gwiazdką według kategorii",
     "page.stat.feeds.unread": "Nieprzeczytane przez kanały",
     "page.stat.feeds.starred": "Oznaczone gwiazdką według kanałów",
+    "page.unread_entry_count": [
+        "%d unread entry",
+        "%d unread entry",
+        "%d unread entries"
+    ],
+    "page.total_entry_count": [
+        "%d entry in total",
+        "%d entry in total",
+        "%d entries in total"
+    ],
     "page.starred.title": "Oznaczone gwiazdką",
+    "page.starred_entry_count": [
+        "%d starred entry",
+        "%d starred entry",
+        "%d starred entries"
+    ],
     "page.categories.title": "Kategorie",
     "page.categories.no_feed": "Brak kanałów.",
     "page.categories.entries": "Artykuły",
@@ -117,15 +142,19 @@
         "Są %d kanały.",
         "Jest %d kanałów."
     ],
-    "page.categories.unread_counter": "Liczba nieprzeczytanych wpisów",
+    "page.categories_count": [
+        "%d category",
+        "%d category",
+        "%d categories"
+    ],
     "page.new_category.title": "Nowa kategoria",
     "page.new_user.title": "Nowy użytkownik",
     "page.edit_category.title": "Edycja Kategorii: %s",
     "page.edit_user.title": "Edytuj użytkownika: %s",
     "page.feeds.title": "Kanały",
+    "page.category_label": "Category: %s",
     "page.feeds.last_check": "Ostatnia aktualizacja:",
     "page.feeds.next_check": "Next check:",
-    "page.feeds.unread_counter": "Liczba nieprzeczytanych wpisów",
     "page.feeds.read_counter": "Liczba przeczytanych wpisów",
     "page.feeds.error_count": [
         "%d błąd",
@@ -133,6 +162,11 @@
         "%d błędów"
     ],
     "page.history.title": "Historia",
+    "page.read_entry_count": [
+        "%d read entry",
+        "%d read entry",
+        "%d read entries"
+    ],
     "page.import.title": "Importuj",
     "page.search.title": "Wyniki wyszukiwania",
     "page.about.title": "O",
@@ -188,6 +222,8 @@
     "page.keyboard_shortcuts.go_to_feed": "Przejdź do subskrypcji",
     "page.keyboard_shortcuts.go_to_previous_page": "Przejdź do poprzedniej strony",
     "page.keyboard_shortcuts.go_to_next_page": "Przejdź do następnej strony",
+    "page.keyboard_shortcuts.go_to_bottom_item": "Przejdź do dolnego elementu",
+    "page.keyboard_shortcuts.go_to_top_item": "Przejdź do najwyższego elementu",
     "page.keyboard_shortcuts.open_item": "Otwórz zaznaczony artykuł",
     "page.keyboard_shortcuts.open_original": "Otwórz oryginalny artykuł",
     "page.keyboard_shortcuts.open_original_same_window": "Otwórz oryginalny link w bieżącej karcie",
@@ -363,6 +399,7 @@
     "form.feed.label.apprise_service_urls": "Comma separated list of Apprise service URLs",
     "form.feed.label.ignore_http_cache": "Zignoruj ​​pamięć podręczną HTTP",
     "form.feed.label.allow_self_signed_certificates": "Zezwalaj na certyfikaty z podpisem własnym lub nieprawidłowe certyfikaty",
+    "form.feed.label.disable_http2": "Disable HTTP/2 to avoid fingerprinting",
     "form.feed.label.fetch_via_proxy": "Pobierz przez proxy",
     "form.feed.label.disabled": "Nie odświeżaj tego kanału",
     "form.feed.label.no_media_player": "No media player (audio/video)",
@@ -472,16 +509,30 @@
     "form.integration.telegram_bot_disable_web_page_preview": "Disable web page preview",
     "form.integration.telegram_bot_disable_notification": "Disable notification",
     "form.integration.telegram_bot_disable_buttons": "Disable buttons",
+    "form.integration.linkace_activate": "Save entries to LinkAce",
+    "form.integration.linkace_endpoint": "LinkAce API Endpoint",
+    "form.integration.linkace_api_key": "LinkAce API key",
+    "form.integration.linkace_tags": "LinkAce Tags",
+    "form.integration.linkace_is_private": "Mark link as private",
+    "form.integration.linkace_check_disabled": "Disable link check",
     "form.integration.linkding_activate": "Zapisz artykuły do Linkding",
     "form.integration.linkding_endpoint": "Linkding URL",
     "form.integration.linkding_api_key": "Linkding API key",
     "form.integration.linkding_tags": "Linkding Tags",
     "form.integration.linkding_bookmark": "Zaznacz zakładkę jako nieprzeczytaną",
+    "form.integration.linkwarden_activate": "Zapisz artykuły do Linkwarden",
+    "form.integration.linkwarden_endpoint": "Linkwarden URL",
+    "form.integration.linkwarden_api_key": "Linkwarden API key",
     "form.integration.matrix_bot_activate": "Przenieś nowe artykuły do Matrix",
     "form.integration.matrix_bot_user": "Nazwa użytkownika dla Matrix",
     "form.integration.matrix_bot_password": "Hasło dla użytkownika Matrix",
     "form.integration.matrix_bot_url": "URL serwera Matrix",
     "form.integration.matrix_bot_chat_id": "Identyfikator pokoju Matrix",
+    "form.integration.readeck_activate": "Zapisz artykuły do Readeck",
+    "form.integration.readeck_endpoint": "Readeck URL",
+    "form.integration.readeck_api_key": "Readeck API key",
+    "form.integration.readeck_labels": "Readeck Labels",
+    "form.integration.readeck_only_url": "Wyślij tylko adres URL (zamiast pełnej treści)",
     "form.integration.shiori_activate": "Zapisz artykuły do Shiori",
     "form.integration.shiori_endpoint": "Shiori URL",
     "form.integration.shiori_username": "Login do Shiori",
@@ -530,13 +581,17 @@
         "%d lat temu",
         "%d lat temu"
     ],
-    "alert.too_many_feeds_refresh": "You have triggered too many feed refreshes. Please wait 30 minutes before trying again.",
+    "alert.too_many_feeds_refresh": [
+        "You have triggered too many feed refreshes. Please wait %d minute before trying again.",
+        "You have triggered too many feed refreshes. Please wait %d minutes before trying again.",
+        "You have triggered too many feed refreshes. Please wait %d minutes before trying again."
+    ],
     "alert.background_feed_refresh": "All feeds are being refreshed in the background. You can continue to use Miniflux while this process is running.",
     "error.http_response_too_large": "The HTTP response is too large. You could increase the HTTP response size limit in the global settings (requires a server restart).",
     "error.http_body_read": "Unable to read the HTTP body: %v.",
     "error.http_empty_response_body": "The HTTP response body is empty.",
     "error.http_empty_response": "The HTTP response is empty. Perhaps, this website is using a bot protection mechanism?",
-    "error.tls_error": "TLS error: %v. You could disable TLS verification in the feed settings if you would like.",
+    "error.tls_error": "TLS error: %q. You could disable TLS verification in the feed settings if you would like.",
     "error.network_operation": "Miniflux is not able to reach this website due to a network error: %v.",
     "error.network_timeout": "This website is too slow and the request timed out: %v",
     "error.http_client_error": "HTTP client error: %v.",
@@ -555,5 +610,7 @@
     "error.unable_to_parse_feed": "Unable to parse this feed: %v.",
     "error.feed_not_found": "This feed does not exist or does not belong to this user.",
     "error.unable_to_detect_rssbridge": "Unable to detect feed using RSS-Bridge: %v.",
-    "error.feed_format_not_detected": "Unable to detect feed format: %v."
+    "error.feed_format_not_detected": "Unable to detect feed format: %v.",
+    "form.prefs.label.media_playback_rate": "Prędkość odtwarzania audio/wideo",
+    "error.settings_media_playback_rate_range": "Prędkość odtwarzania jest poza zakresem"
 }

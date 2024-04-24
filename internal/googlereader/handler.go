@@ -18,8 +18,8 @@ import (
 	"miniflux.app/v2/internal/http/response/json"
 	"miniflux.app/v2/internal/http/route"
 	"miniflux.app/v2/internal/integration"
+	"miniflux.app/v2/internal/mediaproxy"
 	"miniflux.app/v2/internal/model"
-	"miniflux.app/v2/internal/proxy"
 	"miniflux.app/v2/internal/reader/fetcher"
 	mff "miniflux.app/v2/internal/reader/handler"
 	mfs "miniflux.app/v2/internal/reader/subscription"
@@ -264,9 +264,10 @@ func getStreamFilterModifiers(r *http.Request) (RequestModifiers, error) {
 }
 
 func getStream(streamID string, userID int64) (Stream, error) {
-	if strings.HasPrefix(streamID, FeedPrefix) {
+	switch {
+	case strings.HasPrefix(streamID, FeedPrefix):
 		return Stream{Type: FeedStream, ID: strings.TrimPrefix(streamID, FeedPrefix)}, nil
-	} else if strings.HasPrefix(streamID, fmt.Sprintf(UserStreamPrefix, userID)) || strings.HasPrefix(streamID, StreamPrefix) {
+	case strings.HasPrefix(streamID, fmt.Sprintf(UserStreamPrefix, userID)) || strings.HasPrefix(streamID, StreamPrefix):
 		id := strings.TrimPrefix(streamID, fmt.Sprintf(UserStreamPrefix, userID))
 		id = strings.TrimPrefix(id, StreamPrefix)
 		switch id {
@@ -287,15 +288,15 @@ func getStream(streamID string, userID int64) (Stream, error) {
 		default:
 			return Stream{NoStream, ""}, fmt.Errorf("googlereader: unknown stream with id: %s", id)
 		}
-	} else if strings.HasPrefix(streamID, fmt.Sprintf(UserLabelPrefix, userID)) || strings.HasPrefix(streamID, LabelPrefix) {
+	case strings.HasPrefix(streamID, fmt.Sprintf(UserLabelPrefix, userID)) || strings.HasPrefix(streamID, LabelPrefix):
 		id := strings.TrimPrefix(streamID, fmt.Sprintf(UserLabelPrefix, userID))
 		id = strings.TrimPrefix(id, LabelPrefix)
 		return Stream{LabelStream, id}, nil
-	} else if streamID == "" {
+	case streamID == "":
 		return Stream{NoStream, ""}, nil
+	default:
+		return Stream{NoStream, ""}, fmt.Errorf("googlereader: unknown stream type: %s", streamID)
 	}
-
-	return Stream{NoStream, ""}, fmt.Errorf("googlereader: unknown stream type: %s", streamID)
 }
 
 func getStreams(streamIDs []string, userID int64) ([]Stream, error) {
@@ -381,7 +382,7 @@ func getItemIDs(r *http.Request) ([]int64, error) {
 	return itemIDs, nil
 }
 
-func checkOutputFormat(w http.ResponseWriter, r *http.Request) error {
+func checkOutputFormat(r *http.Request) error {
 	var output string
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
@@ -735,11 +736,12 @@ func getFeed(stream Stream, store *storage.Storage, userID int64) (*model.Feed, 
 }
 
 func getOrCreateCategory(category Stream, store *storage.Storage, userID int64) (*model.Category, error) {
-	if category.ID == "" {
+	switch {
+	case category.ID == "":
 		return store.FirstCategory(userID)
-	} else if store.CategoryTitleExists(userID, category.ID) {
+	case store.CategoryTitleExists(userID, category.ID):
 		return store.CategoryByTitle(userID, category.ID)
-	} else {
+	default:
 		catRequest := model.CategoryRequest{
 			Title: category.ID,
 		}
@@ -763,7 +765,7 @@ func subscribe(newFeed Stream, category Stream, title string, store *storage.Sto
 	}
 
 	created, localizedError := mff.CreateFeed(store, userID, &feedRequest)
-	if err != nil {
+	if localizedError != nil {
 		return nil, localizedError.Error()
 	}
 
@@ -907,8 +909,8 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 		slog.Int64("user_id", userID),
 	)
 
-	if err := checkOutputFormat(w, r); err != nil {
-		json.ServerError(w, r, err)
+	if err := checkOutputFormat(r); err != nil {
+		json.BadRequest(w, r, err)
 		return
 	}
 
@@ -959,7 +961,7 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	if len(entries) == 0 {
-		json.ServerError(w, r, fmt.Errorf("googlereader: no items returned from the database"))
+		json.BadRequest(w, r, fmt.Errorf("googlereader: no items returned from the database for item IDs: %v", itemIDs))
 		return
 	}
 
@@ -983,7 +985,7 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 	}
 	contentItems := make([]contentItem, len(entries))
 	for i, entry := range entries {
-		enclosures := make([]contentItemEnclosure, len(entry.Enclosures))
+		enclosures := make([]contentItemEnclosure, 0, len(entry.Enclosures))
 		for _, enclosure := range entry.Enclosures {
 			enclosures = append(enclosures, contentItemEnclosure{URL: enclosure.URL, Type: enclosure.MimeType})
 		}
@@ -1000,13 +1002,14 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 			categories = append(categories, userStarred)
 		}
 
-		entry.Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entry)
+		entry.Content = mediaproxy.RewriteDocumentWithAbsoluteProxyURL(h.router, r.Host, entry.Content, entry.Feed.ProxifyMedia || entry.Feed.CacheMedia)
+		proxyOption := config.Opts.MediaProxyMode()
 
 		for i := range entry.Enclosures {
-			if proxy.ShouldProxify(entry.Enclosures[i].URL) || entry.Feed.ProxifyMedia {
-				for _, mediaType := range config.Opts.ProxyMediaTypes() {
+			if entry.Feed.ProxifyMedia || mediaproxy.ShouldProxy(entry.Enclosures[i].URL, proxyOption) {
+				for _, mediaType := range config.Opts.MediaProxyResourceTypes() {
 					if strings.HasPrefix(entry.Enclosures[i].MimeType, mediaType+"/") {
-						entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
+						entry.Enclosures[i].URL = mediaproxy.ProxifyAbsoluteURL(h.router, r.Host, entry.Enclosures[i].URL)
 						break
 					}
 				}
@@ -1168,7 +1171,7 @@ func (h *handler) tagListHandler(w http.ResponseWriter, r *http.Request) {
 		slog.String("user_agent", r.UserAgent()),
 	)
 
-	if err := checkOutputFormat(w, r); err != nil {
+	if err := checkOutputFormat(r); err != nil {
 		json.BadRequest(w, r, err)
 		return
 	}
@@ -1203,8 +1206,8 @@ func (h *handler) subscriptionListHandler(w http.ResponseWriter, r *http.Request
 		slog.String("user_agent", r.UserAgent()),
 	)
 
-	if err := checkOutputFormat(w, r); err != nil {
-		json.ServerError(w, r, err)
+	if err := checkOutputFormat(r); err != nil {
+		json.BadRequest(w, r, err)
 		return
 	}
 
@@ -1222,7 +1225,7 @@ func (h *handler) subscriptionListHandler(w http.ResponseWriter, r *http.Request
 			URL:        feed.FeedURL,
 			Categories: []subscriptionCategory{{fmt.Sprintf(UserLabelPrefix, userID) + feed.Category.Title, feed.Category.Title, "folder"}},
 			HTMLURL:    feed.SiteURL,
-			IconURL:    "", //TODO Icons are only base64 encode in DB yet
+			IconURL:    "", // TODO: Icons are base64 encoded in the DB.
 		})
 	}
 	json.OK(w, r, result)
@@ -1249,8 +1252,8 @@ func (h *handler) userInfoHandler(w http.ResponseWriter, r *http.Request) {
 		slog.String("user_agent", r.UserAgent()),
 	)
 
-	if err := checkOutputFormat(w, r); err != nil {
-		json.ServerError(w, r, err)
+	if err := checkOutputFormat(r); err != nil {
+		json.BadRequest(w, r, err)
 		return
 	}
 
@@ -1274,8 +1277,8 @@ func (h *handler) streamItemIDsHandler(w http.ResponseWriter, r *http.Request) {
 		slog.Int64("user_id", userID),
 	)
 
-	if err := checkOutputFormat(w, r); err != nil {
-		json.ServerError(w, r, fmt.Errorf("googlereader: output only as json supported"))
+	if err := checkOutputFormat(r); err != nil {
+		json.BadRequest(w, r, err)
 		return
 	}
 
@@ -1475,8 +1478,7 @@ func (h *handler) handleFeedStreamHandler(w http.ResponseWriter, r *http.Request
 
 	if len(rm.ExcludeTargets) > 0 {
 		for _, s := range rm.ExcludeTargets {
-			switch s.Type {
-			case ReadStream:
+			if s.Type == ReadStream {
 				builder.WithoutStatus(model.EntryStatusRead)
 			}
 		}

@@ -1,4 +1,5 @@
 {
+    "skip_to_content": "Aller au contenu",
     "confirm.question": "Êtes-vous sûr ?",
     "confirm.question.refresh": "Voulez-vous forcer le rafraîchissement ?",
     "confirm.yes": "oui",
@@ -21,7 +22,8 @@
     "action.home_screen": "Ajouter à l'écran d'accueil",
     "tooltip.keyboard_shortcuts": "Raccourci clavier : %s",
     "tooltip.logged_user": "Connecté en tant que %s",
-    "menu.home": "Accueil",
+    "menu.title": "Menu",
+    "menu.home_page": "Accueil",
     "menu.stat": "Default Homepage",
     "menu.unread": "Non lus",
     "menu.starred": "Favoris",
@@ -37,6 +39,7 @@
     "menu.about": "À propos",
     "menu.export": "Export",
     "menu.import": "Import",
+    "menu.search": "Recherche",
     "menu.create_category": "Créer une catégorie",
     "menu.mark_page_as_read": "Marquer cette page comme lu",
     "menu.mark_all_as_read": "Tout marquer comme lu",
@@ -57,6 +60,7 @@
     "menu.shared_entries": "Articles partagés",
     "search.label": "Recherche",
     "search.placeholder": "Recherche...",
+    "search.submit": "Rechercher",
     "pagination.next": "Suivant",
     "pagination.previous": "Précédent",
     "entry.status.unread": "Non lu",
@@ -103,11 +107,27 @@
     "entry.estimated_reading_time": [
         "%d minute de lecture",
         "%d minutes de lecture"
-    ],    
+    ],
     "entry.tags.label": "Libellés :",
     "page.shared_entries.title": "Articles partagés",
+    "page.shared_entries_count": [
+        "%d article partagé",
+        "%d articles partagés"
+    ],
     "page.unread.title": "Non lus",
+    "page.unread_entry_count": [
+        "%d article non lu",
+        "%d articles non lus"
+    ],
+    "page.total_entry_count": [
+        "%d article au total",
+        "%d articles au total"
+    ],
     "page.starred.title": "Favoris",
+    "page.starred_entry_count": [
+        "%d favori",
+        "%d favoris"
+    ],
     "page.categories.title": "Catégories",
     "page.categories.no_feed": "Aucun abonnement.",
     "page.categories.entries": "Articles",
@@ -116,21 +136,28 @@
         "Il y a %d abonnement.",
         "Il y a %d abonnements."
     ],
-    "page.categories.unread_counter": "Nombre d'entrées non lues",
+    "page.categories_count": [
+        "%d catégorie",
+        "%d catégories"
+    ],
     "page.new_category.title": "Nouvelle catégorie",
     "page.new_user.title": "Nouvel Utilisateur",
     "page.edit_category.title": "Modification de la catégorie : %s",
     "page.edit_user.title": "Modification de l'utilisateur : %s",
     "page.feeds.title": "Abonnements",
+    "page.category_label": "Catégorie : %s",
     "page.feeds.last_check": "Dernière vérification :",
     "page.feeds.next_check": "Prochaine vérification :",
-    "page.feeds.unread_counter": "Nombre d'entrées non lues",
     "page.feeds.read_counter": "Nombre d'entrées lues",
     "page.feeds.error_count": [
         "%d erreur",
         "%d erreurs"
     ],
     "page.history.title": "Historique",
+    "page.read_entry_count": [
+        "%d read entry",
+        "%d read entries"
+    ],
     "page.import.title": "Importation",
     "page.search.title": "Résultats de la recherche",
     "page.about.title": "À propos",
@@ -186,6 +213,8 @@
     "page.keyboard_shortcuts.go_to_feed": "Voir abonnement",
     "page.keyboard_shortcuts.go_to_previous_page": "Page précédente",
     "page.keyboard_shortcuts.go_to_next_page": "Page suivante",
+    "page.keyboard_shortcuts.go_to_bottom_item": "Aller à l'élément du bas",
+    "page.keyboard_shortcuts.go_to_top_item": "Aller à l'élément supérieur",
     "page.keyboard_shortcuts.open_item": "Ouvrir élément sélectionné",
     "page.keyboard_shortcuts.open_original": "Ouvrir le lien original",
     "page.keyboard_shortcuts.open_original_same_window": "Ouvrir le lien original dans l'onglet en cours",
@@ -224,7 +253,7 @@
     "page.settings.webauthn.last_seen_on": "Dernière utilisation",
     "page.settings.webauthn.register": "Enregister une nouvelle clé d’accès",
     "page.settings.webauthn.register.error": "Impossible d'enregistrer la clé d’accès",
-    "page.settings.webauthn.delete" : [
+    "page.settings.webauthn.delete": [
         "Supprimer %d clé d’accès",
         "Supprimer %d clés d’accès"
     ],
@@ -360,6 +389,7 @@
     "form.feed.label.urlrewrite_rules": "Règles de réécriture d'URL",
     "form.feed.label.ignore_http_cache": "Ignorer le cache HTTP",
     "form.feed.label.allow_self_signed_certificates": "Autoriser les certificats auto-signés ou non valides",
+    "form.feed.label.disable_http2": "Désactiver HTTP/2",
     "form.feed.label.fetch_via_proxy": "Récupérer via proxy",
     "form.feed.label.disabled": "Ne pas actualiser ce flux",
     "form.feed.label.no_media_player": "Pas de lecteur multimedia (audio/vidéo)",
@@ -469,16 +499,30 @@
     "form.integration.telegram_bot_disable_web_page_preview": "Désactiver l'aperçu de la page Web",
     "form.integration.telegram_bot_disable_notification": "Désactiver les notifications",
     "form.integration.telegram_bot_disable_buttons": "Disable buttons",
+    "form.integration.linkace_activate": "Save entries to LinkAce",
+    "form.integration.linkace_endpoint": "LinkAce API Endpoint",
+    "form.integration.linkace_api_key": "LinkAce API key",
+    "form.integration.linkace_tags": "LinkAce Tags",
+    "form.integration.linkace_is_private": "Mark link as private",
+    "form.integration.linkace_check_disabled": "Disable link check",
     "form.integration.linkding_activate": "Sauvegarder les articles vers Linkding",
     "form.integration.linkding_endpoint": "URL de l'API de Linkding",
     "form.integration.linkding_api_key": "Clé d'API de Linkding",
     "form.integration.linkding_tags": "Linkding Tags",
     "form.integration.linkding_bookmark": "Marquer le lien comme non lu",
+    "form.integration.linkwarden_activate": "Sauvegarder les articles vers Linkwarden",
+    "form.integration.linkwarden_endpoint": "URL de l'API de Linkwarden",
+    "form.integration.linkwarden_api_key": "Clé d'API de Linkwarden",
     "form.integration.matrix_bot_activate": "Envoyer les nouveaux articles vers Matrix",
     "form.integration.matrix_bot_user": "Nom de l'utilisateur Matrix",
     "form.integration.matrix_bot_password": "Mot de passe de l'utilisateur Matrix",
     "form.integration.matrix_bot_url": "URL du serveur Matrix",
     "form.integration.matrix_bot_chat_id": "Identifiant de la salle Matrix",
+    "form.integration.readeck_activate": "Sauvegarder les articles vers Readeck",
+    "form.integration.readeck_endpoint": "URL de l'API de Readeck",
+    "form.integration.readeck_api_key": "Clé d'API de Readeck",
+    "form.integration.readeck_labels": "Readeck Labels",
+    "form.integration.readeck_only_url": "Envoyer uniquement l'URL (au lieu du contenu complet)",
     "form.integration.shiori_activate": "Sauvegarder les articles vers Shiori",
     "form.integration.shiori_endpoint": "URL de l'API de Shiori",
     "form.integration.shiori_username": "Nom d'utilisateur de Shiori",
@@ -521,13 +565,16 @@
         "il y a %d an",
         "il y a %d ans"
     ],
-    "alert.too_many_feeds_refresh": "Vous avez déclenché trop d'actualisations de flux. Veuillez attendre 30 minutes avant de réessayer.",
+    "alert.too_many_feeds_refresh": [
+        "Vous avez déclenché trop d'actualisations de flux. Veuillez attendre %d minute avant de réessayer.",
+        "Vous avez déclenché trop d'actualisations de flux. Veuillez attendre %d minutes avant de réessayer."
+    ],
     "alert.background_feed_refresh": "Les abonnements sont en cours d'actualisation en arrière-plan. Vous pouvez continuer à naviguer dans l'application.",
     "error.http_response_too_large": "La réponse HTTP est trop volumineuse. Vous pouvez augmenter la limite de taille de réponse HTTP dans les paramètres de l'application (redémarrage de l'application nécessaire).",
     "error.http_body_read": "Impossible de lire le corps de la réponse HTTP : %v.",
     "error.http_empty_response_body": "Le corps de la réponse HTTP est vide.",
     "error.http_empty_response": "La réponse HTTP est vide. Peut-être que ce site web bloque Miniflux avec une protection anti-bot ?",
-    "error.tls_error": "Erreur TLS : %v. Vous pouvez désactiver la vérification TLS dans les paramètres de l'abonnement.",
+    "error.tls_error": "Erreur TLS : %q. Vous pouvez désactiver la vérification TLS dans les paramètres de l'abonnement.",
     "error.network_operation": "Miniflux n'est pas en mesure de se connecter à ce site web à cause d'un problème réseau : %v.",
     "error.network_timeout": "Ce site web est trop lent à répondre : %v.",
     "error.http_client_error": "Erreur du client HTTP : %v.",
@@ -546,5 +593,7 @@
     "error.unable_to_parse_feed": "Impossible d'analyser ce flux : %v.",
     "error.feed_not_found": "Impossible de trouver ce flux.",
     "error.unable_to_detect_rssbridge": "Impossible de détecter un flux RSS en utilisant RSS-Bridge: %v.",
-    "error.feed_format_not_detected": "Impossible de détecter le format du flux : %v."
+    "error.feed_format_not_detected": "Impossible de détecter le format du flux : %v.",
+    "form.prefs.label.media_playback_rate": "Vitesse de lecture de l'audio/vidéo",
+    "error.settings_media_playback_rate_range": "La vitesse de lecture est hors limites"
 }

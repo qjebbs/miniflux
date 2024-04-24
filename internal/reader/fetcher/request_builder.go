@@ -16,6 +16,7 @@ import (
 const (
 	defaultHTTPClientTimeout     = 20
 	defaultHTTPClientMaxBodySize = 15 * 1024 * 1024
+	defaultAcceptHeader          = "application/xml, application/atom+xml, application/rss+xml, application/rdf+xml, application/feed+json, text/html, */*;q=0.9"
 )
 
 type RequestBuilder struct {
@@ -25,6 +26,7 @@ type RequestBuilder struct {
 	clientTimeout    int
 	withoutRedirects bool
 	ignoreTLSErrors  bool
+	disableHTTP2     bool
 }
 
 func NewRequestBuilder() *RequestBuilder {
@@ -96,6 +98,11 @@ func (r *RequestBuilder) WithoutRedirects() *RequestBuilder {
 	return r
 }
 
+func (r *RequestBuilder) DisableHTTP2(value bool) *RequestBuilder {
+	r.disableHTTP2 = value
+	return r
+}
+
 func (r *RequestBuilder) IgnoreTLSErrors(value bool) *RequestBuilder {
 	r.ignoreTLSErrors = value
 	return r
@@ -104,6 +111,8 @@ func (r *RequestBuilder) IgnoreTLSErrors(value bool) *RequestBuilder {
 func (r *RequestBuilder) ExecuteRequest(requestURL string) (*http.Response, error) {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
+		// Setting `DialContext` disables HTTP/2, this option forces the transport to try HTTP/2 regardless.
+		ForceAttemptHTTP2: true,
 		DialContext: (&net.Dialer{
 			// Default is 30s.
 			Timeout: 10 * time.Second,
@@ -121,6 +130,14 @@ func (r *RequestBuilder) ExecuteRequest(requestURL string) (*http.Response, erro
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: r.ignoreTLSErrors,
 		},
+	}
+
+	if r.disableHTTP2 {
+		transport.ForceAttemptHTTP2 = false
+
+		// https://pkg.go.dev/net/http#hdr-HTTP_2
+		// Programs that must disable HTTP/2 can do so by setting [Transport.TLSNextProto] (for clients) or [Server.TLSNextProto] (for servers) to a non-nil, empty map.
+		transport.TLSNextProto = map[string]func(string, *tls.Conn) http.RoundTripper{}
 	}
 
 	if r.useClientProxy && r.clientProxyURL != "" {
@@ -152,7 +169,7 @@ func (r *RequestBuilder) ExecuteRequest(requestURL string) (*http.Response, erro
 	}
 
 	req.Header = r.headers
-	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Accept", defaultAcceptHeader)
 	req.Header.Set("Connection", "close")
 
 	slog.Debug("Making outgoing request", slog.Group("request",
@@ -162,6 +179,8 @@ func (r *RequestBuilder) ExecuteRequest(requestURL string) (*http.Response, erro
 		slog.Bool("without_redirects", r.withoutRedirects),
 		slog.Bool("with_proxy", r.useClientProxy),
 		slog.String("proxy_url", r.clientProxyURL),
+		slog.Bool("ignore_tls_errors", r.ignoreTLSErrors),
+		slog.Bool("disable_http2", r.disableHTTP2),
 	))
 
 	return client.Do(req)

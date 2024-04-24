@@ -64,9 +64,11 @@ func (s *Storage) CountAllFeeds() map[string]int64 {
 	}
 	defer rows.Close()
 
-	results := make(map[string]int64)
-	results["enabled"] = 0
-	results["disabled"] = 0
+	results := map[string]int64{
+		"enabled":  0,
+		"disabled": 0,
+		"total":    0,
+	}
 
 	for rows.Next() {
 		var disabled bool
@@ -194,9 +196,9 @@ func (s *Storage) WeeklyFeedEntryCount(userID, feedID int64) (int, error) {
 		FROM
 			entries
 		WHERE
-			entries.user_id=$1 AND 
-			entries.feed_id=$2 AND 
-			entries.published_at BETWEEN (now() - interval '1 week') AND now();
+			entries.user_id=$1 AND
+			entries.feed_id=$2 AND
+			entries.published_at >= now() - interval '1 week';
 	`
 
 	var weeklyCount int
@@ -255,10 +257,11 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			nsfw,
 			url_rewrite_rules,
 			no_media_player,
-			apprise_service_urls
+			apprise_service_urls,
+			disable_http2
 		)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
 		RETURNING
 			id
 	`
@@ -288,21 +291,22 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.UrlRewriteRules,
 		feed.NoMediaPlayer,
 		feed.AppriseServiceURLs,
+		feed.DisableHTTP2,
 	).Scan(&feed.ID)
 	if err != nil {
 		return fmt.Errorf(`store: unable to create feed %q: %v`, feed.FeedURL, err)
 	}
 
-	for i := 0; i < len(feed.Entries); i++ {
-		feed.Entries[i].FeedID = feed.ID
-		feed.Entries[i].UserID = feed.UserID
+	for _, entry := range feed.Entries {
+		entry.FeedID = feed.ID
+		entry.UserID = feed.UserID
 
 		tx, err := s.db.Begin()
 		if err != nil {
 			return fmt.Errorf(`store: unable to start transaction: %v`, err)
 		}
 
-		entryExists, err := s.entryExists(tx, feed.Entries[i])
+		entryExists, err := s.entryExists(tx, entry)
 		if err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
 				return fmt.Errorf(`store: unable to rollback transaction: %v (rolled back due to: %v)`, rollbackErr, err)
@@ -311,7 +315,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		}
 
 		if !entryExists {
-			if err := s.CreateEntry(tx, feed.Entries[i]); err != nil {
+			if err := s.CreateEntry(tx, entry); err != nil {
 				if rollbackErr := tx.Rollback(); rollbackErr != nil {
 					return fmt.Errorf(`store: unable to rollback transaction: %v (rolled back due to: %v)`, rollbackErr, err)
 				}
@@ -362,9 +366,10 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			cache_media=$27,
 			view=$28,
 			proxify_media=$29,
-			apprise_service_urls=$30
+			apprise_service_urls=$30,
+			disable_http2=$31
 		WHERE
-			id=$31 AND user_id=$32
+			id=$32 AND user_id=$33
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -397,6 +402,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.View,
 		feed.ProxifyMedia,
 		feed.AppriseServiceURLs,
+		feed.DisableHTTP2,
 		feed.ID,
 		feed.UserID,
 	)

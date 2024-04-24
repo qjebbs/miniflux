@@ -1,10 +1,10 @@
 {{ define "title"}}{{ .feed.Title }} ({{ .total }}){{ end }}
 
-{{ define "content"}}
-<section class="page-header clearfix">
-    <h1 dir="auto">
+{{ define "page_header"}}
+<section class="page-header clearfix" aria-labelledby="page-header-title">
+    <h1 id="page-header-title" dir="auto">
         <a href="{{ .feed.SiteURL | safeURL  }}" title="{{ .feed.SiteURL }}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-original-link="{{ .user.MarkReadOnView }}">{{ .feed.Title }}</a>
-        ({{ .total }})
+        <span aria-hidden="true">({{ .total }})</span>
     </h1>
     <ul>
         <li>
@@ -20,7 +20,8 @@
     <ul class="left full">
         {{ if .entries }}
         <li>
-            <a href="#"
+            <button
+                    class="page-button"
                 data-action="markPageAsRead"
                 data-label-question="{{ t "confirm.question" }}"
                 data-label-yes="{{ t "confirm.yes" }}"
@@ -29,7 +30,8 @@
                 data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ icon "mark-page-as-read" }}{{ t "menu.mark_page_as_read" }}</a>
         </li>
         <li>
-            <a href="#"
+            <button
+                    class="page-button"
                 data-confirm="true"
                 data-label-question="{{ t "confirm.question" }}"
                 data-label-yes="{{ t "confirm.yes" }}"
@@ -39,7 +41,8 @@
         </li>
         {{ end }}
         <li>
-            <a href="#"
+            <button
+                    class="page-button"
                 data-confirm="true"
                 data-label-question="{{ t "confirm.question.refresh" }}"
                 data-label-yes="{{ t "confirm.yes" }}"
@@ -52,7 +55,8 @@
             <a href="{{ route "editFeed" "feedID" .feed.ID }}">{{ icon "edit" }}{{ t "menu.edit_feed" }}</a>
         </li>
         <li>
-            <a href="#"
+            <button
+                    class="page-button"
                 data-confirm="true"
                 data-action="remove-feed"
                 data-label-question="{{ t "confirm.question" }}"
@@ -63,7 +67,8 @@
                 data-redirect-url="{{ route "feeds" }}">{{ icon "delete" }}{{ t "action.remove_feed" }}</a>
         </li>
         <li>
-            <a href="#"
+            <button
+                    class="page-button"
                 data-action="setView"
                 data-url="{{ route "updateFeedView" "feedID" .feed.ID }}"
                 {{ if eq .view "masonry" }}
@@ -77,20 +82,22 @@
         </li>
     </ul>
 </section>
+{{ end }}
 
+{{ define "content"}}
 {{ if ne .feed.ParsingErrorCount 0 }}
-<div class="alert alert-error">
+<div role="alert" class="alert alert-error">
     <h3>{{ t "alert.feed_error" }}</h3>
     <p>{{ t .feed.ParsingErrorMsg }}</p>
 </div>
 {{ end }}
 {{ if not .entries }}
     {{ if .showOnlyUnreadEntries }}
-        <p class="alert">{{ t "alert.no_unread_feed_entry" }}</p>
+        <p role="alert" class="alert">{{ t "alert.no_unread_feed_entry" }}</p>
     {{ else if .showOnlyStarredEntries }}
-        <p class="alert">{{ t "alert.no_starred_feed_entry" }}</p>
+        <p role="alert" class="alert">{{ t "alert.no_starred_feed_entry" }}</p>
     {{ else }}
-        <p class="alert">{{ t "alert.no_feed_entry" }}</p>
+        <p role="alert" class="alert">{{ t "alert.no_feed_entry" }}</p>
     {{ end }}
 {{ else }}
     <div class="pagination-top">
@@ -113,16 +120,18 @@
     <section class="page-footer">
         <ul>
             <li>
-                <a href="#"
+                <button
+                    class="page-button"
                     data-action="markPageAsRead"
                     data-label-question="{{ t "confirm.question" }}"
                     data-label-yes="{{ t "confirm.yes" }}"
                     data-label-no="{{ t "confirm.no" }}"
                     data-label-loading="{{ t "confirm.loading" }}"
-                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ icon "mark-page-as-read" }}{{ t "menu.mark_page_as_read" }}</a>
+                    data-show-only-unread="{{ if .showOnlyUnreadEntries }}1{{ end }}">{{ icon "mark-page-as-read" }}{{ t "menu.mark_page_as_read" }}</button>
             </li>
             <li>
-                <a href="#"
+                <button
+                    class="page-button"
                     data-confirm="true"
                     data-label-question="{{ t "confirm.question" }}"
                     data-label-yes="{{ t "confirm.yes" }}"

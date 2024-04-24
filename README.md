@@ -1,18 +1,5 @@
 # Miniflux Fork
 
-> For those who migrated to this fork before `2023-08-21`, you may
-> have to run the following SQL to update the database schema:
-> 
-> ```sql
-> ALTER TABLE categories ADD COLUMN hide_globally boolean not null default false;
-> ALTER TABLE feeds ADD COLUMN hide_globally boolean not null default false;
-> ALTER TABLE users DROP COLUMN IF EXISTS "view";
-> UPDATE schema_version SET version=CAST(version AS INT)+2;
-> ```
-> 
-> The problem is related to the recent code change which is to maintain
-> database compatibility with the upstream.
-
 This is a Miniflux fork, ships with all upstream features, plus:
 
 - New home, an article statistics page where reading starts.

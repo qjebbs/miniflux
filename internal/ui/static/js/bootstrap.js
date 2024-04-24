@@ -5,41 +5,44 @@ document.addEventListener("DOMContentLoaded", () => {
     category_feeds_cascader();
 
     if (!document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {
-        let keyboardHandler = new KeyboardHandler();
+        const keyboardHandler = new KeyboardHandler();
         keyboardHandler.on("g u", () => goToPage("unread"));
         keyboardHandler.on("g b", () => goToPage("starred"));
         keyboardHandler.on("g h", () => goToPage("history"));
-        keyboardHandler.on("g f", () => goToFeedOrFeeds());
+        keyboardHandler.on("g f", goToFeedOrFeeds);
         keyboardHandler.on("g c", () => goToPage("categories"));
         keyboardHandler.on("g s", () => goToPage("settings"));
-        keyboardHandler.on("ArrowLeft", () => goToPrevious());
-        keyboardHandler.on("ArrowRight", () => goToNext());
-        keyboardHandler.on("k", () => goToPrevious());
-        keyboardHandler.on("p", () => goToPrevious());
-        keyboardHandler.on("j", () => goToNext());
-        keyboardHandler.on("n", () => goToNext());
+        keyboardHandler.on("g g", () => goToPrevious(TOP));
+        keyboardHandler.on("G", () => goToNext(BOTTOM));
+        keyboardHandler.on("ArrowLeft", goToPrevious);
+        keyboardHandler.on("ArrowRight", goToNext);
+        keyboardHandler.on("k", goToPrevious);
+        keyboardHandler.on("p", goToPrevious);
+        keyboardHandler.on("j", goToNext);
+        keyboardHandler.on("n", goToNext);
         keyboardHandler.on("h", () => goToPage("previous"));
         keyboardHandler.on("l", () => goToPage("next"));
-        keyboardHandler.on("z t", () => scrollToCurrentItem());
-        keyboardHandler.on("o", () => openSelectedItem());
-        keyboardHandler.on("v", () => openOriginalLink());
+        keyboardHandler.on("z t", scrollToCurrentItem);
+        keyboardHandler.on("o", openSelectedItem);
+        keyboardHandler.on("Enter", () => openSelectedItem());
+        keyboardHandler.on("v", () => openOriginalLink(false));
         keyboardHandler.on("V", () => openOriginalLink(true));
-        keyboardHandler.on("c", () => openCommentLink());
+        keyboardHandler.on("c", () => openCommentLink(false));
         keyboardHandler.on("C", () => openCommentLink(true));
         keyboardHandler.on("m", () => handleEntryStatus("next"));
         keyboardHandler.on("M", () => handleEntryStatus("previous"));
-        keyboardHandler.on("A", () => markPageAsRead());
+        keyboardHandler.on("A", markPageAsRead);
         keyboardHandler.on("s", () => handleSaveEntry());
-        keyboardHandler.on("d", () => handleFetchOriginalContent());
+        keyboardHandler.on("d", handleFetchOriginalContent);
         keyboardHandler.on("f", () => handleBookmark());
-        keyboardHandler.on("F", () => goToFeed());
-        keyboardHandler.on("R", () => handleRefreshAllFeeds());
-        keyboardHandler.on("?", () => showKeyboardShortcuts());
-        keyboardHandler.on("+", () => goToAddSubscription());
-        keyboardHandler.on("#", () => unsubscribeFromFeed());
-        keyboardHandler.on("/", (e) => setFocusToSearchInput(e));
+        keyboardHandler.on("F", goToFeed);
+        keyboardHandler.on("R", handleRefreshAllFeeds);
+        keyboardHandler.on("?", showKeyboardShortcuts);
+        keyboardHandler.on("+", goToAddSubscription);
+        keyboardHandler.on("#", unsubscribeFromFeed);
+        keyboardHandler.on("/", () => goToPage("search"));
         keyboardHandler.on("a", () => {
-            let enclosureElement = document.querySelector('.entry-enclosures');
+            const enclosureElement = document.querySelector('.entry-enclosures');
             if (enclosureElement) {
                 enclosureElement.toggleAttribute('open');
             }
@@ -52,9 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (WebAuthnHandler.isWebAuthnSupported()) {
         const webauthnHandler = new WebAuthnHandler();
 
-        onClick("#webauthn-delete", () => { webauthnHandler.removeAllCredentials() });
+        onClick("#webauthn-delete", () => { webauthnHandler.removeAllCredentials(); });
 
-        let registerButton = document.getElementById("webauthn-register");
+        const registerButton = document.getElementById("webauthn-register");
         if (registerButton != null) {
             registerButton.disabled = false;
 
@@ -63,13 +66,13 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        let loginButton = document.getElementById("webauthn-login");
+        const loginButton = document.getElementById("webauthn-login");
         if (loginButton != null) {
             const abortController = new AbortController();
             loginButton.disabled = false;
 
             onClick("#webauthn-login", () => {
-                let usernameField = document.getElementById("form-username");
+                const usernameField = document.getElementById("form-username");
                 if (usernameField != null) {
                     abortController.abort();
                     webauthnHandler.login(usernameField.value).catch(err => WebAuthnHandler.showErrorMessage(err));
@@ -80,27 +83,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    onClick("a[data-save-entry]", (event) => handleSaveEntry(event.target));
-    onClick("a[data-toggle-bookmark]", (event) => handleBookmark(event.target));
-    onClick("a[data-fetch-content-entry]", () => handleFetchOriginalContent());
-    onClick("a[data-action=search]", (event) => setFocusToSearchInput(event));
-    onClick("a[data-share-status]", () => handleShare());
-    onClick("a[data-action=setView]", (event) => handleSetView(event.target));
-    onClick("a[data-action=markPageAsRead]", (event) => handleConfirmationMessage(event.target, () => markPageAsRead()));
-    onClick("a[data-toggle-status]", (event) => handleEntryStatus("next", event.target));
-    onClick("a[data-action=nsfw]", () => handleNSFW());
-    onClick("a[data-action=historyGoBack]", () => history.back());
+    onClick(":is(a, button)[data-save-entry]", (event) => handleSaveEntry(event.target));
+    onClick(":is(a, button)[data-toggle-bookmark]", (event) => handleBookmark(event.target));
+    onClick(":is(a, button)[data-fetch-content-entry]", handleFetchOriginalContent);
+    onClick(":is(a, button)[data-share-status]", handleShare);
+    onClick(":is(a, button)[data-action=setView]", (event) => handleSetView(event.target));
+    onClick(":is(a, button)[data-action=markPageAsRead]", (event) => handleConfirmationMessage(event.target, markPageAsRead));
+    onClick(":is(a, button)[data-toggle-status]", (event) => handleEntryStatus("next", event.target));
+    onClick(":is(a, button)[data-action=nsfw]", () => handleNSFW());
+    onClick(":is(a, button)[data-action=historyGoBack]", () => history.back());
 
     let tabHandler = new TabHandler();
     tabHandler.addEventListener('.tabs.tabs-entry-edit', EntryEditorHandler.switchHandler);
 
-    onClick("a[data-toggle-cache]", (event) => handleCache(event.target));
-    onClick("a[data-set-read='true']", (event) => setEntryStatusRead(findEntry(event.target)), true);
-    onClick("a[data-action=showActionMenu]", (event) => ActionMenu.switch(event.target));
+    onClick(":is(a, button)[data-toggle-cache]", (event) => handleCache(event.target));
+    onClick(":is(a, button)[data-set-read='true']", (event) => setEntryStatusRead(findEntry(event.target)), true);
+    onClick(":is(a, button)[data-action=showActionMenu]", (event) => ActionMenu.switch(event.target));
     onClick("button[data-action=submitEntry]", (event) => EntryEditorHandler.submitHandler(event));
-
-    onClick("a[data-confirm]", (event) => handleConfirmationMessage(event.target, (url, redirectURL) => {
-        let request = new RequestBuilder(url);
+    onClick(":is(a, button)[data-confirm]", (event) => handleConfirmationMessage(event.target, (url, redirectURL) => {
+    const request = new RequestBuilder(url);
 
         request.withCallback((response) => {
             if (redirectURL) {
@@ -124,10 +125,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }, true);
 
-    if (document.documentElement.clientWidth < 600) {
-        onClick(".logo", () => toggleMainMenu());
-        onClick(".header nav li", (event) => onClickMainMenuListItem(event));
+    checkMenuToggleModeByLayout();
+    window.addEventListener("resize", checkMenuToggleModeByLayout, { passive: true });
+
+    fixVoiceOverDetailsSummaryBug();
+
+    const logoElement = document.querySelector(".logo");
+    if (logoElement) {
+        logoElement.addEventListener("click", toggleMainMenu);
+        logoElement.addEventListener("keydown", toggleMainMenu);
     }
+
+    onClick(".header nav li", (event) => onClickMainMenuListItem(event));
 
     if (document.querySelector('.no-back-forward-cache')) {
         window.onpageshow = function (event) {
@@ -138,16 +147,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if ("serviceWorker" in navigator) {
-        let scriptElement = document.getElementById("service-worker-script");
+        const scriptElement = document.getElementById("service-worker-script");
         if (scriptElement) {
-            navigator.serviceWorker.register(scriptElement.src);
+	    navigator.serviceWorker.register(ttpolicy.createScriptURL(scriptElement.src));
         }
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent Chrome 67 and earlier from automatically showing the prompt.
-        e.preventDefault();
-
         let deferredPrompt = e;
         const promptHomeScreen = document.getElementById('prompt-home-screen');
         if (promptHomeScreen) {
@@ -168,11 +174,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Save and resume media position
-    const elements = document.querySelectorAll("audio[data-last-position],video[data-last-position]");
-    elements.forEach((element) => {
+    const lastPositionElements = document.querySelectorAll("audio[data-last-position],video[data-last-position]");
+    lastPositionElements.forEach((element) => {
         if (element.dataset.lastPosition) {
             element.currentTime = element.dataset.lastPosition;
         }
         element.ontimeupdate = () => handlePlayerProgressionSave(element);
+    });
+
+    // Set media playback rate
+    const playbackRateElements = document.querySelectorAll("audio[data-playback-rate],video[data-playback-rate]");
+    playbackRateElements.forEach((element) => {
+        if (element.dataset.playbackRate) {
+            element.playbackRate = element.dataset.playbackRate;
+        }
     });
 });

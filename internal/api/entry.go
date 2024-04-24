@@ -15,8 +15,8 @@ import (
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/json"
 	"miniflux.app/v2/internal/integration"
+	"miniflux.app/v2/internal/mediaproxy"
 	"miniflux.app/v2/internal/model"
-	"miniflux.app/v2/internal/proxy"
 	"miniflux.app/v2/internal/reader/processor"
 	"miniflux.app/v2/internal/reader/readingtime"
 	"miniflux.app/v2/internal/storage"
@@ -35,13 +35,14 @@ func (h *handler) getEntryFromBuilder(w http.ResponseWriter, r *http.Request, b 
 		return
 	}
 
-	entry.Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entry)
+	entry.Content = mediaproxy.RewriteDocumentWithAbsoluteProxyURL(h.router, r.Host, entry.Content, entry.Feed.ProxifyMedia || entry.Feed.CacheMedia)
+	proxyOption := config.Opts.MediaProxyMode()
 
 	for i := range entry.Enclosures {
-		if proxy.ShouldProxify(entry.Enclosures[i].URL) || entry.Feed.ProxifyMedia {
-			for _, mediaType := range config.Opts.ProxyMediaTypes() {
+		if entry.Feed.ProxifyMedia || mediaproxy.ShouldProxy(entry.Enclosures[i].URL, proxyOption) {
+			for _, mediaType := range config.Opts.MediaProxyResourceTypes() {
 				if strings.HasPrefix(entry.Enclosures[i].MimeType, mediaType+"/") {
-					entry.Enclosures[i].URL = proxy.AbsoluteProxifyURL(h.router, r.Host, entry.Enclosures[i].URL)
+					entry.Enclosures[i].URL = mediaproxy.ProxifyAbsoluteURL(h.router, r.Host, entry.Enclosures[i].URL)
 					break
 				}
 			}
@@ -162,7 +163,7 @@ func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int
 	}
 
 	for i := range entries {
-		entries[i].Content = proxy.AbsoluteProxyRewriter(h.router, r.Host, entries[i])
+		entries[i].Content = mediaproxy.RewriteDocumentWithAbsoluteProxyURL(h.router, r.Host, entries[i].Content, entries[i].Feed.ProxifyMedia || entries[i].Feed.CacheMedia)
 	}
 
 	json.OK(w, r, &entriesResponse{Total: count, Entries: entries})
@@ -273,7 +274,9 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	entryUpdateRequest.Patch(entry)
-	entry.ReadingTime = readingtime.EstimateReadingTime(entry.Content, user.DefaultReadingSpeed, user.CJKReadingSpeed)
+	if user.ShowReadingTime {
+		entry.ReadingTime = readingtime.EstimateReadingTime(entry.Content, user.DefaultReadingSpeed, user.CJKReadingSpeed)
+	}
 
 	if err := h.store.UpdateEntryTitleAndContent(entry); err != nil {
 		json.ServerError(w, r, err)

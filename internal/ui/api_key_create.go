@@ -14,9 +14,6 @@ import (
 )
 
 func (h *handler) showCreateAPIKeyPage(w http.ResponseWriter, r *http.Request) {
-	sess := session.New(h.store, request.SessionID(r))
-	view := view.New(h.tpl, r, sess)
-
 	user, err := h.store.UserByID(request.UserID(r))
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -24,7 +21,8 @@ func (h *handler) showCreateAPIKeyPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nsfw := request.IsNSFWEnabled(r)
-
+	sess := session.New(h.store, request.SessionID(r))
+	view := view.New(h.tpl, r, sess)
 	view.Set("form", &form.APIKeyForm{})
 	view.Set("menu", "settings")
 	view.Set("user", user)

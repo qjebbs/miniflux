@@ -32,8 +32,8 @@ class TouchHandler {
     detectDrag() {
         if (this.touch.flagDrag) return;
         if (this.touch.start.x >= -1 && this.touch.move.x >= -1) {
-            let horizontalDistance = Math.abs(this.touch.move.x - this.touch.start.x);
-            let verticalDistance = Math.abs(this.touch.move.y - this.touch.start.y);
+            const horizontalDistance = Math.abs(this.touch.move.x - this.touch.start.x);
+            const verticalDistance = Math.abs(this.touch.move.y - this.touch.start.y);
 
             if (horizontalDistance > 30 && verticalDistance < 70) {
                 this.touch.flagDrag = true;
@@ -83,7 +83,7 @@ class TouchHandler {
         }
 
         if (this.touch.target !== null) {
-            let distance = this.calculateDistance();
+            const distance = this.calculateDistance();
 
             if (Math.abs(distance) > 75) {
                 this.runListeners(this.listeners.active);

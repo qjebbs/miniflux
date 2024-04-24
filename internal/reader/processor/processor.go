@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"slices"
 	"strconv"
 	"time"
 
@@ -25,7 +26,7 @@ import (
 )
 
 var (
-	youtubeRegex           = regexp.MustCompile(`youtube\.com/watch\?v=(.*)`)
+	youtubeRegex           = regexp.MustCompile(`youtube\.com/watch\?v=(.*)$`)
 	odyseeRegex            = regexp.MustCompile(`^https://odysee\.com`)
 	iso8601Regex           = regexp.MustCompile(`^P((?P<year>\d+)Y)?((?P<month>\d+)M)?((?P<week>\d+)W)?((?P<day>\d+)D)?(T((?P<hour>\d+)H)?((?P<minute>\d+)M)?((?P<second>\d+)S)?)?$`)
 	customReplaceRuleRegex = regexp.MustCompile(`rewrite\("(.*)"\|"(.*)"\)`)
@@ -46,8 +47,7 @@ func ProcessFeedEntries(store *storage.Storage, feed *model.Feed, user *model.Us
 			slog.Int64("feed_id", feed.ID),
 			slog.String("feed_url", feed.FeedURL),
 		)
-
-		if isBlockedEntry(feed, entry) || !isAllowedEntry(feed, entry) {
+		if isBlockedEntry(feed, entry) || !isAllowedEntry(feed, entry) || !isRecentEntry(entry) {
 			continue
 		}
 
@@ -71,6 +71,7 @@ func ProcessFeedEntries(store *storage.Storage, feed *model.Feed, user *model.Us
 			requestBuilder.WithProxy(config.Opts.HTTPClientProxy())
 			requestBuilder.UseProxy(feed.FetchViaProxy)
 			requestBuilder.IgnoreTLSErrors(feed.AllowSelfSignedCertificates)
+			requestBuilder.DisableHTTP2(feed.DisableHTTP2)
 
 			content, scraperErr := scraper.ScrapeWebsite(
 				requestBuilder,
@@ -114,50 +115,65 @@ func ProcessFeedEntries(store *storage.Storage, feed *model.Feed, user *model.Us
 }
 
 func isBlockedEntry(feed *model.Feed, entry *model.Entry) bool {
-	if feed.BlocklistRules != "" {
-		if matchField(feed.BlocklistRules, entry.URL) || matchField(feed.BlocklistRules, entry.Title) {
-			slog.Debug("Blocking entry based on rule",
-				slog.Int64("entry_id", entry.ID),
-				slog.String("entry_url", entry.URL),
-				slog.Int64("feed_id", feed.ID),
-				slog.String("feed_url", feed.FeedURL),
-				slog.String("rule", feed.BlocklistRules),
-			)
-			return true
-		}
+	if feed.BlocklistRules == "" {
+		return false
+	}
+
+	compiledBlocklist, err := regexp.Compile(feed.BlocklistRules)
+	if err != nil {
+		slog.Debug("Failed on regexp compilation",
+			slog.String("pattern", feed.BlocklistRules),
+			slog.Any("error", err),
+		)
+		return false
+	}
+
+	containsBlockedTag := slices.ContainsFunc(entry.Tags, func(tag string) bool {
+		return compiledBlocklist.MatchString(tag)
+	})
+
+	if compiledBlocklist.MatchString(entry.URL) || compiledBlocklist.MatchString(entry.Title) || compiledBlocklist.MatchString(entry.Author) || containsBlockedTag {
+		slog.Debug("Blocking entry based on rule",
+			slog.Int64("entry_id", entry.ID),
+			slog.String("entry_url", entry.URL),
+			slog.Int64("feed_id", feed.ID),
+			slog.String("feed_url", feed.FeedURL),
+			slog.String("rule", feed.BlocklistRules),
+		)
+		return true
 	}
 
 	return false
 }
 
 func isAllowedEntry(feed *model.Feed, entry *model.Entry) bool {
-	if feed.KeeplistRules != "" {
-		if matchField(feed.KeeplistRules, entry.URL) || matchField(feed.KeeplistRules, entry.Title) {
-			slog.Debug("Allow entry based on rule",
-				slog.Int64("entry_id", entry.ID),
-				slog.String("entry_url", entry.URL),
-				slog.Int64("feed_id", feed.ID),
-				slog.String("feed_url", feed.FeedURL),
-				slog.String("rule", feed.KeeplistRules),
-			)
-			return true
-		}
-		return false
+	if feed.KeeplistRules == "" {
+		return true
 	}
-	return true
-}
 
-func matchField(pattern, value string) bool {
-	match, err := regexp.MatchString(pattern, value)
+	compiledKeeplist, err := regexp.Compile(feed.KeeplistRules)
 	if err != nil {
-		slog.Debug("Failed on regexp match",
-			slog.String("pattern", pattern),
-			slog.String("value", value),
-			slog.Bool("match", match),
+		slog.Debug("Failed on regexp compilation",
+			slog.String("pattern", feed.KeeplistRules),
 			slog.Any("error", err),
 		)
+		return false
 	}
-	return match
+	containsAllowedTag := slices.ContainsFunc(entry.Tags, func(tag string) bool {
+		return compiledKeeplist.MatchString(tag)
+	})
+
+	if compiledKeeplist.MatchString(entry.URL) || compiledKeeplist.MatchString(entry.Title) || compiledKeeplist.MatchString(entry.Author) || containsAllowedTag {
+		slog.Debug("Allow entry based on rule",
+			slog.Int64("entry_id", entry.ID),
+			slog.String("entry_url", entry.URL),
+			slog.Int64("feed_id", feed.ID),
+			slog.String("feed_url", feed.FeedURL),
+			slog.String("rule", feed.KeeplistRules),
+		)
+		return true
+	}
+	return false
 }
 
 // ProcessEntryWebPage downloads the entry web page and apply rewrite rules.
@@ -172,6 +188,7 @@ func ProcessEntryWebPage(feed *model.Feed, entry *model.Entry, user *model.User)
 	requestBuilder.WithProxy(config.Opts.HTTPClientProxy())
 	requestBuilder.UseProxy(feed.FetchViaProxy)
 	requestBuilder.IgnoreTLSErrors(feed.AllowSelfSignedCertificates)
+	requestBuilder.DisableHTTP2(feed.DisableHTTP2)
 
 	content, scraperErr := scraper.ScrapeWebsite(
 		requestBuilder,
@@ -193,7 +210,9 @@ func ProcessEntryWebPage(feed *model.Feed, entry *model.Entry, user *model.User)
 
 	if content != nil {
 		entry.Content = content.Content
-		entry.ReadingTime = readingtime.EstimateReadingTime(entry.Content, user.DefaultReadingSpeed, user.CJKReadingSpeed)
+		if user.ShowReadingTime {
+			entry.ReadingTime = readingtime.EstimateReadingTime(entry.Content, user.DefaultReadingSpeed, user.CJKReadingSpeed)
+		}
 	}
 
 	rewrite.Rewriter(websiteURL, entry, entry.Feed.RewriteRules)
@@ -271,7 +290,9 @@ func updateEntryReadingTime(store *storage.Storage, feed *model.Feed, entry *mod
 	}
 	// Handle YT error case and non-YT entries.
 	if entry.ReadingTime == 0 {
-		entry.ReadingTime = readingtime.EstimateReadingTime(entry.Content, user.DefaultReadingSpeed, user.CJKReadingSpeed)
+		if user.ShowReadingTime {
+			entry.ReadingTime = readingtime.EstimateReadingTime(entry.Content, user.DefaultReadingSpeed, user.CJKReadingSpeed)
+		}
 	}
 }
 
@@ -379,15 +400,22 @@ func parseISO8601(from string) (time.Duration, error) {
 
 		switch name {
 		case "hour":
-			d = d + (time.Duration(val) * time.Hour)
+			d += (time.Duration(val) * time.Hour)
 		case "minute":
-			d = d + (time.Duration(val) * time.Minute)
+			d += (time.Duration(val) * time.Minute)
 		case "second":
-			d = d + (time.Duration(val) * time.Second)
+			d += (time.Duration(val) * time.Second)
 		default:
 			return 0, fmt.Errorf("unknown field %s", name)
 		}
 	}
 
 	return d, nil
+}
+
+func isRecentEntry(entry *model.Entry) bool {
+	if config.Opts.FilterEntryMaxAgeDays() == 0 || entry.Date.After(time.Now().AddDate(0, 0, -config.Opts.FilterEntryMaxAgeDays())) {
+		return true
+	}
+	return false
 }

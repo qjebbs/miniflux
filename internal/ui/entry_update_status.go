@@ -25,13 +25,11 @@ func (h *handler) updateEntriesStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := request.UserID(r)
-	err := h.store.SetEntriesStatus(userID, entriesStatusUpdateRequest.EntryIDs, entriesStatusUpdateRequest.Status)
+	nsfw := request.IsNSFWEnabled(r)
+	count, err := h.store.SetEntriesStatusCount(request.UserID(r), entriesStatusUpdateRequest.EntryIDs, entriesStatusUpdateRequest.Status, nsfw)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
 	}
-	nsfw := request.IsNSFWEnabled(r)
-	count := h.store.CountUnreadEntries(userID, nsfw)
 	json.OK(w, r, count)
 }

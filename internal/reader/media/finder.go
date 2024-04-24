@@ -63,7 +63,7 @@ func FindMedia(media *model.Media) error {
 func FetchMedia(media *model.Media, r *http.Request) (*http.Response, error) {
 	clt := &http.Client{
 		Transport: &http.Transport{
-			IdleConnTimeout: time.Duration(config.Opts.ProxyHTTPClientTimeout()) * time.Second,
+			IdleConnTimeout: time.Duration(config.Opts.MediaProxyHTTPClientTimeout()) * time.Second,
 		},
 		Timeout: time.Duration(config.Opts.HTTPClientTimeout()) * time.Second,
 	}

@@ -145,14 +145,14 @@ func (s *Storage) CategoriesWithFeedCount(userID int64, nsfw bool) (model.Catego
 			c.id,
 			c.user_id,
 			c.title,
-			(SELECT count(*) FROM feeds WHERE feeds.category_id=c.id %[1]s) AS count,
+			(SELECT count(*) FROM feeds WHERE feeds.category_id=c.id) AS count,
 			(SELECT count(*)
 			   FROM feeds
 			     JOIN entries ON (feeds.id = entries.feed_id)
-			   WHERE feeds.category_id = c.id AND entries.status = $1 %[1]s) AS count_unread
+			   WHERE feeds.category_id = c.id AND entries.status = $1) AS count_unread
 		FROM categories c
 		WHERE
-			user_id=$2
+			user_id=$2 %s
 	`
 
 	if user.CategoriesSortingOrder == "alphabetical" {
@@ -167,12 +167,11 @@ func (s *Storage) CategoriesWithFeedCount(userID int64, nsfw bool) (model.Catego
 				c.title ASC
 		`
 	}
-	var nsfwCond1, nsfwCond2 string
+	var nsfwCond string
 	if nsfw {
-		nsfwCond1 = "AND feeds.nsfw = 'f'"
-		nsfwCond2 = "AND c.nsfw = 'f'"
+		nsfwCond = "AND NOT c.nsfw"
 	}
-	query = fmt.Sprintf(query, nsfwCond1, nsfwCond2)
+	query = fmt.Sprintf(query, nsfwCond)
 	rows, err := s.db.Query(query, model.EntryStatusUnread, userID)
 	if err != nil {
 		return nil, fmt.Errorf(`store: unable to fetch categories: %v`, err)

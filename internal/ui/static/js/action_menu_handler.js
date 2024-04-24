@@ -32,9 +32,6 @@ class ActionMenu {
 
         let modal = container.querySelector(".modal");
         if (modal === null) return;
-        setTimeout(() => {
-            modal.classList.add("fade");
-        }, 100)
 
         // initMenu creates menu for given links in action modal.
         // dataForValue specifies the part of predefined menu to keep, 

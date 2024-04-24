@@ -84,6 +84,12 @@ class ModalHandler {
         }
 
         this.setupFocusTrap();
+        let modal = container.querySelector(".modal");
+        if (modal) {
+            setTimeout(() => {
+                modal.classList.add("fade");
+            }, 100)
+        }
         return container;
     }
 

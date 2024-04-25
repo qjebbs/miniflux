@@ -40,8 +40,12 @@ func (h *handler) showReadEntryPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	entryPaginationBuilder := storage.NewEntryPaginationBuilder(h.store, user.ID, entry.ID, "changed_at", "desc")
 	entryPaginationBuilder.WithStatus(model.EntryStatusRead)
+	if nsfw {
+		entryPaginationBuilder.WithoutNSFW()
+	}
 	prevEntry, nextEntry, err := entryPaginationBuilder.Entries()
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -58,7 +62,6 @@ func (h *handler) showReadEntryPage(w http.ResponseWriter, r *http.Request) {
 		prevEntryRoute = route.Path(h.router, "readEntry", "entryID", prevEntry.ID)
 	}
 
-	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("entry", entry)

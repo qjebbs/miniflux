@@ -51,9 +51,13 @@ func (h *handler) showUnreadFeedEntryPage(w http.ResponseWriter, r *http.Request
 		entry.Status = model.EntryStatusRead
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	entryPaginationBuilder := storage.NewEntryPaginationBuilder(h.store, user.ID, entry.ID, user.EntryOrder, user.EntryDirection)
 	entryPaginationBuilder.WithFeedID(feedID)
 	entryPaginationBuilder.WithStatus(model.EntryStatusUnread)
+	if nsfw {
+		entryPaginationBuilder.WithoutNSFW()
+	}
 
 	if entry.Status == model.EntryStatusRead {
 		err = h.store.SetEntriesStatus(user.ID, []int64{entry.ID}, model.EntryStatusUnread)
@@ -88,7 +92,6 @@ func (h *handler) showUnreadFeedEntryPage(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("entry", entry)

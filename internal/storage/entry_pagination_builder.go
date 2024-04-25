@@ -58,6 +58,12 @@ func (e *EntryPaginationBuilder) WithStatus(status string) {
 	}
 }
 
+// WithoutNSFW adds non-NSFW to the condition.
+func (e *EntryPaginationBuilder) WithoutNSFW() {
+	e.conditions = append(e.conditions, "not c.nsfw")
+	e.conditions = append(e.conditions, "not f.nsfw")
+}
+
 // Entries returns previous and next entries.
 func (e *EntryPaginationBuilder) Entries() (*model.Entry, *model.Entry, error) {
 	tx, err := e.store.db.Begin()

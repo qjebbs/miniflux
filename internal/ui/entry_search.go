@@ -24,9 +24,13 @@ func (h *handler) showSearchEntryPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	entryID := request.RouteInt64Param(r, "entryID")
 	searchQuery := request.QueryStringParam(r, "q", "")
 	builder := h.store.NewEntryQueryBuilder(user.ID)
+	if nsfw {
+		builder.WithoutNSFW()
+	}
 	builder.WithSearchQuery(searchQuery)
 	builder.WithEntryID(entryID)
 	builder.WithoutStatus(model.EntryStatusRemoved)
@@ -54,6 +58,9 @@ func (h *handler) showSearchEntryPage(w http.ResponseWriter, r *http.Request) {
 
 	entryPaginationBuilder := storage.NewEntryPaginationBuilder(h.store, user.ID, entry.ID, user.EntryOrder, user.EntryDirection)
 	entryPaginationBuilder.WithSearchQuery(searchQuery)
+	if nsfw {
+		entryPaginationBuilder.WithoutNSFW()
+	}
 	prevEntry, nextEntry, err := entryPaginationBuilder.Entries()
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -70,7 +77,6 @@ func (h *handler) showSearchEntryPage(w http.ResponseWriter, r *http.Request) {
 		prevEntryRoute = route.Path(h.router, "searchEntry", "entryID", prevEntry.ID)
 	}
 
-	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	view.Set("searchQuery", searchQuery)

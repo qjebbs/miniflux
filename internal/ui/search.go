@@ -21,6 +21,7 @@ func (h *handler) showSearchPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nsfw := request.IsNSFWEnabled(r)
 	searchQuery := request.QueryStringParam(r, "q", "")
 	offset := request.QueryIntParam(r, "offset", 0)
 
@@ -29,6 +30,9 @@ func (h *handler) showSearchPage(w http.ResponseWriter, r *http.Request) {
 
 	if searchQuery != "" {
 		builder := h.store.NewEntryQueryBuilder(user.ID)
+		if nsfw {
+			builder.WithoutNSFW()
+		}
 		builder.WithSearchQuery(searchQuery)
 		builder.WithoutStatus(model.EntryStatusRemoved)
 		builder.WithOffset(offset)
@@ -47,7 +51,6 @@ func (h *handler) showSearchPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
 	pagination := getPagination(route.Path(h.router, "search"), entriesCount, offset, user.EntriesPerPage)

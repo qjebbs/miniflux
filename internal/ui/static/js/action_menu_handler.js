@@ -14,7 +14,7 @@ class ActionMenu {
         let container;
         if (isListView()) {
             // menu for entries
-            container=initMenu(currentEntry.querySelectorAll(".item-meta a"), "entries");
+            container = initMenu(currentEntry.querySelectorAll(".item-meta :is(a, button)"), "entries");
             document.querySelector("#menu-mark-above-read").addEventListener("click", () => {
                 setEntriesAboveStatusRead(currentEntry);
                 ModalHandler.close();
@@ -22,7 +22,7 @@ class ActionMenu {
             });
         } else if (currentEntry.classList.contains("entry")) {
             // menu for entry
-            container=initMenu(currentEntry.querySelectorAll(".entry-actions a"), "entry");
+            container = initMenu(currentEntry.querySelectorAll(".entry-actions :is(a, button)"), "entry");
         }
         // cancel menu
         document.querySelector("#menu-action-cancel").addEventListener("click", () => {
@@ -65,9 +65,10 @@ class ActionMenu {
         }
 
         function clickElement(element) {
-            let e = document.createEvent("MouseEvents");
-            e.initEvent("click", true, true);
-            element.dispatchEvent(e);
+            element.dispatchEvent(new Event(
+                "click",
+                { bubbles: true, cancelable: true, composed: true },
+            ));
         }
     }
     static close() {

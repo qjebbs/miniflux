@@ -243,11 +243,12 @@ function updateEntriesStatus(entryIDs, status, callback) {
                 callback(resp);
             }
 
-            if (status === "read") {
-                decrementUnreadCounter(count);
-            } else {
-                incrementUnreadCounter(count);
-            }
+            // if (status === "read") {
+            //     decrementUnreadCounter(count);
+            // } else {
+            //     incrementUnreadCounter(count);
+            // }
+            updateUnreadCounterValue(() => count);
         });
     });
     request.execute();

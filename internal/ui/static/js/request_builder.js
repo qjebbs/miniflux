@@ -20,27 +20,7 @@ class RequestBuilder {
     }
 
     withBody(body) {
-        this.options = Object.assign(this.options, {
-            body: JSON.stringify(body),
-            headers: new Headers({
-                "Content-Type": "application/json",
-                "X-Csrf-Token": getCsrfToken()
-            })
-        });
-        return this;
-    }
-
-    withForm(data) {
-        let form = new FormData();
-        for (let key in data) {
-            form.append(key, data[key]);
-        }
-        this.options = Object.assign(this.options, {
-            body: form,
-            headers: new Headers({
-                "X-Csrf-Token": getCsrfToken()
-            })
-        });
+        this.options.body = JSON.stringify(body);
         return this;
     }
 

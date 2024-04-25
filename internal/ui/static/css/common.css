@@ -635,11 +635,11 @@ template {
 }
 
 .modal.left {
-    left: -360px;
+    left: -380px;
 }
 
 .modal.right {
-    right: -360px;
+    right: -380px;
 }
 
 .modal.left.fade {

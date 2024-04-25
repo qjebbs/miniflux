@@ -84,7 +84,7 @@ func (f *FeedQueryBuilder) WithOffset(offset int) *FeedQueryBuilder {
 
 // WithoutNSFW excludes NSFW contents.
 func (f *FeedQueryBuilder) WithoutNSFW() *FeedQueryBuilder {
-	f.conditions = append(f.conditions, "c.nsfw='f' AND f.nsfw = 'f'")
+	f.conditions = append(f.conditions, "NOT c.nsfw AND NOT f.nsfw")
 	return f
 }
 

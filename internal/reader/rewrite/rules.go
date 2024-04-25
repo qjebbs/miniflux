@@ -18,7 +18,6 @@ var predefinedRules = map[string]string{
 	"happletea.com":          "add_image_title",
 	"ilpost.it":              `remove(".art_tag, #audioPlayerArticle, .author-container, .caption, .ilpostShare, .lastRecents, #mc_embed_signup, .outbrain_inread, p:has(.leggi-anche), .youtube-overlay")`,
 	"imogenquest.net":        "add_image_title",
-	"invidio.us":             "add_invidious_video",
 	"lukesurl.com":           "add_image_title",
 	"medium.com":             "fix_medium_images",
 	"mercworks.net":          "add_image_title",

@@ -245,11 +245,7 @@ func (s *Storage) UpdateCategory(category *model.Category) error {
 
 // RemoveCategory deletes a category.
 func (s *Storage) RemoveCategory(userID, categoryID int64) error {
-	query := `DELETE FROM categories WHERE id in (
-		SELECT c.id FROM categories c
-		LEFT JOIN feeds f ON f.category_id = c.id
-		WHERE c.id = $1 AND c.user_id = $2 AND f.id IS NULL
-	)`
+	query := `DELETE FROM categories WHERE id = $1 AND user_id = $2`
 	result, err := s.db.Exec(query, categoryID, userID)
 	if err != nil {
 		return fmt.Errorf(`store: unable to remove this category: %v`, err)

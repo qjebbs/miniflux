@@ -185,12 +185,6 @@ func (e *EntryQueryBuilder) WithoutStatus(status string) *EntryQueryBuilder {
 	return e
 }
 
-// WithoutNSFW excludes entries whose feed marked as Not Safe For Work.
-func (e *EntryQueryBuilder) WithoutNSFW() *EntryQueryBuilder {
-	e.conditions = append(e.conditions, "c.nsfw = 'f' AND f.nsfw = 'f'")
-	return e
-}
-
 // WithShareCode set the entry share code.
 func (e *EntryQueryBuilder) WithShareCode(shareCode string) *EntryQueryBuilder {
 	e.conditions = append(e.conditions, fmt.Sprintf("e.share_code = $%d", len(e.args)+1))
@@ -223,6 +217,13 @@ func (e *EntryQueryBuilder) WithOffset(offset int) *EntryQueryBuilder {
 	if offset > 0 {
 		e.offset = offset
 	}
+	return e
+}
+
+// WithoutNSFW excludes entries whose feed marked as Not Safe For Work.
+func (e *EntryQueryBuilder) WithoutNSFW() *EntryQueryBuilder {
+	e.conditions = append(e.conditions, "c.nsfw IS FALSE")
+	e.conditions = append(e.conditions, "f.nsfw IS FALSE")
 	return e
 }
 

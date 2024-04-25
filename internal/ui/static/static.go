@@ -171,12 +171,13 @@ func GenerateJavascriptBundles() error {
 			buffer.WriteString(suffix)
 		}
 
-		// minifiedData, err := minifier.Bytes("text/javascript", buffer.Bytes())
-		// if err != nil {
-		// 	return err
-		// }
+		minifiedData, err := minifier.Bytes("text/javascript", buffer.Bytes())
+		if err != nil {
+			return err
+		}
 
-		minifiedData := buffer.Bytes()
+		// debug purposes only
+		// minifiedData = buffer.Bytes()
 
 		JavascriptBundles[bundle] = minifiedData
 		JavascriptBundleChecksums[bundle] = crypto.HashFromBytes(minifiedData)

@@ -4,7 +4,7 @@ function handleSetView(element) {
         return;
     }
     let request = new RequestBuilder(element.dataset.url);
-    request.withForm({
+    request.withBody({
         view: element.dataset.value
     });
     request.withCallback((response) => {

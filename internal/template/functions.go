@@ -60,9 +60,12 @@ func (f *funcMap) Map() template.FuncMap {
 			return mediaproxy.RewriteDocumentWithRelativeProxyURL(f.router, data, feedProxifyImages)
 		},
 		"proxyURL": func(feedProxifyImages bool, link string) string {
-			if feedProxifyImages || mediaproxy.ShouldProxy(link, config.Opts.MediaProxyMode()) {
+			mediaProxyMode := config.Opts.MediaProxyMode()
+
+			if feedProxifyImages || mediaproxy.ShouldProxy(link, mediaProxyMode) {
 				return mediaproxy.ProxifyRelativeURL(f.router, link)
 			}
+
 			return link
 		},
 		"mustBeProxyfied": func(mediaType string) bool {

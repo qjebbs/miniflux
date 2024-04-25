@@ -98,7 +98,6 @@ func (b *Builder) Write() {
 func (b *Builder) writeHeaders() {
 	b.headers["X-Content-Type-Options"] = "nosniff"
 	b.headers["X-Frame-Options"] = "DENY"
-	// b.headers["Content-Security-Policy"] = "default-src 'self'; img-src *; media-src *; frame-src *"
 	b.headers["Referrer-Policy"] = "no-referrer"
 
 	for key, value := range b.headers {

@@ -8,6 +8,7 @@ import (
 
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/html"
+	"miniflux.app/v2/internal/http/route"
 	"miniflux.app/v2/internal/ui/session"
 	"miniflux.app/v2/internal/ui/view"
 )
@@ -20,9 +21,13 @@ func (h *handler) sharedEntries(w http.ResponseWriter, r *http.Request) {
 	}
 	nsfw := request.IsNSFWEnabled(r)
 
+	offset := request.QueryIntParam(r, "offset", 0)
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithShareCodeNotEmpty()
 	builder.WithSorting(user.EntryOrder, user.EntryDirection)
+	builder.WithOffset(offset)
+	builder.WithLimit(user.EntriesPerPage)
+
 	if nsfw {
 		builder.WithoutNSFW()
 	}
@@ -43,6 +48,7 @@ func (h *handler) sharedEntries(w http.ResponseWriter, r *http.Request) {
 	view := view.New(h.tpl, r, sess)
 	view.Set("entries", entries)
 	view.Set("total", count)
+	view.Set("pagination", getPagination(route.Path(h.router, "sharedEntries"), count, offset, user.EntriesPerPage))
 	view.Set("menu", "history")
 	view.Set("user", user)
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))

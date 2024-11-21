@@ -170,6 +170,7 @@ func CreateFeed(store *storage.Storage, userID int64, feedCreationRequest *model
 	subscription.BlocklistRules = feedCreationRequest.BlocklistRules
 	subscription.KeeplistRules = feedCreationRequest.KeeplistRules
 	subscription.UrlRewriteRules = feedCreationRequest.UrlRewriteRules
+	subscription.NSFW = feedCreationRequest.NSFW
 	subscription.EtagHeader = responseHandler.ETag()
 	subscription.LastModifiedHeader = responseHandler.LastModified()
 	subscription.FeedURL = responseHandler.EffectiveURL()

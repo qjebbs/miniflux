@@ -45,6 +45,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		SiteURL:                     feed.SiteURL,
 		FeedURL:                     feed.FeedURL,
 		Title:                       feed.Title,
+		Description:                 feed.Description,
 		ScraperRules:                feed.ScraperRules,
 		RewriteRules:                feed.RewriteRules,
 		BlocklistRules:              feed.BlocklistRules,
@@ -67,6 +68,8 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		ProxifyMedia:                feed.ProxifyMedia,
 		AppriseServiceURLs:          feed.AppriseServiceURLs,
 		DisableHTTP2:                feed.DisableHTTP2,
+		NtfyEnabled:                 feed.NtfyEnabled,
+		NtfyPriority:                feed.NtfyPriority,
 	}
 
 	all, count, size, err := h.store.MediaStatisticsByFeed(feedID)

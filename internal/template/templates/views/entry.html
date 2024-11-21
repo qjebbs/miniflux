@@ -198,7 +198,11 @@
         <audio controls preload="metadata"
             data-last-position="{{ .MediaProgression }}"
             {{ if $.user.MediaPlaybackRate }}data-playback-rate="{{ $.user.MediaPlaybackRate }}"{{ end }}
+            {{ if $.user.MarkReadOnMediaPlayerCompletion }}
+               data-mark-read-on-completion="0.9"
+            {{ end }}
             data-save-url="{{ route "saveEnclosureProgression" "enclosureID" .ID }}"
+            data-enclosure-id="{{.ID}}"
             >
             {{ if (and $.user (mustBeProxyfied "audio")) }}
             <source src="{{ proxyURL .URL }}" type="{{ .Html5MimeType }}">
@@ -206,13 +210,18 @@
             <source src="{{ .URL | safeURL }}" type="{{ .Html5MimeType }}">
             {{ end }}
         </audio>
+        {{ template "enclosure_media_controls" . }}
     </div>
         {{ else if hasPrefix .MimeType "video/" }}
         <div class="enclosure-video">
             <video controls preload="metadata"
                 data-last-position="{{ .MediaProgression }}"
                 {{ if $.user.MediaPlaybackRate }}data-playback-rate="{{ $.user.MediaPlaybackRate }}"{{ end }}
+                {{ if $.user.MarkReadOnMediaPlayerCompletion }}
+                    data-mark-read-on-completion="0.9"
+                {{ end }}
                 data-save-url="{{ route "saveEnclosureProgression" "enclosureID" .ID }}"
+                data-enclosure-id="{{.ID}}"
                 >
                 {{ if (and $.user (mustBeProxyfied "video")) }}
                 <source src="{{ proxyURL .URL }}" type="{{ .Html5MimeType }}">
@@ -220,6 +229,7 @@
                 <source src="{{ .URL | safeURL }}" type="{{ .Html5MimeType }}">
                 {{ end }}
             </video>
+            {{ template "enclosure_media_controls" . }}
         </div>
         {{ end }}
         {{ end }}
@@ -242,7 +252,11 @@
             <audio controls preload="metadata"
                 data-last-position="{{ .MediaProgression }}"
                 {{ if $.user.MediaPlaybackRate }}data-playback-rate="{{ $.user.MediaPlaybackRate }}"{{ end }}
+                {{ if $.user.MarkReadOnMediaPlayerCompletion }}
+                    data-mark-read-on-completion="0.9"
+                {{ end }}
                 data-save-url="{{ route "saveEnclosureProgression" "enclosureID" .ID }}"
+                data-enclosure-id="{{.ID}}"
                 >
                 {{ if (and $.user (mustBeProxyfied "audio")) }}
                 <source src="{{ proxyURL .URL }}" type="{{ .Html5MimeType }}">
@@ -250,13 +264,18 @@
                 <source src="{{ .URL | safeURL }}" type="{{ .Html5MimeType }}">
                 {{ end }}
             </audio>
+            {{ template "enclosure_media_controls" . }}
         </div>
         {{ else if hasPrefix .MimeType "video/" }}
         <div class="enclosure-video">
             <video controls preload="metadata"
                 data-last-position="{{ .MediaProgression }}"
                 {{ if $.user.MediaPlaybackRate }}data-playback-rate="{{ $.user.MediaPlaybackRate }}"{{ end }}
+                {{ if $.user.MarkReadOnMediaPlayerCompletion }}
+                    data-mark-read-on-completion="0.9"
+                {{ end }}
                 data-save-url="{{ route "saveEnclosureProgression" "enclosureID" .ID }}"
+                data-enclosure-id="{{.ID}}"
                 >
                 {{ if (and $.user (mustBeProxyfied "video")) }}
                 <source src="{{ proxyURL .URL }}" type="{{ .Html5MimeType }}">
@@ -264,6 +283,7 @@
                 <source src="{{ .URL | safeURL }}" type="{{ .Html5MimeType }}">
                 {{ end }}
             </video>
+            {{ template "enclosure_media_controls" . }}
         </div>
         {{ else if hasPrefix .MimeType "image/" }}
         <div class="enclosure-image">

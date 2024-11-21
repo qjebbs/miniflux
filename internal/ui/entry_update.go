@@ -40,7 +40,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if entryForm.Readability {
-		content, err := readability.ExtractContent(strings.NewReader(entryForm.Content))
+		_, content, err := readability.ExtractContent(strings.NewReader(entryForm.Content))
 		if err == nil {
 			entryForm.Content = content
 		}

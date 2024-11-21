@@ -4,6 +4,7 @@
 package mediaproxy // import "miniflux.app/v2/internal/mediaproxy"
 
 import (
+	"slices"
 	"strings"
 
 	"miniflux.app/v2/internal/config"
@@ -20,11 +21,8 @@ func RewriteDocumentWithRelativeProxyURL(router *mux.Router, htmlDocument string
 	return genericProxyRewriter(router, ProxifyRelativeURL, htmlDocument, forceProxy)
 }
 
-func RewriteDocumentWithAbsoluteProxyURL(router *mux.Router, host, htmlDocument string, forceProxy bool) string {
-	proxifyFunction := func(router *mux.Router, url string) string {
-		return ProxifyAbsoluteURL(router, host, url)
-	}
-	return genericProxyRewriter(router, proxifyFunction, htmlDocument, forceProxy)
+func RewriteDocumentWithAbsoluteProxyURL(router *mux.Router, htmlDocument string, forceProxy bool) string {
+	return genericProxyRewriter(router, ProxifyAbsoluteURL, htmlDocument, forceProxy)
 }
 
 func genericProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, htmlDocument string, forceProxy bool) string {
@@ -53,13 +51,15 @@ func genericProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, 
 				}
 			})
 
-			doc.Find("video").Each(func(i int, video *goquery.Selection) {
-				if posterAttrValue, ok := video.Attr("poster"); ok {
-					if forceProxy || shouldProxy(posterAttrValue, proxyOption) {
-						video.SetAttr("poster", proxifyFunction(router, posterAttrValue))
+			if !slices.Contains(config.Opts.MediaProxyResourceTypes(), "video") {
+				doc.Find("video").Each(func(i int, video *goquery.Selection) {
+					if posterAttrValue, ok := video.Attr("poster"); ok {
+						if forceProxy || shouldProxy(posterAttrValue, proxyOption) {
+							video.SetAttr("poster", proxifyFunction(router, posterAttrValue))
+						}
 					}
-				}
-			})
+				})
+			}
 
 		case "audio":
 			doc.Find("audio, audio source").Each(func(i int, audio *goquery.Selection) {

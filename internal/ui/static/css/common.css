@@ -336,6 +336,11 @@ a:hover {
         display: inline;
         padding-right: 15px;
     }
+
+    .pagination-backward,
+    .pagination-forward {
+        display: flex;
+    }
 }
 
 /* Tables */
@@ -728,6 +733,7 @@ template {
     font-size: 1.1em;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .pagination-top {
@@ -749,20 +755,36 @@ template {
     padding-top: 8px;
 }
 
-.pagination > div {
-    flex: 1;
+.pagination > div.pagination-backward > div {
+    padding-right: 15px;
+}
+
+.pagination > div.pagination-forward > div {
+    padding-left: 15px;
 }
 
 .pagination-next {
     text-align: right;
 }
 
-.pagination-prev:before {
-    content: "« ";
+.pagination-next:after {
+    content: " ›";
 }
 
-.pagination-next:after {
+.pagination-last {
+    text-align: right;
+}
+
+.pagination-last:after {
     content: " »";
+}
+
+.pagination-prev:before {
+    content: "‹ ";
+}
+
+.pagination-first:before {
+    content: "« ";
 }
 
 .pagination a {
@@ -1037,6 +1059,10 @@ article.category-has-unread {
     background-color: white;
 }
 
+.entry-content img {
+    height: auto;
+}
+
 .entry-content figure {
     margin-top: 15px;
     margin-bottom: 15px;
@@ -1167,6 +1193,15 @@ article.category-has-unread {
     border-bottom: 1px dashed var(--entry-content-abbr-border-color);
 }
 
+.entry-content aside {
+    width: 30%;
+    padding: 1ch;
+    margin-left: 15px;
+    float: right;
+    font-style: italic;
+    border: dotted var(--entry-content-aside-border-color) 2px;
+}
+
 details.entry-enclosures {
     margin-top: 25px;
 }
@@ -1232,6 +1267,39 @@ details.entry-enclosures {
 
 audio, video {
     width: 100%;
+}
+
+.media-controls{
+    font-size: .9em;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.media-controls .media-control-label{
+    line-height: 1em;
+}
+
+.media-controls>div{
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content:center;
+    min-width: 50%;
+    align-items: center;
+}
+
+.media-controls>div>*{
+    padding-left:12px;
+}
+
+.media-controls>div>*:first-child{
+    padding-left:0;
+}
+
+.media-controls span.speed-indicator{
+    /*monospace to ensure constant width even when value change. JS ensure the value is always on 4 characters (in most cases)
+    This reduce ui flickering due to element moving around a bit
+    */
+    font-family: monospace;
 }
 
 .integration-form summary {

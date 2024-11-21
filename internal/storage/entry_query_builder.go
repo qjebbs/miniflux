@@ -293,6 +293,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			f.title as feed_title,
 			f.feed_url,
 			f.site_url,
+			f.description,
 			f.checked_at,
 			f.category_id,
 			c.title as category_title,
@@ -363,6 +364,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.Feed.Title,
 			&entry.Feed.FeedURL,
 			&entry.Feed.SiteURL,
+			&entry.Feed.Description,
 			&entry.Feed.CheckedAt,
 			&entry.Feed.Category.ID,
 			&entry.Feed.Category.Title,
@@ -418,13 +420,13 @@ func (e *EntryQueryBuilder) GetEntryIDs() ([]int64, error) {
 	query := `
 		SELECT
 			e.id
-		FROM 
+		FROM
 			entries e
 		LEFT JOIN
 			feeds f
 		ON
-			f.id=e.feed_id 
-		WHERE 
+			f.id=e.feed_id
+		WHERE
 			%s %s
 	`
 

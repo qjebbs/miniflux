@@ -102,13 +102,13 @@ class TouchHandler {
 
     listen() {
         let elements = document.querySelectorAll('.' + this.className);
-        let hasPassiveOption = DomHelper.hasPassiveEventListenerOption();
+        const eventListenerOptions = { passive: true };
 
         elements.forEach((element) => {
-            element.addEventListener("touchstart", (e) => this.onTouchStart(e), hasPassiveOption ? { passive: true } : false);
-            element.addEventListener("touchmove", (e) => this.onTouchMove(e), hasPassiveOption ? { passive: false } : false);
-            element.addEventListener("touchend", (e) => this.onTouchEnd(e), hasPassiveOption ? { passive: true } : false);
-            element.addEventListener("touchcancel", () => this.reset(), hasPassiveOption ? { passive: true } : false);
+            element.addEventListener("touchstart", (e) => this.onTouchStart(e),eventListenerOptions);
+            element.addEventListener("touchmove", (e) => this.onTouchMove(e));
+            element.addEventListener("touchend", (e) => this.onTouchEnd(e),eventListenerOptions);
+            element.addEventListener("touchcancel", () => this.reset(),eventListenerOptions);
         });
     }
     addEventListener(type, listener) {

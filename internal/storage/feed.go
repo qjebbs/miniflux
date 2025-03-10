@@ -40,6 +40,14 @@ func (s *Storage) FeedExists(userID, feedID int64) bool {
 	return result
 }
 
+// CategoryFeedExists returns true if the given feed exists that belongs to the given category.
+func (s *Storage) CategoryFeedExists(userID, categoryID, feedID int64) bool {
+	var result bool
+	query := `SELECT true FROM feeds WHERE user_id=$1 AND category_id=$2 AND id=$3`
+	s.db.QueryRow(query, userID, categoryID, feedID).Scan(&result)
+	return result
+}
+
 // FeedURLExists checks if feed URL already exists.
 func (s *Storage) FeedURLExists(userID int64, feedURL string) bool {
 	var result bool
@@ -258,11 +266,12 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			url_rewrite_rules,
 			no_media_player,
 			apprise_service_urls,
+			webhook_url,
 			disable_http2,
 			description
 		)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)
 		RETURNING
 			id
 	`
@@ -292,6 +301,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.UrlRewriteRules,
 		feed.NoMediaPlayer,
 		feed.AppriseServiceURLs,
+		feed.WebhookURL,
 		feed.DisableHTTP2,
 		feed.Description,
 	).Scan(&feed.ID)
@@ -369,12 +379,15 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			view=$28,
 			proxify_media=$29,
 			apprise_service_urls=$30,
-			disable_http2=$31,
-			description=$32,
-			ntfy_enabled=$33,
-			ntfy_priority=$34
+			webhook_url=$31,
+			disable_http2=$32,
+			description=$33,
+			ntfy_enabled=$34,
+			ntfy_priority=$35,
+			pushover_enabled=$36,
+			pushover_priority=$37
 		WHERE
-			id=$35 AND user_id=$36
+			id=$38 AND user_id=$39
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -407,10 +420,13 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.View,
 		feed.ProxifyMedia,
 		feed.AppriseServiceURLs,
+		feed.WebhookURL,
 		feed.DisableHTTP2,
 		feed.Description,
 		feed.NtfyEnabled,
 		feed.NtfyPriority,
+		feed.PushoverEnabled,
+		feed.PushoverPriority,
 		feed.ID,
 		feed.UserID,
 	)

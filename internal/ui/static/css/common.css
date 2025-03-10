@@ -7,7 +7,7 @@
 
 html {
     -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 body {
@@ -53,7 +53,6 @@ a:hover {
 .sr-only {
     border: 0 !important;
     clip: rect(1px, 1px, 1px, 1px) !important;
-    -webkit-clip-path: inset(50%) !important;
     clip-path: inset(50%) !important;
     height: 1px !important;
     overflow: hidden !important;
@@ -307,8 +306,7 @@ a:hover {
 
     .header li {
         display: inline-block;
-        padding: 0;
-        padding-right: 12px;
+        padding: 0 12px 0 0;
         line-height: normal;
         border: none;
         font-size: 1.0em;
@@ -630,8 +628,7 @@ template {
     color: var(--modal-color);
     background: var(--modal-background);
     box-shadow: var(--modal-box-shadow);
-    padding: 5px;
-    padding-top: 30px;
+    padding: 30px 5px 5px;
 }
 
 .modal h3 {
@@ -767,16 +764,12 @@ template {
     padding-left: 15px;
 }
 
-.pagination-next {
+.pagination-next, .pagination-last {
     text-align: right;
 }
 
 .pagination-next:after {
     content: " ›";
-}
-
-.pagination-last {
-    text-align: right;
 }
 
 .pagination-last:after {
@@ -1198,10 +1191,9 @@ article.category-has-unread {
 }
 
 .entry-content aside {
-    width: 30%;
+    font-size: 0.9em;
     padding: 1ch;
-    margin-left: 15px;
-    float: right;
+    margin-bottom: 15px;
     font-style: italic;
     border: dotted var(--entry-content-aside-border-color) 2px;
 }

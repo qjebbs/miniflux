@@ -11,12 +11,12 @@ import (
 	"strings"
 
 	"miniflux.app/v2/internal/config"
+	"miniflux.app/v2/internal/reader/encoding"
 	"miniflux.app/v2/internal/reader/fetcher"
 	"miniflux.app/v2/internal/reader/readability"
 	"miniflux.app/v2/internal/urllib"
 
 	"github.com/PuerkitoBio/goquery"
-	"golang.org/x/net/html/charset"
 )
 
 // ScrapeWebsiteResult represents the result of a website scraping.
@@ -50,10 +50,11 @@ func ScrapeWebsite(requestBuilder *fetcher.RequestBuilder, pageURL, rules string
 		rules = getPredefinedScraperRules(pageURL)
 	}
 
-	htmlDocumentReader, err := charset.NewReader(
+	htmlDocumentReader, err := encoding.NewCharsetReader(
 		responseHandler.Body(config.Opts.HTTPClientMaxBodySize()),
 		responseHandler.ContentType(),
 	)
+
 	if err != nil {
 		return nil, fmt.Errorf("scraper: unable to read HTML document: %v", err)
 	}
@@ -101,7 +102,7 @@ func findContentUsingCustomRules(page io.Reader, rules string) (baseURL string, 
 		return "", "", err
 	}
 
-	if hrefValue, exists := document.Find("head base").First().Attr("href"); exists {
+	if hrefValue, exists := document.FindMatcher(goquery.Single("head base")).Attr("href"); exists {
 		hrefValue = strings.TrimSpace(hrefValue)
 		if urllib.IsAbsoluteURL(hrefValue) {
 			baseURL = hrefValue

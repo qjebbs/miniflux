@@ -10,6 +10,7 @@ import (
 	"miniflux.app/v2/internal/integration/apprise"
 	"miniflux.app/v2/internal/integration/betula"
 	"miniflux.app/v2/internal/integration/cubox"
+	"miniflux.app/v2/internal/integration/discord"
 	"miniflux.app/v2/internal/integration/espial"
 	"miniflux.app/v2/internal/integration/instapaper"
 	"miniflux.app/v2/internal/integration/linkace"
@@ -22,11 +23,13 @@ import (
 	"miniflux.app/v2/internal/integration/omnivore"
 	"miniflux.app/v2/internal/integration/pinboard"
 	"miniflux.app/v2/internal/integration/pocket"
+	"miniflux.app/v2/internal/integration/pushover"
 	"miniflux.app/v2/internal/integration/raindrop"
 	"miniflux.app/v2/internal/integration/readeck"
 	"miniflux.app/v2/internal/integration/readwise"
 	"miniflux.app/v2/internal/integration/shaarli"
 	"miniflux.app/v2/internal/integration/shiori"
+	"miniflux.app/v2/internal/integration/slack"
 	"miniflux.app/v2/internal/integration/telegrambot"
 	"miniflux.app/v2/internal/integration/wallabag"
 	"miniflux.app/v2/internal/integration/webhook"
@@ -472,20 +475,27 @@ func PushEntries(feed *model.Feed, entries model.Entries, userIntegrations *mode
 	}
 
 	if userIntegrations.WebhookEnabled {
+		var webhookURL string
+		if feed.WebhookURL != "" {
+			webhookURL = feed.WebhookURL
+		} else {
+			webhookURL = userIntegrations.WebhookURL
+		}
+
 		slog.Debug("Sending new entries to Webhook",
 			slog.Int64("user_id", userIntegrations.UserID),
 			slog.Int("nb_entries", len(entries)),
 			slog.Int64("feed_id", feed.ID),
-			slog.String("webhook_url", userIntegrations.WebhookURL),
+			slog.String("webhook_url", webhookURL),
 		)
 
-		webhookClient := webhook.NewClient(userIntegrations.WebhookURL, userIntegrations.WebhookSecret)
+		webhookClient := webhook.NewClient(webhookURL, userIntegrations.WebhookSecret)
 		if err := webhookClient.SendNewEntriesWebhookEvent(feed, entries); err != nil {
 			slog.Debug("Unable to send new entries to Webhook",
 				slog.Int64("user_id", userIntegrations.UserID),
 				slog.Int("nb_entries", len(entries)),
 				slog.Int64("feed_id", feed.ID),
-				slog.String("webhook_url", userIntegrations.WebhookURL),
+				slog.String("webhook_url", webhookURL),
 				slog.Any("error", err),
 			)
 		}
@@ -505,6 +515,7 @@ func PushEntries(feed *model.Feed, entries model.Entries, userIntegrations *mode
 			userIntegrations.NtfyUsername,
 			userIntegrations.NtfyPassword,
 			userIntegrations.NtfyIconURL,
+			userIntegrations.NtfyInternalLinks,
 			feed.NtfyPriority,
 		)
 
@@ -513,8 +524,82 @@ func PushEntries(feed *model.Feed, entries model.Entries, userIntegrations *mode
 		}
 	}
 
+	if userIntegrations.AppriseEnabled {
+		slog.Debug("Sending new entries to Apprise",
+			slog.Int64("user_id", userIntegrations.UserID),
+			slog.Int("nb_entries", len(entries)),
+			slog.Int64("feed_id", feed.ID),
+		)
+
+		appriseServiceURLs := userIntegrations.AppriseServicesURL
+		if feed.AppriseServiceURLs != "" {
+			appriseServiceURLs = feed.AppriseServiceURLs
+		}
+
+		client := apprise.NewClient(
+			appriseServiceURLs,
+			userIntegrations.AppriseURL,
+		)
+
+		if err := client.SendNotification(feed, entries); err != nil {
+			slog.Warn("Unable to send new entries to Apprise", slog.Any("error", err))
+		}
+	}
+
+	if userIntegrations.DiscordEnabled {
+		slog.Debug("Sending new entries to Discord",
+			slog.Int64("user_id", userIntegrations.UserID),
+			slog.Int("nb_entries", len(entries)),
+			slog.Int64("feed_id", feed.ID),
+		)
+
+		client := discord.NewClient(
+			userIntegrations.DiscordWebhookLink,
+		)
+
+		if err := client.SendDiscordMsg(feed, entries); err != nil {
+			slog.Warn("Unable to send new entries to Discord", slog.Any("error", err))
+		}
+	}
+
+	if userIntegrations.SlackEnabled {
+		slog.Debug("Sending new entries to Slack",
+			slog.Int64("user_id", userIntegrations.UserID),
+			slog.Int("nb_entries", len(entries)),
+			slog.Int64("feed_id", feed.ID),
+		)
+
+		client := slack.NewClient(
+			userIntegrations.SlackWebhookLink,
+		)
+
+		if err := client.SendSlackMsg(feed, entries); err != nil {
+			slog.Warn("Unable to send new entries to Slack", slog.Any("error", err))
+		}
+	}
+
+	if userIntegrations.PushoverEnabled && feed.PushoverEnabled {
+		slog.Debug("Sending new entries to Pushover",
+			slog.Int64("user_id", userIntegrations.UserID),
+			slog.Int("nb_entries", len(entries)),
+			slog.Int64("feed_id", feed.ID),
+		)
+
+		client := pushover.New(
+			userIntegrations.PushoverUser,
+			userIntegrations.PushoverToken,
+			feed.PushoverPriority,
+			userIntegrations.PushoverDevice,
+			userIntegrations.PushoverPrefix,
+		)
+
+		if err := client.SendMessages(feed, entries); err != nil {
+			slog.Warn("Unable to send new entries to Pushover", slog.Any("error", err))
+		}
+	}
+
 	// Integrations that only support sending individual entries
-	if userIntegrations.TelegramBotEnabled || userIntegrations.AppriseEnabled {
+	if userIntegrations.TelegramBotEnabled {
 		for _, entry := range entries {
 			if userIntegrations.TelegramBotEnabled {
 				slog.Debug("Sending a new entry to Telegram",
@@ -537,35 +622,6 @@ func PushEntries(feed *model.Feed, entries model.Entries, userIntegrations *mode
 						slog.Int64("user_id", userIntegrations.UserID),
 						slog.Int64("entry_id", entry.ID),
 						slog.String("entry_url", entry.URL),
-						slog.Any("error", err),
-					)
-				}
-			}
-
-			if userIntegrations.AppriseEnabled {
-				slog.Debug("Sending a new entry to Apprise",
-					slog.Int64("user_id", userIntegrations.UserID),
-					slog.Int64("entry_id", entry.ID),
-					slog.String("entry_url", entry.URL),
-					slog.String("apprise_url", userIntegrations.AppriseURL),
-				)
-
-				appriseServiceURLs := userIntegrations.AppriseServicesURL
-				if feed.AppriseServiceURLs != "" {
-					appriseServiceURLs = feed.AppriseServiceURLs
-				}
-
-				client := apprise.NewClient(
-					appriseServiceURLs,
-					userIntegrations.AppriseURL,
-				)
-
-				if err := client.SendNotification(entry); err != nil {
-					slog.Error("Unable to send entry to Apprise",
-						slog.Int64("user_id", userIntegrations.UserID),
-						slog.Int64("entry_id", entry.ID),
-						slog.String("entry_url", entry.URL),
-						slog.String("apprise_url", userIntegrations.AppriseURL),
 						slog.Any("error", err),
 					)
 				}

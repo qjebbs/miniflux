@@ -53,8 +53,11 @@ type Feed struct {
 	NSFW                        bool      `json:"nsfw"`
 	DisableHTTP2                bool      `json:"disable_http2"`
 	AppriseServiceURLs          string    `json:"apprise_service_urls"`
+	WebhookURL                  string    `json:"webhook_url"`
 	NtfyEnabled                 bool      `json:"ntfy_enabled"`
 	NtfyPriority                int       `json:"ntfy_priority"`
+	PushoverEnabled             bool      `json:"pushover_enabled,omitempty"`
+	PushoverPriority            int       `json:"pushover_priority,omitempty"`
 
 	// Non-persisted attributes
 	Category *Category `json:"category,omitempty"`
@@ -127,8 +130,8 @@ func (f *Feed) ScheduleNextCheck(weeklyCount int, refreshDelayInMinutes int) {
 			intervalMinutes = config.Opts.SchedulerEntryFrequencyMaxInterval()
 		} else {
 			intervalMinutes = int(math.Round(float64(7*24*60) / float64(weeklyCount*config.Opts.SchedulerEntryFrequencyFactor())))
-			intervalMinutes = int(math.Min(float64(intervalMinutes), float64(config.Opts.SchedulerEntryFrequencyMaxInterval())))
-			intervalMinutes = int(math.Max(float64(intervalMinutes), float64(config.Opts.SchedulerEntryFrequencyMinInterval())))
+			intervalMinutes = min(intervalMinutes, config.Opts.SchedulerEntryFrequencyMaxInterval())
+			intervalMinutes = max(intervalMinutes, config.Opts.SchedulerEntryFrequencyMinInterval())
 		}
 	}
 

@@ -4,22 +4,29 @@
 package icon // import "miniflux.app/v2/internal/reader/icon"
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	"image"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"log/slog"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 
 	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/crypto"
 	"miniflux.app/v2/internal/model"
+	"miniflux.app/v2/internal/reader/encoding"
 	"miniflux.app/v2/internal/reader/fetcher"
 	"miniflux.app/v2/internal/urllib"
 
 	"github.com/PuerkitoBio/goquery"
-	"golang.org/x/net/html/charset"
+	"golang.org/x/image/draw"
 )
 
 type IconFinder struct {
@@ -180,7 +187,57 @@ func (f *IconFinder) DownloadIcon(iconURL string) (*model.Icon, error) {
 		Content:  responseBody,
 	}
 
+	icon = resizeIcon(icon)
+
 	return icon, nil
+}
+
+func resizeIcon(icon *model.Icon) *model.Icon {
+	r := bytes.NewReader(icon.Content)
+
+	if !slices.Contains([]string{"image/jpeg", "image/png", "image/gif"}, icon.MimeType) {
+		slog.Info("icon isn't a png/gif/jpeg/ico, can't resize", slog.String("mimetype", icon.MimeType))
+		return icon
+	}
+
+	// Don't resize icons that we can't decode, or that already have the right size.
+	config, _, err := image.DecodeConfig(r)
+	if err != nil {
+		slog.Warn("unable to decode the metadata of the icon", slog.Any("error", err))
+		return icon
+	}
+	if config.Height <= 32 && config.Width <= 32 {
+		slog.Debug("icon don't need to be rescaled", slog.Int("height", config.Height), slog.Int("width", config.Width))
+		return icon
+	}
+
+	r.Seek(0, io.SeekStart)
+
+	var src image.Image
+	switch icon.MimeType {
+	case "image/jpeg":
+		src, err = jpeg.Decode(r)
+	case "image/png":
+		src, err = png.Decode(r)
+	case "image/gif":
+		src, err = gif.Decode(r)
+	}
+	if err != nil || src == nil {
+		slog.Warn("unable to decode the icon", slog.Any("error", err))
+		return icon
+	}
+
+	dst := image.NewRGBA(image.Rect(0, 0, 32, 32))
+	draw.BiLinear.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+
+	var b bytes.Buffer
+	if err = png.Encode(io.Writer(&b), dst); err != nil {
+		slog.Warn("unable to encode the new icon", slog.Any("error", err))
+	}
+
+	icon.Content = b.Bytes()
+	icon.MimeType = "image/png"
+	return icon
 }
 
 func findIconURLsFromHTMLDocument(body io.Reader, contentType string) ([]string, error) {
@@ -191,7 +248,7 @@ func findIconURLsFromHTMLDocument(body io.Reader, contentType string) ([]string,
 		"link[rel='apple-touch-icon-precomposed.png']",
 	}
 
-	htmlDocumentReader, err := charset.NewReader(body, contentType)
+	htmlDocumentReader, err := encoding.NewCharsetReader(body, contentType)
 	if err != nil {
 		return nil, fmt.Errorf("icon: unable to create charset reader: %w", err)
 	}

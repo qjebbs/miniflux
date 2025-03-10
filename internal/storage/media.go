@@ -423,10 +423,6 @@ func (s *Storage) cleanMediaReferences() error {
 // cleanMediaRecords removes media records which has no reference record at all.
 // Important: this should always run after CleanMediaCaches(), or caches in disk will be orphan files.
 func (s *Storage) cleanMediaRecords() error {
-	err := s.cleanMediaReferences()
-	if err != nil {
-		return fmt.Errorf(`store: unable to clean media references: %v`, err)
-	}
 	query := `
 		DELETE FROM medias
 		WHERE id IN (

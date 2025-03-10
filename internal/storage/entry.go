@@ -428,11 +428,6 @@ func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries
 				slog.Any("error", err),
 			)
 		}
-		if err := s.cleanMediaRecords(); err != nil {
-			slog.Error("Unable to cleanup media records",
-				slog.Any("error", err),
-			)
-		}
 	}()
 
 	return newEntries, nil

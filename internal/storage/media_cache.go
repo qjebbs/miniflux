@@ -43,7 +43,10 @@ func (s *Storage) CacheMedias() error {
 			if !m.Cached {
 				// try load media from disk cache first
 				if err = filesystem.MediaFromCache(m); err != nil {
-					slog.Debug("[Storage:CacheMedias] unable to load disk cache: %v", err)
+					slog.Debug(
+						"[Storage:CacheMedias] unable to load disk cache: %v",
+						slog.Any("error", err),
+					)
 					if err = media.FindMedia(m); err != nil {
 						slog.Error("[Storage:CacheMedias] unable to fetch media %s: %v", m.URL, err)
 						m.ErrorCount++
@@ -163,7 +166,10 @@ func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
 		if !m.Cached {
 			// try load media from disk cache first
 			if err = filesystem.MediaFromCache(m); err != nil {
-				slog.Debug("[Storage:CacheEntryMedias] unable to load disk cache: %v", err)
+				slog.Debug(
+					"[Storage:CacheEntryMedias] unable to load disk cache",
+					slog.Any("error", err),
+				)
 				if err = media.FindMedia(m); err != nil {
 					slog.Error("[Storage:CacheEntryMedias] unable to fetch media %s: %v", m.URL, err)
 					m.ErrorCount++
@@ -256,8 +262,8 @@ func (s *Storage) RemoveFeedCaches(userID, feedID int64) error {
 	return nil
 }
 
-// CleanMediaCaches removes caches that no entry claims to use.
-func (s *Storage) CleanMediaCaches() error {
+// CleanupMedia removes media that no entry claims to use.
+func (s *Storage) CleanupMedia() error {
 	// Step 1: clean media which has no 'use cache' reference, which applies to 2 cases:
 	// 1. media which has reference records, but no 'use cache' record.
 	// 2. media which has no reference record at all.
@@ -287,12 +293,18 @@ func (s *Storage) CleanMediaCaches() error {
 		var urlHash string
 		err := rows.Scan(&urlHash)
 		if err != nil {
-			slog.Error("unable to fetch unused cache info: %v", err)
+			slog.Error(
+				"unable to fetch unused cache info",
+				slog.Any("error", err),
+			)
 			continue
 		}
 		err = filesystem.RemoveMediaFile(urlHash)
 		if err != nil {
-			slog.Error("unable to remove cache file (%s): %v", urlHash, err)
+			slog.Error(
+				"unable to remove cache file (%s)", urlHash,
+				slog.Any("error", err),
+			)
 			continue
 		}
 		count++
@@ -301,7 +313,14 @@ func (s *Storage) CleanMediaCaches() error {
 	slog.Info("remove unused media cache.", slog.Int("count", count))
 
 	// step 2: Remove media records which has no reference record at all.
+	err = s.cleanMediaReferences()
+	if err != nil {
+		return fmt.Errorf(`store: unable to clean media references: %v`, err)
+	}
 	err = s.cleanMediaRecords()
+	if err != nil {
+		return fmt.Errorf(`store: unable to clean media records: %v`, err)
+	}
 	return nil
 }
 

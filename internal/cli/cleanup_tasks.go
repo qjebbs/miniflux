@@ -46,4 +46,10 @@ func runCleanupTasks(store *storage.Storage) {
 			metric.ArchiveEntriesDuration.WithLabelValues(model.EntryStatusUnread).Observe(time.Since(startTime).Seconds())
 		}
 	}
+
+	if err := store.CleanupMedia(); err != nil {
+		slog.Error("Unable to cleanup media records",
+			slog.Any("error", err),
+		)
+	}
 }

@@ -20,50 +20,50 @@ import (
 )
 
 const (
-	flagInfoHelp            = "Show build information"
-	flagVersionHelp         = "Show application version"
-	flagMigrateHelp         = "Run SQL migrations"
-	flagFlushSessionsHelp   = "Flush all sessions (disconnect users)"
-	flagCreateAdminHelp     = "Create an admin user from an interactive terminal"
-	flagResetPasswordHelp   = "Reset user password"
-	flagResetFeedErrorsHelp = "Clear all feed errors for all users"
-	flagDebugModeHelp       = "Show debug logs"
-	flagConfigFileHelp      = "Load configuration file"
-	flagConfigDumpHelp      = "Print parsed configuration values"
-	flagCacheHelp           = "Do the media cache job"
-	flagCacheToDiskHelp     = "Move media caches from database to disk"
-	flagCleanCacheHelp      = "Remove unused caches from disk and database"
-	flagArchiveReadHelp     = "Archive read articles"
-	flagHealthCheckHelp     = `Perform a health check on the given endpoint (the value "auto" try to guess the health check endpoint).`
-	flagRefreshFeedsHelp    = "Refresh a batch of feeds and exit"
-	flagRunCleanupTasksHelp = "Run cleanup tasks (delete old sessions and archives old entries)"
-	flagExportUserFeedsHelp = "Export user feeds (provide the username as argument)"
-	flagFixCoverImagesHelp  = "Fix cover images display for old articles for a user"
+	flagInfoHelp             = "Show build information"
+	flagVersionHelp          = "Show application version"
+	flagMigrateHelp          = "Run SQL migrations"
+	flagFlushSessionsHelp    = "Flush all sessions (disconnect users)"
+	flagCreateAdminHelp      = "Create an admin user from an interactive terminal"
+	flagResetPasswordHelp    = "Reset user password"
+	flagResetFeedErrorsHelp  = "Clear all feed errors for all users"
+	flagDebugModeHelp        = "Show debug logs"
+	flagConfigFileHelp       = "Load configuration file"
+	flagConfigDumpHelp       = "Print parsed configuration values"
+	flagMediaCacheHelp       = "Do the media cache job"
+	flagMediaCacheToDiskHelp = "Move media caches from database to disk"
+	flagMediaCleanCacheHelp  = "Remove unused media from disk and database"
+	flagArchiveReadHelp      = "Archive read articles"
+	flagHealthCheckHelp      = `Perform a health check on the given endpoint (the value "auto" try to guess the health check endpoint).`
+	flagRefreshFeedsHelp     = "Refresh a batch of feeds and exit"
+	flagRunCleanupTasksHelp  = "Run cleanup tasks (delete old sessions and archives old entries)"
+	flagExportUserFeedsHelp  = "Export user feeds (provide the username as argument)"
+	flagFixCoverImagesHelp   = "Fix cover images display for old articles for a user"
 )
 
 // Parse parses command line arguments.
 func Parse() {
 	var (
-		err                 error
-		flagInfo            bool
-		flagVersion         bool
-		flagMigrate         bool
-		flagFlushSessions   bool
-		flagCreateAdmin     bool
-		flagResetPassword   bool
-		flagResetFeedErrors bool
-		flagDebugMode       bool
-		flagConfigFile      string
-		flagConfigDump      bool
-		flagCacheToDisk     bool
-		flagCleanCache      bool
-		flagCache           bool
-		flagArchiveRead     bool
-		flagHealthCheck     string
-		flagRefreshFeeds    bool
-		flagRunCleanupTasks bool
-		flagExportUserFeeds string
-		flagFixCoverImages  int64
+		err                  error
+		flagInfo             bool
+		flagVersion          bool
+		flagMigrate          bool
+		flagFlushSessions    bool
+		flagCreateAdmin      bool
+		flagResetPassword    bool
+		flagResetFeedErrors  bool
+		flagDebugMode        bool
+		flagConfigFile       string
+		flagConfigDump       bool
+		flagMediaCacheToDisk bool
+		flagMediaCleanUp     bool
+		flagMediaCache       bool
+		flagArchiveRead      bool
+		flagHealthCheck      string
+		flagRefreshFeeds     bool
+		flagRunCleanupTasks  bool
+		flagExportUserFeeds  string
+		flagFixCoverImages   int64
 	)
 
 	flag.BoolVar(&flagInfo, "info", false, flagInfoHelp)
@@ -79,9 +79,9 @@ func Parse() {
 	flag.StringVar(&flagConfigFile, "config-file", "", flagConfigFileHelp)
 	flag.StringVar(&flagConfigFile, "c", "", flagConfigFileHelp)
 	flag.BoolVar(&flagConfigDump, "config-dump", false, flagConfigDumpHelp)
-	flag.BoolVar(&flagCache, "cache", false, flagCacheHelp)
-	flag.BoolVar(&flagCacheToDisk, "cache-to-disk", false, flagCacheToDiskHelp)
-	flag.BoolVar(&flagCleanCache, "cache-clean", false, flagCleanCacheHelp)
+	flag.BoolVar(&flagMediaCache, "media-cache", false, flagMediaCacheHelp)
+	flag.BoolVar(&flagMediaCacheToDisk, "media-cache-to-disk", false, flagMediaCacheToDiskHelp)
+	flag.BoolVar(&flagMediaCleanUp, "media-cleanup", false, flagMediaCleanCacheHelp)
 	flag.BoolVar(&flagArchiveRead, "archive-read", false, flagArchiveReadHelp)
 	flag.StringVar(&flagHealthCheck, "healthcheck", "", flagHealthCheckHelp)
 	flag.BoolVar(&flagRefreshFeeds, "refresh-feeds", false, flagRefreshFeedsHelp)
@@ -229,21 +229,21 @@ func Parse() {
 		return
 	}
 
-	if flagCacheToDisk {
+	if flagMediaCacheToDisk {
 		if err = store.MoveCacheToDisk(); err != nil {
 			printErrorAndExit(err)
 		}
 		return
 	}
 
-	if flagCleanCache {
-		if err = store.CleanMediaCaches(); err != nil {
+	if flagMediaCleanUp {
+		if err = store.CleanupMedia(); err != nil {
 			printErrorAndExit(err)
 		}
 		return
 	}
 
-	if flagCache {
+	if flagMediaCache {
 		if err = store.ValidateCaches(); err != nil {
 			printErrorAndExit(err)
 		}

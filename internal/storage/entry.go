@@ -428,6 +428,11 @@ func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries
 				slog.Any("error", err),
 			)
 		}
+		if err := s.cleanMediaRecords(); err != nil {
+			slog.Error("Unable to cleanup media records",
+				slog.Any("error", err),
+			)
+		}
 	}()
 
 	return newEntries, nil
@@ -468,11 +473,6 @@ func (s *Storage) ArchiveEntries(status string, days, limit int) (int64, error) 
 	count, err := result.RowsAffected()
 	if err != nil {
 		return 0, fmt.Errorf(`store: unable to get the number of rows affected: %v`, err)
-	}
-
-	err = s.cleanMediaReferences()
-	if err != nil {
-		return 0, fmt.Errorf(`store: unable to clean media when archive %s entries: %v`, status, err)
 	}
 
 	return count, nil

@@ -16,13 +16,13 @@
     <nav aria-label="{{ .category.Title }} {{ t "menu.title" }}">
         <ul>
             <li>
-                <a href="{{ route "categoryEntries" "categoryID" .category.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ icon "show-unread-entries" }}{{ t "menu.show_only_unread_entries" }}</a>
+                <a href="{{ route "categoryEntries" "categoryID" .category.ID }}" {{ if .showOnlyUnreadEntries }}class="disabled"{{ end }}>{{ icon "show-unread-entries" }}{{ t "menu.unread_entries" }}</a>
             </li>
             <li>
-                <a href="{{ route "categoryEntriesStarred" "categoryID" .category.ID }}" {{ if .showOnlyStarredEntries }}class="disabled"{{ end }}>{{ icon "star" }}{{ t "menu.show_only_starred_entries" }}</a>
+                <a href="{{ route "categoryEntriesStarred" "categoryID" .category.ID }}" {{ if .showOnlyStarredEntries }}class="disabled"{{ end }}>{{ icon "star" }}{{ t "menu.starred_entries" }}</a>
             </li>
             <li>
-                <a href="{{ route "categoryEntriesAll" "categoryID" .category.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ icon "show-all-entries" }}{{ t "menu.show_all_entries" }}</a>
+                <a href="{{ route "categoryEntriesAll" "categoryID" .category.ID }}" {{ if and (not .showOnlyUnreadEntries) (not .showOnlyStarredEntries) }}class="disabled"{{ end }}>{{ icon "show-all-entries" }}{{ t "menu.all_entries" }}</a>
             </li>
             <li>
                 <a href="{{ route "categoryFeeds" "categoryID" .category.ID }}">{{ icon "feeds" }}{{ t "menu.feeds" }}</a>

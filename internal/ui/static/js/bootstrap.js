@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initMasonryLayout();
     initTouchHandlers();
     category_feeds_cascader();
+    imageFallback(":is(img, source)[data-fallback]");
 
     if (!document.querySelector("body[data-disable-keyboard-shortcuts=true]")) {
         const keyboardHandler = new KeyboardHandler();

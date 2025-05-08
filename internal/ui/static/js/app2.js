@@ -103,6 +103,18 @@ function setEntriesAboveStatusRead(element) {
     });
 }
 
+function imageFallback(selector) {
+    document.querySelectorAll(selector).forEach((element) => {
+        if (!element.dataset.fallback) {
+            return
+        }
+        element.onerror = (event) => {
+            element.src = element.dataset.fallback;
+            element.onerror = undefined;
+        };
+    });
+}
+
 // https://masonry.desandro.com
 function initMasonryLayout() {
     let layoutCallback;

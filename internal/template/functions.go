@@ -62,17 +62,26 @@ func (f *funcMap) Map() template.FuncMap {
 		"noescape": func(str string) template.HTML {
 			return template.HTML(str)
 		},
-		"proxyFilter": func(feedProxifyImages bool, data string) string {
-			return mediaproxy.RewriteDocumentWithRelativeProxyURL(f.router, data, feedProxifyImages)
+		"proxyFilter": func(data string) string {
+			return mediaproxy.RewriteDocumentWithRelativeProxyURL(f.router, data)
 		},
-		"proxyURL": func(feedProxifyImages bool, link string) string {
+		"proxyURL": func(link string) string {
 			mediaProxyMode := config.Opts.MediaProxyMode()
 
-			if feedProxifyImages || mediaproxy.ShouldProxy(link, mediaProxyMode) {
+			if mediaproxy.ShouldProxy(link, mediaProxyMode) {
 				return mediaproxy.ProxifyRelativeURL(f.router, link)
 			}
 
 			return link
+		},
+		"fallbackProxyURL": func(link string) string {
+			mediaProxyMode := config.Opts.MediaProxyMode()
+
+			if mediaproxy.ShouldProxy(link, mediaProxyMode) {
+				return ""
+			}
+
+			return mediaproxy.ProxifyRelativeURL(f.router, link)
 		},
 		"mustBeProxyfied": func(mediaType string) bool {
 			return slices.Contains(config.Opts.MediaProxyResourceTypes(), mediaType)

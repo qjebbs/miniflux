@@ -108,7 +108,7 @@
             <label><input type="checkbox" name="ignore_http_cache" value="1" {{ if .form.IgnoreHTTPCache }}checked{{ end }}> {{ t "form.feed.label.ignore_http_cache" }}</label>
             <label><input type="checkbox" name="allow_self_signed_certificates" value="1" {{ if .form.AllowSelfSignedCertificates }}checked{{ end }}> {{ t "form.feed.label.allow_self_signed_certificates" }}</label>
             <label><input type="checkbox" name="disable_http2" value="1" {{ if .form.DisableHTTP2 }}checked{{ end }}> {{ t "form.feed.label.disable_http2" }}</label>
-            <label><input type="checkbox" name="proxify_media" value="1" {{ if .form.ProxifyMedia }}checked{{ end }}> {{ t "form.feed.label.proxify_media" }}</label>
+            <!-- <label><input type="checkbox" name="proxify_media" value="1" {{ if .form.ProxifyMedia }}checked{{ end }}> {{ t "form.feed.label.proxify_media" }}</label> -->
             <label><input type="checkbox" name="cache_media" value="1" {{ if .form.CacheMedia }}checked{{ end }}> {{ t "form.feed.label.cache_media" }}</label>
             {{ if .hasProxyConfigured }}
             <label><input type="checkbox" name="fetch_via_proxy" value="1" {{ if .form.FetchViaProxy }}checked{{ end }}> {{ t "form.feed.label.fetch_via_proxy" }}</label>

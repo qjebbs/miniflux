@@ -235,7 +235,7 @@
     {{ end }}
 
     {{ if .user }}
-        {{ noescape (proxyFilter (or .entry.Feed.ProxifyMedia .entry.Feed.CacheMedia) .entry.Content) }}
+        {{ noescape (proxyFilter .entry.Content) }}
     {{ else }}
         {{ noescape .entry.Content }}
     {{ end }}
@@ -249,7 +249,7 @@
         {{ if .IsImage }}
         <div class="enclosure-image">
             {{ if (and $.user (mustBeProxyfied "image")) }}
-            <img src="{{ proxyURL (or $.entry.Feed.ProxifyMedia $.entry.Feed.CacheMedia) .URL }}" title="{{ .URL }} ({{ .MimeType }})" loading="lazy" alt="{{ .URL }} ({{ .MimeType }})">
+            <img src="{{ proxyURL .URL }}" title="{{ .URL }} ({{ .MimeType }})" loading="lazy" alt="{{ .URL }} ({{ .MimeType }})">
             {{ else }}
             <img src="{{ .URL | safeURL }}" title="{{ .URL }} ({{ .MimeType }})" loading="lazy" alt="{{ .URL }} ({{ .MimeType }})">
             {{ end }}

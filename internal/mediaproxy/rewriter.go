@@ -17,15 +17,15 @@ import (
 
 type urlProxyRewriter func(router *mux.Router, url string) string
 
-func RewriteDocumentWithRelativeProxyURL(router *mux.Router, htmlDocument string, forceProxy bool) string {
-	return genericProxyRewriter(router, ProxifyRelativeURL, htmlDocument, forceProxy)
+func RewriteDocumentWithRelativeProxyURL(router *mux.Router, htmlDocument string) string {
+	return genericProxyRewriter(router, ProxifyRelativeURL, htmlDocument)
 }
 
-func RewriteDocumentWithAbsoluteProxyURL(router *mux.Router, htmlDocument string, forceProxy bool) string {
-	return genericProxyRewriter(router, ProxifyAbsoluteURL, htmlDocument, forceProxy)
+func RewriteDocumentWithAbsoluteProxyURL(router *mux.Router, htmlDocument string) string {
+	return genericProxyRewriter(router, ProxifyAbsoluteURL, htmlDocument)
 }
 
-func genericProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, htmlDocument string, forceProxy bool) string {
+func genericProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, htmlDocument string) string {
 	proxyOption := config.Opts.MediaProxyMode()
 	if proxyOption == "none" {
 		return htmlDocument
@@ -41,8 +41,11 @@ func genericProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, 
 		case "image":
 			doc.Find("img, picture source").Each(func(i int, img *goquery.Selection) {
 				if srcAttrValue, ok := img.Attr("src"); ok {
-					if forceProxy || shouldProxy(srcAttrValue, proxyOption) {
-						img.SetAttr("src", proxifyFunction(router, srcAttrValue))
+					purl := proxifyFunction(router, srcAttrValue)
+					if shouldProxy(srcAttrValue, proxyOption) {
+						img.SetAttr("src", purl)
+					} else {
+						img.SetAttr("data-fallback", purl)
 					}
 				}
 
@@ -54,7 +57,7 @@ func genericProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, 
 			if !slices.Contains(config.Opts.MediaProxyResourceTypes(), "video") {
 				doc.Find("video").Each(func(i int, video *goquery.Selection) {
 					if posterAttrValue, ok := video.Attr("poster"); ok {
-						if forceProxy || shouldProxy(posterAttrValue, proxyOption) {
+						if shouldProxy(posterAttrValue, proxyOption) {
 							video.SetAttr("poster", proxifyFunction(router, posterAttrValue))
 						}
 					}
@@ -64,7 +67,7 @@ func genericProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, 
 		case "audio":
 			doc.Find("audio, audio source").Each(func(i int, audio *goquery.Selection) {
 				if srcAttrValue, ok := audio.Attr("src"); ok {
-					if forceProxy || shouldProxy(srcAttrValue, proxyOption) {
+					if shouldProxy(srcAttrValue, proxyOption) {
 						audio.SetAttr("src", proxifyFunction(router, srcAttrValue))
 					}
 				}
@@ -73,13 +76,13 @@ func genericProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, 
 		case "video":
 			doc.Find("video, video source").Each(func(i int, video *goquery.Selection) {
 				if srcAttrValue, ok := video.Attr("src"); ok {
-					if forceProxy || shouldProxy(srcAttrValue, proxyOption) {
+					if shouldProxy(srcAttrValue, proxyOption) {
 						video.SetAttr("src", proxifyFunction(router, srcAttrValue))
 					}
 				}
 
 				if posterAttrValue, ok := video.Attr("poster"); ok {
-					if forceProxy || shouldProxy(posterAttrValue, proxyOption) {
+					if shouldProxy(posterAttrValue, proxyOption) {
 						video.SetAttr("poster", proxifyFunction(router, posterAttrValue))
 					}
 				}

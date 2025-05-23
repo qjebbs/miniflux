@@ -12,17 +12,17 @@
         "env": {
             "DATABASE_URL": "postgres://admin:admin@localhost/miniflux?sslmode=disable",
             "PORT": "8080",
-            "DEBUG": "1",
+            "LOG_LEVEL": "1",
             "RUN_MIGRATIONS":"1",
             "CREATE_ADMIN":"1",
             "ADMIN_USERNAME":"admin",
             "ADMIN_PASSWORD":"123123",
             // "CACHE_LOCATION":"database",
             "DISK_STORAGE_ROOT":"~/Downloads/miniflux",
-            "PROXY_PRIVATE_KEY": "123",
+            "MEDIA_PROXY_PRIVATE_KEY": "123",
         },
         "args": [
-            // "--cache-clean",
+            // "--cache-pack", "output.zip"
             // "--migrate",
             // "--fix-cover=1"
         ],

@@ -33,6 +33,7 @@ const (
 	flagMediaCacheHelp       = "Do the media cache job"
 	flagMediaCacheToDiskHelp = "Move media caches from database to disk"
 	flagMediaCleanCacheHelp  = "Remove unused media from disk and database"
+	flagMediaPackHelp        = "Pack and export media caches to zip file"
 	flagArchiveReadHelp      = "Archive read articles"
 	flagHealthCheckHelp      = `Perform a health check on the given endpoint (the value "auto" try to guess the health check endpoint).`
 	flagRefreshFeedsHelp     = "Refresh a batch of feeds and exit"
@@ -58,6 +59,7 @@ func Parse() {
 		flagMediaCacheToDisk bool
 		flagMediaCleanUp     bool
 		flagMediaCache       bool
+		flagMediaPack        bool
 		flagArchiveRead      bool
 		flagHealthCheck      string
 		flagRefreshFeeds     bool
@@ -82,6 +84,7 @@ func Parse() {
 	flag.BoolVar(&flagMediaCache, "media-cache", false, flagMediaCacheHelp)
 	flag.BoolVar(&flagMediaCacheToDisk, "media-cache-to-disk", false, flagMediaCacheToDiskHelp)
 	flag.BoolVar(&flagMediaCleanUp, "media-cleanup", false, flagMediaCleanCacheHelp)
+	flag.BoolVar(&flagMediaPack, "cache-pack", false, flagMediaPackHelp)
 	flag.BoolVar(&flagArchiveRead, "archive-read", false, flagArchiveReadHelp)
 	flag.StringVar(&flagHealthCheck, "healthcheck", "", flagHealthCheckHelp)
 	flag.BoolVar(&flagRefreshFeeds, "refresh-feeds", false, flagRefreshFeedsHelp)
@@ -238,6 +241,13 @@ func Parse() {
 
 	if flagMediaCleanUp {
 		if err = store.CleanupMedia(); err != nil {
+			printErrorAndExit(err)
+		}
+		return
+	}
+
+	if flagMediaPack {
+		if err = packMediaCache(store, flag.Args()); err != nil {
 			printErrorAndExit(err)
 		}
 		return

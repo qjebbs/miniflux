@@ -470,3 +470,71 @@ func (s *Storage) ValidateCaches() error {
 		}
 	}
 }
+
+// CachedMediasStat gets the count and size of cached media from the database.
+func (s *Storage) CachedMediasStat() (count int64, size int64, maxID int64, err error) {
+	query := `
+		SELECT
+			COUNT(1) cnt,
+			SUM(m.size) size,
+			MAX(m.id) max_id
+		FROM medias m
+		WHERE m.cached='T'
+	`
+	err = s.db.QueryRow(query).Scan(&count, &size, &maxID)
+	return count, size, maxID, err
+}
+
+// CachedMedias gets all cached media from the database.
+func (s *Storage) CachedMedias(offset int64, limit int64) (map[string]model.Medias, error) {
+	query := `
+	SELECT
+		MAX(f.title) as feed,
+		m.id,
+		m.url,
+		m.url_hash,
+		m.mime_type,
+		m.cached,
+		m.content,
+		m.created_at
+    FROM medias m
+        INNER JOIN entry_medias em ON m.id=em.media_id
+        INNER JOIN entries e ON em.entry_id=e.id
+        INNER JOIN feeds f ON e.feed_id=f.id
+    WHERE 
+        m.cached='T'
+	GROUP BY m.id
+	ORDER BY MIN(f.id), m.id ASC
+	OFFSET $1
+    LIMIT $2
+`
+
+	medias := make(map[string]model.Medias, 0)
+	rows, err := s.db.Query(query, offset, limit)
+	defer rows.Close()
+	if err == sql.ErrNoRows {
+		return medias, nil
+	} else if err != nil {
+		return nil, fmt.Errorf("unable to fetch cached medias: %v", err)
+	}
+
+	for rows.Next() {
+		var feed string
+		var media model.Media
+		err := rows.Scan(
+			&feed,
+			&media.ID,
+			&media.URL,
+			&media.URLHash,
+			&media.MimeType,
+			&media.Cached,
+			&media.Content,
+			&media.CreatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("unable to fetch cached medias row: %v", err)
+		}
+		medias[feed] = append(medias[feed], &media)
+	}
+	return medias, nil
+}

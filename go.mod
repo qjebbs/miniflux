@@ -32,6 +32,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect

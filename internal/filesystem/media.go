@@ -29,7 +29,7 @@ func MediaFromCache(m *model.Media) error {
 		return err
 	}
 	defer fi.Close()
-	chunks := make([]byte, 1024, 1024)
+	chunks := make([]byte, 1024)
 	buf := make([]byte, 1024)
 	for {
 		n, err := fi.Read(buf)

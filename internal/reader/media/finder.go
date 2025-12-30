@@ -72,6 +72,9 @@ func FetchMedia(media *model.Media, r *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Add("Connection", "close")
+	if media.Referrer != "" {
+		req.Header.Add("Referer", media.Referrer)
+	}
 	if r != nil {
 		forwardedRequestHeader := []string{"Range", "Accept", "Accept-Encoding"}
 		for _, requestHeaderName := range forwardedRequestHeader {
@@ -83,19 +86,6 @@ func FetchMedia(media *model.Media, r *http.Request) (*http.Response, error) {
 	resp, err := clt.Do(req)
 	if err != nil {
 		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		if media.Referrer != "" {
-			req.Header.Add("Referer", media.Referrer)
-		}
-		resp, err := clt.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		if resp.StatusCode == http.StatusOK {
-			return resp, nil
-		}
 	}
 
 	return resp, nil

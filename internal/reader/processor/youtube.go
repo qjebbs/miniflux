@@ -31,11 +31,11 @@ func getVideoIDFromYouTubeURL(websiteURL string) string {
 }
 
 func shouldFetchYouTubeWatchTimeForSingleEntry(entry *model.Entry) bool {
-	return config.Opts.FetchYouTubeWatchTime() && config.Opts.YouTubeApiKey() == "" && isYouTubeVideoURL(entry.URL)
+	return config.Opts.FetchYouTubeWatchTime() && config.Opts.YouTubeAPIKey() == "" && isYouTubeVideoURL(entry.URL)
 }
 
 func shouldFetchYouTubeWatchTimeInBulk() bool {
-	return config.Opts.FetchYouTubeWatchTime() && config.Opts.YouTubeApiKey() != ""
+	return config.Opts.FetchYouTubeWatchTime() && config.Opts.YouTubeAPIKey() != ""
 }
 
 func fetchYouTubeWatchTimeForSingleEntry(websiteURL string) (int, error) {
@@ -43,8 +43,8 @@ func fetchYouTubeWatchTimeForSingleEntry(websiteURL string) (int, error) {
 }
 
 func fetchYouTubeWatchTimeInBulk(entries []*model.Entry) {
-	var videosEntriesMapping = make(map[string]*model.Entry, len(entries))
-	var videoIDs []string
+	videosEntriesMapping := make(map[string]*model.Entry, len(entries))
+	videoIDs := make([]string, 0, len(entries))
 
 	for _, entry := range entries {
 		if !isYouTubeVideoURL(entry.URL) {
@@ -82,7 +82,7 @@ func fetchYouTubeWatchTimeFromApiInBulk(videoIDs []string) (map[string]time.Dura
 
 	apiQuery := url.Values{}
 	apiQuery.Set("id", strings.Join(videoIDs, ","))
-	apiQuery.Set("key", config.Opts.YouTubeApiKey())
+	apiQuery.Set("key", config.Opts.YouTubeAPIKey())
 	apiQuery.Set("part", "contentDetails")
 
 	apiURL := url.URL{

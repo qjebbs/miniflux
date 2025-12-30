@@ -4,10 +4,26 @@
 package urllib // import "miniflux.app/v2/internal/urllib"
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 )
+
+// IsRelativePath returns true if the link is a relative path.
+func IsRelativePath(link string) bool {
+	if link == "" {
+		return false
+	}
+	if parsedURL, err := url.Parse(link); err == nil {
+		// Only allow relative paths (not scheme-relative URLs like //example.org)
+		// and ensure the URL doesn't have a host component
+		if !parsedURL.IsAbs() && parsedURL.Host == "" && parsedURL.Scheme == "" {
+			return true
+		}
+	}
+	return false
+}
 
 // IsAbsoluteURL returns true if the link is absolute.
 func IsAbsoluteURL(link string) bool {
@@ -18,7 +34,7 @@ func IsAbsoluteURL(link string) bool {
 	return u.IsAbs()
 }
 
-// GetAbsoluteURL return the absolute form of `input` is possible, as well as its parser form.
+// GetAbsoluteURL returns the absolute form of `input` if possible, as well as its parsed form.
 func GetAbsoluteURL(input string) (string, *url.URL, error) {
 	if strings.HasPrefix(input, "//") {
 		return "https:" + input, nil, nil
@@ -103,11 +119,11 @@ func DomainWithoutWWW(websiteURL string) string {
 // JoinBaseURLAndPath returns a URL string with the provided path elements joined together.
 func JoinBaseURLAndPath(baseURL, path string) (string, error) {
 	if baseURL == "" {
-		return "", fmt.Errorf("empty base URL")
+		return "", errors.New("empty base URL")
 	}
 
 	if path == "" {
-		return "", fmt.Errorf("empty path")
+		return "", errors.New("empty path")
 	}
 
 	_, err := url.Parse(baseURL)

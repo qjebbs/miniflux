@@ -4,13 +4,14 @@
 package storage // import "miniflux.app/v2/internal/storage"
 
 import (
+	"errors"
 	"fmt"
 
 	"miniflux.app/v2/internal/crypto"
 	"miniflux.app/v2/internal/model"
 )
 
-var ErrAPIKeyNotFound = fmt.Errorf("store: API Key not found")
+var ErrAPIKeyNotFound = errors.New("store: API Key not found")
 
 // APIKeyExists checks if an API Key with the same description exists.
 func (s *Storage) APIKeyExists(userID int64, description string) bool {
@@ -62,7 +63,7 @@ func (s *Storage) APIKeys(userID int64) (model.APIKeys, error) {
 			return nil, fmt.Errorf(`store: unable to fetch API Key row: %v`, err)
 		}
 
-		apiKeys = append(apiKeys, &apiKey)
+		apiKeys = append(apiKeys, apiKey)
 	}
 
 	return apiKeys, nil

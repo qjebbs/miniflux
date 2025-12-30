@@ -4,19 +4,19 @@
 package sanitizer
 
 import (
-	"fmt"
+	"errors"
 	"strconv"
 	"strings"
 )
 
-type ImageCandidate struct {
+type imageCandidate struct {
 	ImageURL   string
 	Descriptor string
 }
 
-type ImageCandidates []*ImageCandidate
+type imageCandidates []*imageCandidate
 
-func (c ImageCandidates) String() string {
+func (c imageCandidates) String() string {
 	htmlCandidates := make([]string, 0, len(c))
 
 	for _, imageCandidate := range c {
@@ -35,7 +35,7 @@ func (c ImageCandidates) String() string {
 
 // ParseSrcSetAttribute returns the list of image candidates from the set.
 // https://html.spec.whatwg.org/#parse-a-srcset-attribute
-func ParseSrcSetAttribute(attributeValue string) (imageCandidates ImageCandidates) {
+func ParseSrcSetAttribute(attributeValue string) (imageCandidates imageCandidates) {
 	for _, unparsedCandidate := range strings.Split(attributeValue, ", ") {
 		if candidate, err := parseImageCandidate(unparsedCandidate); err == nil {
 			imageCandidates = append(imageCandidates, candidate)
@@ -45,20 +45,20 @@ func ParseSrcSetAttribute(attributeValue string) (imageCandidates ImageCandidate
 	return imageCandidates
 }
 
-func parseImageCandidate(input string) (*ImageCandidate, error) {
+func parseImageCandidate(input string) (*imageCandidate, error) {
 	parts := strings.Split(strings.TrimSpace(input), " ")
 	nbParts := len(parts)
 
 	switch nbParts {
 	case 1:
-		return &ImageCandidate{ImageURL: parts[0]}, nil
+		return &imageCandidate{ImageURL: parts[0]}, nil
 	case 2:
 		if !isValidWidthOrDensityDescriptor(parts[1]) {
-			return nil, fmt.Errorf(`srcset: invalid descriptor`)
+			return nil, errors.New(`srcset: invalid descriptor`)
 		}
-		return &ImageCandidate{ImageURL: parts[0], Descriptor: parts[1]}, nil
+		return &imageCandidate{ImageURL: parts[0], Descriptor: parts[1]}, nil
 	default:
-		return nil, fmt.Errorf(`srcset: invalid number of descriptors`)
+		return nil, errors.New(`srcset: invalid number of descriptors`)
 	}
 }
 

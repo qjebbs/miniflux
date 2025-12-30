@@ -1,4 +1,4 @@
-{{ define "item_meta" }}
+{{ define "item_meta" -}}
 <div class="item-meta">
     <ul class="item-meta-info">
         <li class="item-meta-info-title">
@@ -17,13 +17,11 @@
         <li class="item-meta-info-timestamp">
             <time datetime="{{ isodate .entry.Date }}" title="{{ isodate .entry.Date }}">{{ elapsed .user.Timezone .entry.Date }}</time>
         </li>
-        {{ if and .user.ShowReadingTime (gt .entry.ReadingTime 0) }}
+        {{ if and .user.ShowReadingTime (gt .entry.ReadingTime 0) -}}
         <li class="item-meta-info-reading-time">
-            <span>
-            {{ plural "entry.estimated_reading_time" .entry.ReadingTime .entry.ReadingTime }}
-            </span>
+            <span>{{ plural "entry.estimated_reading_time" .entry.ReadingTime .entry.ReadingTime }}</span>
         </li>
-        {{ end }}
+        {{ end -}}
     </ul>
     <ul class="item-meta-icons">
         <li class="item-meta-icons-read">
@@ -40,13 +38,13 @@
         <li class="item-meta-icons-star">
             <button
                 aria-describedby="entry-title-{{ .entry.ID }}"
-                data-toggle-bookmark="true"
-                data-bookmark-url="{{ route "toggleBookmark" "entryID" .entry.ID }}"
+                data-toggle-starred="true"
+                data-star-url="{{ route "toggleStarred" "entryID" .entry.ID }}"
                 data-label-loading="{{ t "entry.state.saving" }}"
-                data-label-star="{{ t "entry.bookmark.toggle.on" }}"
-                data-label-unstar="{{ t "entry.bookmark.toggle.off" }}"
+                data-label-star="{{ t "entry.starred.toggle.on" }}"
+                data-label-unstar="{{ t "entry.starred.toggle.off" }}"
                 data-value="{{ if .entry.Starred }}star{{ else }}unstar{{ end }}"
-                >{{ if .entry.Starred }}{{ icon "unstar" }}{{ else }}{{ icon "star" }}{{ end }}<span class="icon-label">{{ if .entry.Starred }}{{ t "entry.bookmark.toggle.off" }}{{ else }}{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></button>
+                >{{ if .entry.Starred }}{{ icon "unstar" }}{{ else }}{{ icon "star" }}{{ end }}<span class="icon-label">{{ if .entry.Starred }}{{ t "entry.starred.toggle.off" }}{{ else }}{{ t "entry.starred.toggle.on" }}{{ end }}</span></button>
         </li>
         {{ if .entry.ShareCode }}
             <li class="item-meta-icons-share">
@@ -65,7 +63,7 @@
                     data-label-no="{{ t "confirm.no" }}"
                     data-label-loading="{{ t "confirm.loading" }}">{{ icon "delete" }}<span class="icon-label">{{ t "entry.unshare.label" }}</span></button>
             </li>
-        {{ end }}
+        {{ end -}}
         {{ if .hasSaveEntry }}
             <li>
                 <button
@@ -77,13 +75,11 @@
                     data-label-done="{{ t "entry.save.completed" }}"
                     >{{ icon "save" }}<span class="icon-label">{{ t "entry.save.label" }}</span></button>
             </li>
-        {{ end }}
+        {{ end -}}
         <li class="item-meta-icons-external-url">
             <a href="{{ .entry.URL | safeURL  }}"
                 aria-describedby="entry-title-{{ .entry.ID }}"
-                {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ end }}
-                rel="noopener noreferrer"
-                referrerpolicy="no-referrer"
+                {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ else }}rel="noopener"{{ end }}
                 data-original-link="{{ .user.MarkReadOnView }}">{{ icon "external-link" }}<span class="icon-label">{{ t "entry.external_link.label" }}</span></a>
         </li>
         {{ if .entry.CommentsURL }}
@@ -91,18 +87,17 @@
                 <a href="{{ .entry.CommentsURL | safeURL  }}"
                     aria-describedby="entry-title-{{ .entry.ID }}"
                     title="{{ t "entry.comments.title" }}"
-                    {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ end }}
-                    rel="noopener noreferrer"
-                    referrerpolicy="no-referrer"
+                    {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ else }}rel="noopener"{{ end }}
                     data-comments-link="true">{{ icon "comment" }}<span class="icon-label">{{ t "entry.comments.label" }}</span></a>
             </li>
-        {{ end }}
-        <li>
-            <a href="#" 
-                data-action="showActionMenu" 
-                data-action-menu-excluded 
-                title="{{ t "entry.actions.title" }}"
-            >{{ icon "menu" }}<span class="icon-label">{{ t "entry.actions.label" }}</span></a>
+        {{ end -}}
+        <li class="item-meta-icons-above-read">
+            <button
+                data-mark-above-read="true"
+                aria-describedby="entry-title-{{ .entry.ID }}"
+                title="{{ t "action.mark_above_read" }}"
+                data-label-loading="{{ t "entry.state.saving" }}"
+                >{{ icon "mark-all-as-read" }}<span class="icon-label">{{ t "action.mark_above_read" }}</span></button>
         </li>
     </ul>
 </div>

@@ -25,7 +25,9 @@ func (h *handler) showSessionsPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessions.UseTimezone(user.Timezone)
+	for _, sess := range sessions {
+		sess.UseTimezone(user.Timezone)
+	}
 
 	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))

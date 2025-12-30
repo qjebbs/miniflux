@@ -16,12 +16,15 @@ import (
 	"miniflux.app/v2/internal/ui/form"
 	"miniflux.app/v2/internal/ui/session"
 	"miniflux.app/v2/internal/ui/view"
+	"miniflux.app/v2/internal/urllib"
 )
 
 func (h *handler) checkLogin(w http.ResponseWriter, r *http.Request) {
 	clientIP := request.ClientIP(r)
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
+	redirectURL := r.FormValue("redirect_url")
+	view.Set("redirectURL", redirectURL)
 
 	if config.Opts.DisableLocalAuth() {
 		slog.Warn("blocking local auth login attempt, local auth is disabled",
@@ -89,9 +92,14 @@ func (h *handler) checkLogin(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie.New(
 		cookie.CookieUserSessionID,
 		sessionToken,
-		config.Opts.HTTPS,
+		config.Opts.HTTPS(),
 		config.Opts.BasePath(),
 	))
+
+	if redirectURL != "" && urllib.IsRelativePath(redirectURL) {
+		html.Redirect(w, r, redirectURL)
+		return
+	}
 
 	html.Redirect(w, r, route.Path(h.router, user.DefaultHomePage))
 }

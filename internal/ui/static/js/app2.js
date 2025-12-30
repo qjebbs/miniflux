@@ -1,16 +1,26 @@
+const policy = window.trustedTypes?.createPolicy('html', {
+    createHTML: (input) => input
+});
+
+function findParent(element, selector) {
+    for (; element && element !== document; element = element.parentNode) {
+        if (element.classList.contains(selector)) {
+            return element;
+        }
+    }
+    return null;
+}
+
 // Handle set view action for feeds and categories pages.
 function handleSetView(element) {
     if (!element) {
         return;
     }
-    let request = new RequestBuilder(element.dataset.url);
-    request.withBody({
+    sendPOSTRequest(element.dataset.url, {
         view: element.dataset.value
-    });
-    request.withCallback((response) => {
+    }).then((response) => {
         if (response.ok) location.reload();
     });
-    request.execute();
 }
 
 // Handle toggle NSFW action for pages.
@@ -19,11 +29,9 @@ function handleNSFW() {
     if (!element || !element.dataset.url) {
         return;
     }
-    let request = new RequestBuilder(element.dataset.url);
-    request.withCallback((response) => {
+    sendPOSTRequest(element.dataset.url).then((response) => {
         if (response.ok) location.reload();
     });
-    request.execute();
 }
 
 // Handle media cache from the list view and entry view.
@@ -34,34 +42,34 @@ function handleCache(element) {
     }
 }
 
+function setCachedButtonState(buttonElement, newState) {
+    buttonElement.dataset.value = newState;
+    const iconType = newState === "cached" ? "uncache" : "cache";
+    setIconAndLabelElement(buttonElement, iconType, buttonElement.dataset[newState === "cached" ? "labelUncached" : "labelCached"]);
+}
+
 // Send the Ajax request and change the icon when caching an entry.
 function toggleCache(element) {
-    let link = element.querySelector("a[data-toggle-cache]");
-    if (!link) {
-        return;
-    }
+    const currentEntry = findEntry(element);
+    if (!currentEntry) return;
 
-    link.innerHTML = link.dataset.labelLoading;
+    const buttonElement = currentEntry.querySelector(":is(a, button)[data-toggle-cache]");
+    if (!buttonElement) return;
 
-    let request = new RequestBuilder(link.dataset.cacheUrl);
-    request.withCallback(() => {
-        let currentStatus = link.dataset.value;
+    setButtonToLoadingState(buttonElement);
+
+    sendPOSTRequest(buttonElement.dataset.cacheUrl).then(() => {
+        let currentStatus = buttonElement.dataset.value;
         let newStatus = currentStatus === "cached" ? "uncached" : "cached";
+        let isCached = newStatus === "cached";
 
-        let iconElement, label;
+        setCachedButtonState(buttonElement, newStatus);
 
-        if (currentStatus === "cached") {
-            iconElement = document.querySelector("template#icon-cache");
-            label = link.dataset.labelCached;
-        } else {
-            iconElement = document.querySelector("template#icon-uncache");
-            label = link.dataset.labelUncached;
+        if (isEntryView()) {
+            const iconType = newStatus === "cached" ? "uncache" : "cache";
+            showToastNotification(iconType, buttonElement.dataset[isCached ? "toastCached" : "toastUncached"]);
         }
-
-        link.innerHTML = iconElement.innerHTML + '<span class="icon-label">' + label + '</span>';
-        link.dataset.value = newStatus;
     });
-    request.execute();
 }
 
 function setEntryStatusRead(element) {
@@ -178,3 +186,61 @@ function throttle(fn, delay, atleast) {
         }
     }
 }
+
+function initializeForkKeyboardShortcuts() {
+    if (document.querySelector("body[data-disable-keyboard-shortcuts=true]")) return;
+
+    const keyboardHandler = new KeyboardHandler();
+
+    keyboardHandler.on("N", () => handleNSFW());
+
+    keyboardHandler.listen();
+}
+
+function initializeForkClickHandlers() {
+    // Entry actions
+    onClick(":is(a, button)[data-mark-above-read]", (event) => setEntriesAboveStatusRead(event.target));
+    onClick(":is(a, button)[data-toggle-cache]", (event) => handleCache(event.target));
+    onClick(":is(a, button)[data-set-read='true']", (event) => setEntryStatusRead(findEntry(event.target)), true);
+
+    onClick(":is(a, button)[data-action=setView]", (event) => handleSetView(event.target));
+    onClick(":is(a, button)[data-action=nsfw]", () => handleNSFW());
+    onClick(":is(a, button)[data-action=historyGoBack]", () => history.back());
+
+    let tabHandler = new TabHandler();
+    tabHandler.addEventListener('.tabs.tabs-entry-edit', (header, content, i) => {
+        let preview = document.querySelector('#preview-content');
+        let editor = document.querySelector('#form-content');
+        if (i == 0) {
+            editor.value = preview.innerHTML;
+        } else {
+            preview.innerHTML = policy.createHTML(editor.value);
+        }
+    });
+    onClick("button[data-action=submitEntry]", (event) => {
+        let preview = document.querySelector('#preview-content');
+        let editor = document.querySelector('#form-content');
+        let previewParent = findParent(preview, "tab-content");
+        if (previewParent.classList.contains('active')) {
+            editor.value = preview.innerHTML;
+        }
+        document.querySelector("#entry-form").submit();
+    });
+
+}
+
+initializeForkKeyboardShortcuts();
+initializeForkClickHandlers();
+document.addEventListener("DOMContentLoaded", () => {
+    initMasonryLayout();
+    category_feeds_cascader();
+    imageFallback(":is(img, source)[data-fallback]");
+
+    if (document.querySelector('.no-back-forward-cache')) {
+        window.onpageshow = function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
+    }
+});

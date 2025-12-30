@@ -12,7 +12,7 @@
         "env": {
             "DATABASE_URL": "postgres://admin:admin@localhost/miniflux?sslmode=disable",
             "PORT": "8080",
-            "LOG_LEVEL": "1",
+            "LOG_LEVEL": "debug",
             "RUN_MIGRATIONS":"1",
             "CREATE_ADMIN":"1",
             "ADMIN_USERNAME":"admin",

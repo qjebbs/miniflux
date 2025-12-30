@@ -11,6 +11,7 @@ import (
 	"miniflux.app/v2/internal/http/route"
 	"miniflux.app/v2/internal/locale"
 	"miniflux.app/v2/internal/model"
+	"miniflux.app/v2/internal/timezone"
 	"miniflux.app/v2/internal/ui/form"
 	"miniflux.app/v2/internal/ui/session"
 	"miniflux.app/v2/internal/ui/view"
@@ -18,19 +19,13 @@ import (
 )
 
 func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
-	loggedUser, err := h.store.UserByID(request.UserID(r))
+	user, err := h.store.UserByID(request.UserID(r))
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
 	}
 
-	timezones, err := h.store.Timezones()
-	if err != nil {
-		html.ServerError(w, r, err)
-		return
-	}
-
-	creds, err := h.store.WebAuthnCredentialsByUserID(loggedUser.ID)
+	creds, err := h.store.WebAuthnCredentialsByUserID(user.ID)
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
@@ -51,18 +46,18 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 	view.Set("themes", model.Themes())
 	view.Set("views", model.Views())
 	view.Set("languages", locale.AvailableLanguages)
-	view.Set("timezones", timezones)
+	view.Set("timezones", timezone.AvailableTimezones())
 	view.Set("menu", "settings")
-	view.Set("user", loggedUser)
-	view.Set("countUnread", h.store.CountUnreadEntries(loggedUser.ID, nsfw))
-	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID, nsfw))
+	view.Set("user", user)
+	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
+	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("default_home_pages", model.HomePages())
 	view.Set("categories_sorting_options", model.CategoriesSortingOptions())
-	view.Set("countWebAuthnCerts", h.store.CountWebAuthnCredentialsByUserID(loggedUser.ID))
+	view.Set("countWebAuthnCerts", h.store.CountWebAuthnCredentialsByUserID(user.ID))
 	view.Set("webAuthnCerts", creds)
 
 	if validationErr := settingsForm.Validate(); validationErr != nil {
-		view.Set("errorMessage", validationErr.Translate(loggedUser.Language))
+		view.Set("errorMessage", validationErr.Translate(user.Language))
 		html.OK(w, r, view.Render("settings"))
 		return
 	}
@@ -88,20 +83,20 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 		ExternalFontHosts:      model.OptionalString(settingsForm.ExternalFontHosts),
 	}
 
-	if validationErr := validator.ValidateUserModification(h.store, loggedUser.ID, userModificationRequest); validationErr != nil {
-		view.Set("errorMessage", validationErr.Translate(loggedUser.Language))
+	if validationErr := validator.ValidateUserModification(h.store, user.ID, userModificationRequest); validationErr != nil {
+		view.Set("errorMessage", validationErr.Translate(user.Language))
 		html.OK(w, r, view.Render("settings"))
 		return
 	}
 
-	err = h.store.UpdateUser(settingsForm.Merge(loggedUser))
+	err = h.store.UpdateUser(settingsForm.Merge(user))
 	if err != nil {
 		html.ServerError(w, r, err)
 		return
 	}
 
-	sess.SetLanguage(loggedUser.Language)
-	sess.SetTheme(loggedUser.Theme)
+	sess.SetLanguage(user.Language)
+	sess.SetTheme(user.Theme)
 	sess.NewFlashMessage(locale.NewPrinter(request.UserLanguage(r)).Printf("alert.prefs_saved"))
 	html.Redirect(w, r, route.Path(h.router, "settings"))
 }

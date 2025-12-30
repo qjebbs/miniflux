@@ -29,6 +29,7 @@ type Integration struct {
 	WallabagClientSecret             string
 	WallabagUsername                 string
 	WallabagPassword                 string
+	WallabagTags                     string
 	NunuxKeeperEnabled               bool
 	NunuxKeeperURL                   string
 	NunuxKeeperAPIKey                string
@@ -59,9 +60,15 @@ type Integration struct {
 	LinkdingAPIKey                   string
 	LinkdingTags                     string
 	LinkdingMarkAsUnread             bool
+	LinktacoEnabled                  bool
+	LinktacoAPIToken                 string
+	LinktacoOrgSlug                  string
+	LinktacoTags                     string
+	LinktacoVisibility               string
 	LinkwardenEnabled                bool
 	LinkwardenURL                    string
 	LinkwardenAPIKey                 string
+	LinkwardenCollectionID           *int64
 	MatrixBotEnabled                 bool
 	MatrixBotUser                    string
 	MatrixBotPassword                string
@@ -94,6 +101,7 @@ type Integration struct {
 	KarakeepEnabled                  bool
 	KarakeepAPIKey                   string
 	KarakeepURL                      string
+	KarakeepTags                     string
 	RaindropEnabled                  bool
 	RaindropToken                    string
 	RaindropCollectionID             string
@@ -117,4 +125,5 @@ type Integration struct {
 	PushoverToken                    string
 	PushoverDevice                   string
 	PushoverPrefix                   string
+	ArchiveorgEnabled                bool
 }

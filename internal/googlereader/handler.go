@@ -126,8 +126,7 @@ func checkOutputFormat(r *http.Request) error {
 		output = request.QueryStringParam(r, "output", "")
 	}
 	if output != "json" {
-		err := fmt.Errorf("googlereader: only json output is supported")
-		return err
+		return errors.New("googlereader: only json output is supported")
 	}
 	return nil
 }
@@ -230,7 +229,7 @@ func (h *handler) tokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := request.GoolgeReaderToken(r)
+	token := request.GoogleReaderToken(r)
 	if token == "" {
 		slog.Warn("[GoogleReader] User does not have token",
 			slog.String("client_ip", clientIP),
@@ -280,7 +279,7 @@ func (h *handler) editTagHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(addTags) == 0 && len(removeTags) == 0 {
-		err = fmt.Errorf("googlreader: add or/and remove tags should be supplied")
+		err = errors.New("googlreader: add or/and remove tags should be supplied")
 		json.ServerError(w, r, err)
 		return
 	}
@@ -357,7 +356,7 @@ func (h *handler) editTagHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(unstarredEntryIDs) > 0 {
-		err = h.store.SetEntriesBookmarkedState(userID, unstarredEntryIDs, false)
+		err = h.store.SetEntriesStarredState(userID, unstarredEntryIDs, false)
 		if err != nil {
 			json.ServerError(w, r, err)
 			return
@@ -365,7 +364,7 @@ func (h *handler) editTagHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(starredEntryIDs) > 0 {
-		err = h.store.SetEntriesBookmarkedState(userID, starredEntryIDs, true)
+		err = h.store.SetEntriesStarredState(userID, starredEntryIDs, true)
 		if err != nil {
 			json.ServerError(w, r, err)
 			return
@@ -736,14 +735,13 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 		ID:        "user/-/state/com.google/reading-list",
 		Title:     "Reading List",
 		Updated:   time.Now().Unix(),
-		Self: []contentHREF{
-			{
-				HREF: config.Opts.RootURL() + route.Path(h.router, "StreamItemsContents"),
-			},
-		},
+		Self: []contentHREF{{
+			HREF: config.Opts.RootURL() + route.Path(h.router, "StreamItemsContents"),
+		}},
 		Author: userName,
+		Items:  make([]contentItem, len(entries)),
 	}
-	contentItems := make([]contentItem, len(entries))
+
 	for i, entry := range entries {
 		enclosures := make([]contentItemEnclosure, 0, len(entry.Enclosures))
 		for _, enclosure := range entry.Enclosures {
@@ -765,12 +763,12 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 		entry.Content = mediaproxy.RewriteDocumentWithAbsoluteProxyURL(h.router, entry.Content)
 		entry.Enclosures.ProxifyEnclosureURL(h.router, config.Opts.MediaProxyMode(), config.Opts.MediaProxyResourceTypes())
 
-		contentItems[i] = contentItem{
+		result.Items[i] = contentItem{
 			ID:            convertEntryIDToLongFormItemID(entry.ID),
 			Title:         entry.Title,
 			Author:        entry.Author,
-			TimestampUsec: fmt.Sprintf("%d", entry.Date.UnixMicro()),
-			CrawlTimeMsec: fmt.Sprintf("%d", entry.CreatedAt.UnixMilli()),
+			TimestampUsec: strconv.FormatInt(entry.Date.UnixMicro(), 10),
+			CrawlTimeMsec: strconv.FormatInt(entry.CreatedAt.UnixMilli(), 10),
 			Published:     entry.Date.Unix(),
 			Updated:       entry.ChangedAt.Unix(),
 			Categories:    categories,
@@ -794,14 +792,14 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 				Content:   entry.Content,
 			},
 			Origin: contentItemOrigin{
-				StreamID: fmt.Sprintf("feed/%d", entry.FeedID),
+				StreamID: fmt.Sprintf(feedPrefix+"%d", entry.FeedID),
 				Title:    entry.Feed.Title,
 				HTMLUrl:  entry.Feed.SiteURL,
 			},
 			Enclosure: enclosures,
 		}
 	}
-	result.Items = contentItems
+
 	json.OK(w, r, result)
 }
 
@@ -1015,7 +1013,7 @@ func (h *handler) userInfoHandler(w http.ResponseWriter, r *http.Request) {
 		json.ServerError(w, r, err)
 		return
 	}
-	userInfo := userInfoResponse{UserID: fmt.Sprint(user.ID), UserName: user.Username, UserProfileID: fmt.Sprint(user.ID), UserEmail: user.Username}
+	userInfo := userInfoResponse{UserID: strconv.FormatInt(user.ID, 10), UserName: user.Username, UserProfileID: strconv.FormatInt(user.ID, 10), UserEmail: user.Username}
 	json.OK(w, r, userInfo)
 }
 
@@ -1049,7 +1047,7 @@ func (h *handler) streamItemIDsHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if len(rm.Streams) != 1 {
-		json.ServerError(w, r, fmt.Errorf("googlereader: only one stream type expected"))
+		json.ServerError(w, r, errors.New("googlereader: only one stream type expected"))
 		return
 	}
 	switch rm.Streams[0].Type {

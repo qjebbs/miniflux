@@ -42,7 +42,7 @@
     <p role="alert" class="alert">{{ t "alert.no_unread_entry" }}</p>
 {{ else }}
     <div class="pagination-top">
-        {{ template "pagination" .pagination }}
+        {{ template "pagination" .pagination -}}
     </div>
     <div class='items{{ if eq .view "masonry" }} masonry{{ end }}'>
         <div class="item-sizer"></div>

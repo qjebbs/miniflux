@@ -27,22 +27,23 @@ func (h *handler) refreshCategoryFeedsPage(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *handler) refreshCategory(w http.ResponseWriter, r *http.Request) int64 {
-	userID := request.UserID(r)
 	categoryID := request.RouteInt64Param(r, "categoryID")
 	printer := locale.NewPrinter(request.UserLanguage(r))
 	sess := session.New(h.store, request.SessionID(r))
 
 	// Avoid accidental and excessive refreshes.
-	if time.Now().UTC().Unix()-request.LastForceRefresh(r) < int64(config.Opts.ForceRefreshInterval())*60 {
-		time := config.Opts.ForceRefreshInterval()
-		sess.NewFlashErrorMessage(printer.Plural("alert.too_many_feeds_refresh", time, time))
+	if time.Since(request.LastForceRefresh(r)) < config.Opts.ForceRefreshInterval() {
+		interval := int(config.Opts.ForceRefreshInterval().Minutes())
+		sess.NewFlashErrorMessage(printer.Plural("alert.too_many_feeds_refresh", interval, interval))
 	} else {
+		userID := request.UserID(r)
 		// We allow the end-user to force refresh all its feeds in this category
 		// without taking into consideration the number of errors.
 		batchBuilder := h.store.NewBatchBuilder()
 		batchBuilder.WithoutDisabledFeeds()
 		batchBuilder.WithUserID(userID)
 		batchBuilder.WithCategoryID(categoryID)
+		batchBuilder.WithLimitPerHost(config.Opts.PollingLimitPerHost())
 
 		jobs, err := batchBuilder.FetchJobs()
 		if err != nil {

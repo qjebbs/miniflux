@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -21,11 +22,8 @@ import (
 )
 
 var (
-	youtubeVideoRegex = regexp.MustCompile(`youtube\.com/watch\?v=(.*)$`)
-	youtubeShortRegex = regexp.MustCompile(`youtube\.com/shorts/([a-zA-Z0-9_-]{11})$`)
-	youtubeIdRegex    = regexp.MustCompile(`youtube_id"?\s*[:=]\s*"([a-zA-Z0-9_-]{11})"`)
-	invidioRegex      = regexp.MustCompile(`https?://(.*)/watch\?v=(.*)`)
-	textLinkRegex     = regexp.MustCompile(`(?mi)(\bhttps?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])`)
+	youtubeIdRegex = regexp.MustCompile(`youtube_id"?\s*[:=]\s*"([a-zA-Z0-9_-]{11})"`)
+	textLinkRegex  = regexp.MustCompile(`(?mi)(\bhttps?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])`)
 )
 
 // titlelize returns a copy of the string s with all Unicode letters that begin words
@@ -110,7 +108,7 @@ func addDynamicImage(entryContent string) string {
 	doc := goquery.NewDocumentFromNode(parserHtml)
 
 	// Ordered most preferred to least preferred.
-	candidateAttrs := []string{
+	candidateAttrs := [...]string{
 		"data-src",
 		"data-original",
 		"data-orig",
@@ -127,7 +125,7 @@ func addDynamicImage(entryContent string) string {
 		"data-380src",
 	}
 
-	candidateSrcsetAttrs := []string{
+	candidateSrcsetAttrs := [...]string{
 		"data-srcset",
 	}
 
@@ -261,21 +259,38 @@ func useNoScriptImages(entryContent string) string {
 }
 
 func getYoutubVideoIDFromURL(entryURL string) string {
-	matches := youtubeVideoRegex.FindStringSubmatch(entryURL)
-
-	if len(matches) != 2 {
-		matches = youtubeShortRegex.FindStringSubmatch(entryURL)
+	u, err := url.Parse(entryURL)
+	if err != nil {
+		return ""
 	}
 
-	if len(matches) == 2 {
-		return matches[1]
+	if !strings.HasSuffix(u.Hostname(), "youtube.com") {
+		return ""
 	}
+
+	if u.Path == "/watch" {
+		if v := u.Query().Get("v"); v != "" {
+			return v
+		}
+		return ""
+	}
+
+	if id, found := strings.CutPrefix(u.Path, "/shorts/"); found {
+		if len(id) == 11 {
+			// youtube shorts id are always 11 chars.
+			return id
+		}
+	}
+
 	return ""
 }
 
+func buildVideoPlayerIframe(absoluteVideoURL string) string {
+	return `<iframe width="650" height="350" frameborder="0" src="` + absoluteVideoURL + `" allowfullscreen></iframe>`
+}
+
 func addVideoPlayerIframe(absoluteVideoURL, entryContent string) string {
-	video := `<iframe width="650" height="350" frameborder="0" src="` + absoluteVideoURL + `" allowfullscreen></iframe>`
-	return video + `<br>` + entryContent
+	return buildVideoPlayerIframe(absoluteVideoURL) + `<br>` + entryContent
 }
 
 func addYoutubeVideoRewriteRule(entryURL, entryContent string) string {
@@ -292,31 +307,45 @@ func addYoutubeVideoUsingInvidiousPlayer(entryURL, entryContent string) string {
 	return entryContent
 }
 
+// For reference: https://github.com/miniflux/v2/pull/1314
 func addYoutubeVideoFromId(entryContent string) string {
 	matches := youtubeIdRegex.FindAllStringSubmatch(entryContent, -1)
 	if matches == nil {
 		return entryContent
 	}
-	sb := strings.Builder{}
+	var videoPlayerHTML strings.Builder
 	for _, match := range matches {
 		if len(match) == 2 {
-			sb.WriteString(`<iframe width="650" height="350" frameborder="0" src="`)
-			sb.WriteString(config.Opts.YouTubeEmbedUrlOverride())
-			sb.WriteString(match[1])
-			sb.WriteString(`" allowfullscreen></iframe><br>`)
+			videoPlayerHTML.WriteString(buildVideoPlayerIframe(config.Opts.YouTubeEmbedUrlOverride() + match[1]))
+			videoPlayerHTML.WriteString("<br>")
 		}
 	}
-	sb.WriteString(entryContent)
-	return sb.String()
+	return videoPlayerHTML.String() + entryContent
 }
 
 func addInvidiousVideo(entryURL, entryContent string) string {
-	matches := invidioRegex.FindStringSubmatch(entryURL)
-	if len(matches) == 3 {
-		video := `<iframe width="650" height="350" frameborder="0" src="https://` + matches[1] + `/embed/` + matches[2] + `" allowfullscreen></iframe>`
-		return video + `<br>` + entryContent
+	u, err := url.Parse(entryURL)
+	if err != nil {
+		return entryContent
 	}
-	return entryContent
+
+	if u.Path != "/watch" {
+		return entryContent
+	}
+
+	qs := u.Query()
+	videoID := qs.Get("v")
+	if videoID == "" {
+		return entryContent
+	}
+	qs.Del("v")
+
+	embedVideoURL := "https://" + u.Hostname() + `/embed/` + videoID
+	if len(qs) > 0 {
+		embedVideoURL += "?" + qs.Encode()
+	}
+
+	return addVideoPlayerIframe(embedVideoURL, entryContent)
 }
 
 func addPDFLink(entryURL, entryContent string) string {
@@ -519,4 +548,44 @@ func fixGhostCards(entryContent string) string {
 
 	output, _ := doc.FindMatcher(goquery.Single("body")).Html()
 	return strings.TrimSpace(output)
+}
+
+func removeImgBlurParams(entryContent string) string {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(entryContent))
+	if err != nil {
+		return entryContent
+	}
+
+	changed := false
+
+	doc.Find("img[src]").Each(func(i int, img *goquery.Selection) {
+		srcAttr, exists := img.Attr("src")
+		if !exists {
+			return
+		}
+
+		parsedURL, err := url.Parse(srcAttr)
+		if err != nil {
+			return
+		}
+
+		// Only strip query parameters if this is a blurry placeholder image
+		if parsedURL.RawQuery != "" {
+			// Check if there's a blur parameter with a non-zero value
+			if blurValue := parsedURL.Query().Get("blur"); blurValue != "" {
+				if blurInt, err := strconv.Atoi(blurValue); err == nil && blurInt > 0 {
+					parsedURL.RawQuery = ""
+					img.SetAttr("src", parsedURL.String())
+					changed = true
+				}
+			}
+		}
+	})
+
+	if changed {
+		output, _ := doc.FindMatcher(goquery.Single("body")).Html()
+		return output
+	}
+
+	return entryContent
 }

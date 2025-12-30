@@ -6,7 +6,6 @@ package model // import "miniflux.app/v2/internal/model"
 import (
 	"fmt"
 	"io"
-	"math"
 	"time"
 
 	"miniflux.app/v2/internal/config"
@@ -51,7 +50,6 @@ type Feed struct {
 	IgnoreHTTPCache             bool      `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates bool      `json:"allow_self_signed_certificates"`
 	FetchViaProxy               bool      `json:"fetch_via_proxy"`
-	NSFW                        bool      `json:"nsfw"`
 	DisableHTTP2                bool      `json:"disable_http2"`
 	PushoverEnabled             bool      `json:"pushover_enabled"`
 	NtfyEnabled                 bool      `json:"ntfy_enabled"`
@@ -69,12 +67,13 @@ type Feed struct {
 	Entries  Entries   `json:"entries,omitempty"`
 
 	// Internal attributes (not exposed in the API and not persisted in the database)
-	TTL                    int    `json:"-"`
-	IconURL                string `json:"-"`
-	UnreadCount            int    `json:"-"`
-	ReadCount              int    `json:"-"`
-	NumberOfVisibleEntries int    `json:"-"`
+	TTL                    time.Duration `json:"-"`
+	IconURL                string        `json:"-"`
+	UnreadCount            int           `json:"-"`
+	ReadCount              int           `json:"-"`
+	NumberOfVisibleEntries int           `json:"-"`
 
+	NSFW         bool   `json:"nsfw"`
 	View         string `json:"view"`
 	CacheMedia   bool   `json:"cache_media"`
 	ProxifyMedia bool   `json:"-"`
@@ -123,35 +122,33 @@ func (f *Feed) CheckedNow() {
 }
 
 // ScheduleNextCheck set "next_check_at" of a feed based on the scheduler selected from the configuration.
-func (f *Feed) ScheduleNextCheck(weeklyCount int, refreshDelayInMinutes int) int {
+func (f *Feed) ScheduleNextCheck(weeklyCount int, refreshDelay time.Duration) time.Duration {
 	// Default to the global config Polling Frequency.
-	intervalMinutes := config.Opts.SchedulerRoundRobinMinInterval()
+	interval := config.Opts.SchedulerRoundRobinMinInterval()
 
 	if config.Opts.PollingScheduler() == SchedulerEntryFrequency {
 		if weeklyCount <= 0 {
-			intervalMinutes = config.Opts.SchedulerEntryFrequencyMaxInterval()
+			interval = config.Opts.SchedulerEntryFrequencyMaxInterval()
 		} else {
-			intervalMinutes = int(math.Round(float64(7*24*60) / float64(weeklyCount*config.Opts.SchedulerEntryFrequencyFactor())))
-			intervalMinutes = min(intervalMinutes, config.Opts.SchedulerEntryFrequencyMaxInterval())
-			intervalMinutes = max(intervalMinutes, config.Opts.SchedulerEntryFrequencyMinInterval())
+			interval = (7 * 24 * time.Hour) / time.Duration(weeklyCount*config.Opts.SchedulerEntryFrequencyFactor())
+			interval = min(interval, config.Opts.SchedulerEntryFrequencyMaxInterval())
+			interval = max(interval, config.Opts.SchedulerEntryFrequencyMinInterval())
 		}
 	}
 
 	// Use the RSS TTL field, Retry-After, Cache-Control or Expires HTTP headers if defined.
-	if refreshDelayInMinutes > 0 && refreshDelayInMinutes > intervalMinutes {
-		intervalMinutes = refreshDelayInMinutes
-	}
+	interval = max(interval, refreshDelay)
 
 	// Limit the max interval value for misconfigured feeds.
 	switch config.Opts.PollingScheduler() {
 	case SchedulerRoundRobin:
-		intervalMinutes = min(intervalMinutes, config.Opts.SchedulerRoundRobinMaxInterval())
+		interval = min(interval, config.Opts.SchedulerRoundRobinMaxInterval())
 	case SchedulerEntryFrequency:
-		intervalMinutes = min(intervalMinutes, config.Opts.SchedulerEntryFrequencyMaxInterval())
+		interval = min(interval, config.Opts.SchedulerEntryFrequencyMaxInterval())
 	}
 
-	f.NextCheckAt = time.Now().Add(time.Minute * time.Duration(intervalMinutes))
-	return intervalMinutes
+	f.NextCheckAt = time.Now().Add(interval)
+	return interval
 }
 
 // FeedCreationRequest represents the request to create a feed.
@@ -174,11 +171,12 @@ type FeedCreationRequest struct {
 	RewriteRules                string `json:"rewrite_rules"`
 	BlocklistRules              string `json:"blocklist_rules"`
 	KeeplistRules               string `json:"keeplist_rules"`
-	NSFW                        bool   `json:"nsfw"`
 	BlockFilterEntryRules       string `json:"block_filter_entry_rules"`
 	KeepFilterEntryRules        string `json:"keep_filter_entry_rules"`
 	UrlRewriteRules             string `json:"urlrewrite_rules"`
 	ProxyURL                    string `json:"proxy_url"`
+
+	NSFW bool `json:"nsfw"`
 }
 
 type FeedCreationRequestFromSubscriptionDiscovery struct {
@@ -213,10 +211,10 @@ type FeedModificationRequest struct {
 	IgnoreHTTPCache             *bool   `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates *bool   `json:"allow_self_signed_certificates"`
 	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
-	NSFW                        *bool   `json:"nsfw"`
 	DisableHTTP2                *bool   `json:"disable_http2"`
 	ProxyURL                    *string `json:"proxy_url"`
 
+	NSFW         *bool   `json:"nsfw"`
 	View         *string `json:"view"`
 	ProxifyMedia *bool   `json:"proxify_media"`
 	CacheMedia   *bool   `json:"cache_media"`

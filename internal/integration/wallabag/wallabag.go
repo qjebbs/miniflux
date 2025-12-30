@@ -6,6 +6,7 @@ package wallabag // import "miniflux.app/v2/internal/integration/wallabag"
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -24,16 +25,17 @@ type Client struct {
 	clientSecret string
 	username     string
 	password     string
+	tags         string
 	onlyURL      bool
 }
 
-func NewClient(baseURL, clientID, clientSecret, username, password string, onlyURL bool) *Client {
-	return &Client{baseURL, clientID, clientSecret, username, password, onlyURL}
+func NewClient(baseURL, clientID, clientSecret, username, password, tags string, onlyURL bool) *Client {
+	return &Client{baseURL, clientID, clientSecret, username, password, tags, onlyURL}
 }
 
 func (c *Client) CreateEntry(entryURL, entryTitle, entryContent string) error {
 	if c.baseURL == "" || c.clientID == "" || c.clientSecret == "" || c.username == "" || c.password == "" {
-		return fmt.Errorf("wallabag: missing base URL, client ID, client secret, username or password")
+		return errors.New("wallabag: missing base URL, client ID, client secret, username or password")
 	}
 
 	accessToken, err := c.getAccessToken()
@@ -41,10 +43,10 @@ func (c *Client) CreateEntry(entryURL, entryTitle, entryContent string) error {
 		return err
 	}
 
-	return c.createEntry(accessToken, entryURL, entryTitle, entryContent)
+	return c.createEntry(accessToken, entryURL, entryTitle, entryContent, c.tags)
 }
 
-func (c *Client) createEntry(accessToken, entryURL, entryTitle, entryContent string) error {
+func (c *Client) createEntry(accessToken, entryURL, entryTitle, entryContent, tags string) error {
 	apiEndpoint, err := urllib.JoinBaseURLAndPath(c.baseURL, "/api/entries.json")
 	if err != nil {
 		return fmt.Errorf("wallbag: unable to generate entries endpoint: %v", err)
@@ -58,6 +60,7 @@ func (c *Client) createEntry(accessToken, entryURL, entryTitle, entryContent str
 		URL:     entryURL,
 		Title:   entryTitle,
 		Content: entryContent,
+		Tags:    tags,
 	})
 	if err != nil {
 		return fmt.Errorf("wallbag: unable to encode request body: %v", err)
@@ -81,7 +84,7 @@ func (c *Client) createEntry(accessToken, entryURL, entryTitle, entryContent str
 	defer response.Body.Close()
 
 	if response.StatusCode >= 400 {
-		return fmt.Errorf("wallabag: unable to get access token: url=%s status=%d", apiEndpoint, response.StatusCode)
+		return fmt.Errorf("wallabag: unable to get save entry: url=%s status=%d", apiEndpoint, response.StatusCode)
 	}
 
 	return nil
@@ -140,4 +143,5 @@ type createEntryRequest struct {
 	URL     string `json:"url"`
 	Title   string `json:"title"`
 	Content string `json:"content,omitempty"`
+	Tags    string `json:"tags,omitempty"`
 }

@@ -58,5 +58,5 @@ func (h *handler) showStarredPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("pageEntriesType", "starred")
 
-	html.OK(w, r, view.Render("bookmark_entries"))
+	html.OK(w, r, view.Render("starred_entries"))
 }

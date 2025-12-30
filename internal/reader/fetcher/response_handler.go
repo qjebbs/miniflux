@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"math"
 	"net"
 	"net/http"
 	"net/url"
@@ -54,18 +53,19 @@ func (r *ResponseHandler) ETag() string {
 	return r.httpResponse.Header.Get("ETag")
 }
 
-func (r *ResponseHandler) ExpiresInMinutes() int {
+func (r *ResponseHandler) Expires() time.Duration {
 	expiresHeaderValue := r.httpResponse.Header.Get("Expires")
 	if expiresHeaderValue != "" {
 		t, err := time.Parse(time.RFC1123, expiresHeaderValue)
 		if err == nil {
-			return int(math.Ceil(time.Until(t).Minutes()))
+			// This rounds up to the next minute by rounding down and just adding a minute.
+			return time.Until(t).Truncate(time.Minute) + time.Minute
 		}
 	}
 	return 0
 }
 
-func (r *ResponseHandler) CacheControlMaxAgeInMinutes() int {
+func (r *ResponseHandler) CacheControlMaxAge() time.Duration {
 	cacheControlHeaderValue := r.httpResponse.Header.Get("Cache-Control")
 	if cacheControlHeaderValue != "" {
 		for _, directive := range strings.Split(cacheControlHeaderValue, ",") {
@@ -73,7 +73,7 @@ func (r *ResponseHandler) CacheControlMaxAgeInMinutes() int {
 			if strings.HasPrefix(directive, "max-age=") {
 				maxAge, err := strconv.Atoi(strings.TrimPrefix(directive, "max-age="))
 				if err == nil {
-					return int(math.Ceil(float64(maxAge) / 60))
+					return time.Duration(maxAge) * time.Second
 				}
 			}
 		}
@@ -81,17 +81,17 @@ func (r *ResponseHandler) CacheControlMaxAgeInMinutes() int {
 	return 0
 }
 
-func (r *ResponseHandler) ParseRetryDelay() int {
+func (r *ResponseHandler) ParseRetryDelay() time.Duration {
 	retryAfterHeaderValue := r.httpResponse.Header.Get("Retry-After")
 	if retryAfterHeaderValue != "" {
 		// First, try to parse as an integer (number of seconds)
 		if seconds, err := strconv.Atoi(retryAfterHeaderValue); err == nil {
-			return seconds
+			return time.Duration(seconds) * time.Second
 		}
 
 		// If not an integer, try to parse as an HTTP-date
 		if t, err := time.Parse(time.RFC1123, retryAfterHeaderValue); err == nil {
-			return int(time.Until(t).Seconds())
+			return time.Until(t).Truncate(time.Second)
 		}
 	}
 	return 0
@@ -168,7 +168,7 @@ func (r *ResponseHandler) ReadBody(maxBodySize int64) ([]byte, *locale.Localized
 	}
 
 	if len(buffer) == 0 {
-		return nil, locale.NewLocalizedErrorWrapper(fmt.Errorf("fetcher: empty response body"), "error.http_empty_response_body")
+		return nil, locale.NewLocalizedErrorWrapper(errors.New("fetcher: empty response body"), "error.http_empty_response_body")
 	}
 
 	return buffer, nil
@@ -192,11 +192,11 @@ func (r *ResponseHandler) LocalizedError() *locale.LocalizedErrorWrapper {
 
 	switch r.httpResponse.StatusCode {
 	case http.StatusUnauthorized:
-		return locale.NewLocalizedErrorWrapper(fmt.Errorf("fetcher: access unauthorized (401 status code)"), "error.http_not_authorized")
+		return locale.NewLocalizedErrorWrapper(errors.New("fetcher: access unauthorized (401 status code)"), "error.http_not_authorized")
 	case http.StatusForbidden:
-		return locale.NewLocalizedErrorWrapper(fmt.Errorf("fetcher: access forbidden (403 status code)"), "error.http_forbidden")
+		return locale.NewLocalizedErrorWrapper(errors.New("fetcher: access forbidden (403 status code)"), "error.http_forbidden")
 	case http.StatusTooManyRequests:
-		return locale.NewLocalizedErrorWrapper(fmt.Errorf("fetcher: too many requests (429 status code)"), "error.http_too_many_requests")
+		return locale.NewLocalizedErrorWrapper(errors.New("fetcher: too many requests (429 status code)"), "error.http_too_many_requests")
 	case http.StatusNotFound, http.StatusGone:
 		return locale.NewLocalizedErrorWrapper(fmt.Errorf("fetcher: resource not found (%d status code)", r.httpResponse.StatusCode), "error.http_resource_not_found")
 	case http.StatusInternalServerError:
@@ -216,7 +216,7 @@ func (r *ResponseHandler) LocalizedError() *locale.LocalizedErrorWrapper {
 	if r.httpResponse.StatusCode != 304 {
 		// Content-Length = -1 when no Content-Length header is sent.
 		if r.httpResponse.ContentLength == 0 {
-			return locale.NewLocalizedErrorWrapper(fmt.Errorf("fetcher: empty response body"), "error.http_empty_response_body")
+			return locale.NewLocalizedErrorWrapper(errors.New("fetcher: empty response body"), "error.http_empty_response_body")
 		}
 	}
 

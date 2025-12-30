@@ -1,10 +1,51 @@
 {{ define "title"}}{{ .entry.Title }}{{ end }}
 
+{{ define "entry_pagination" }}
+<div class="pagination">
+    <div class="pagination-prev {{ if not .prevEntry }}disabled{{end}}">
+        {{ if .prevEntry }}
+            <a href="{{ .prevEntryRoute }}{{ if .searchQuery }}?q={{ .searchQuery }}{{ end }}" title="{{ .prevEntry.Title }}" data-page="previous" rel="prev">{{ t "pagination.previous" }}</a>
+        {{ else }}
+            {{ t "pagination.previous" }}
+        {{ end }}
+    </div>
+
+    <a href="#" class="elevator">{{ icon "up" }}{{ t "page.footer.elevator" }}</a>
+
+    <div class="pagination-next {{ if not .nextEntry }}disabled{{end}}">
+        {{ if .nextEntry }}
+            <a href="{{ .nextEntryRoute }}{{ if .searchQuery }}?q={{ .searchQuery }}{{ end }}" title="{{ .nextEntry.Title }}" data-page="next" rel="next">{{ t "pagination.next" }}</a>
+        {{ else }}
+            {{ t "pagination.next" }}
+        {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ define "enclosure_media_controls" }}
+<div class="media-controls">
+    <div class="media-seek-control">
+        <div class="media-control-label">{{ t "enclosure_media_controls.seek" }} </div>
+        <button class="page-button" data-enclosure-id="{{.ID}}" data-enclosure-action="seek" data-action-value="-30" title="{{ t "enclosure_media_controls.seek.title" "-30" }}" ><span class="icon-label" >-30s</span></button>
+        <button class="page-button" data-enclosure-id="{{.ID}}" data-enclosure-action="seek" data-action-value="-10" title="{{ t "enclosure_media_controls.seek.title" "-10" }}" ><span class="icon-label" >-10s</span></button>
+        <button class="page-button" data-enclosure-id="{{.ID}}" data-enclosure-action="seek" data-action-value="+10" title="{{ t "enclosure_media_controls.seek.title" "+10" }}" ><span class="icon-label" >+10s</span></button>
+        <button class="page-button" data-enclosure-id="{{.ID}}" data-enclosure-action="seek" data-action-value="+30" title="{{ t "enclosure_media_controls.seek.title" "+30" }}" ><span class="icon-label" >+30s</span></button>
+    </div>
+    <div class="media-speed-control">
+
+        <div class="media-control-label">{{ t "enclosure_media_controls.speed" }} (<span class="speed-indicator" data-enclosure-id="{{.ID}}">1.00x</span>)</div> <!-- Need JS to display the current speed unfortunately -->
+        <button class="page-button" data-enclosure-id="{{.ID}}" data-enclosure-action="speed" data-action-value="-0.25" title="{{ t "enclosure_media_controls.speed.slower.title" "0.25" }}"><span class="icon-label" >{{ t "enclosure_media_controls.speed.slower" }}</span></button>
+        <button class="page-button" data-enclosure-id="{{.ID}}" data-enclosure-action="speed-reset" data-action-value="1" title="{{ t "enclosure_media_controls.speed.reset.title"}}"><span class="icon-label" >{{ t "enclosure_media_controls.speed.reset" }}</span></button>
+        <button class="page-button" data-enclosure-id="{{.ID}}" data-enclosure-action="speed" data-action-value="+0.25" title="{{ t "enclosure_media_controls.speed.faster.title" "0.25" }}"><span class="icon-label" >{{ t "enclosure_media_controls.speed.faster" }}</span></button>
+    </div>
+</div>
+{{ end }}
+
 {{ define "page_header"}}
 <section class="entry" data-id="{{ .entry.ID }}" aria-labelledby="page-header-title">
     <header class="entry-header">
         <h1 id="page-header-title" dir="auto">
-            <a href="{{ .entry.URL | safeURL }}" {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ end }} rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .entry.Title }}</a>
+            <a href="{{ .entry.URL | safeURL }}" {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ else }}rel="noopener"{{ end }}>{{ .entry.Title }}</a>
         </h1>
         {{ if .user }}
         <div class="entry-actions">
@@ -25,15 +66,15 @@
                 <li>
                     <button
                         class="page-button"
-                        data-toggle-bookmark="true"
-                        data-bookmark-url="{{ route "toggleBookmark" "entryID" .entry.ID }}"
+                        data-toggle-starred="true"
+                        data-star-url="{{ route "toggleStarred" "entryID" .entry.ID }}"
                         data-label-loading="{{ t "entry.state.saving" }}"
-                        data-label-star="{{ t "entry.bookmark.toggle.on" }}"
-                        data-label-unstar="{{ t "entry.bookmark.toggle.off" }}"
-                        data-toast-star="{{ t "entry.bookmark.toast.on" }}"
-                        data-toast-unstar="{{ t "entry.bookmark.toast.off" }}"
+                        data-label-star="{{ t "entry.starred.toggle.on" }}"
+                        data-label-unstar="{{ t "entry.starred.toggle.off" }}"
+                        data-toast-star="{{ t "entry.starred.toast.on" }}"
+                        data-toast-unstar="{{ t "entry.starred.toast.off" }}"
                         data-value="{{ if .entry.Starred }}star{{ else }}unstar{{ end }}"
-                        >{{ if .entry.Starred }}{{ icon "unstar" }}{{ else }}{{ icon "star" }}{{ end }}<span class="icon-label">{{ if .entry.Starred }}{{ t "entry.bookmark.toggle.off" }}{{ else }}{{ t "entry.bookmark.toggle.on" }}{{ end }}</span></button>
+                        >{{ if .entry.Starred }}{{ icon "unstar" }}{{ else }}{{ icon "star" }}{{ end }}<span class="icon-label">{{ if .entry.Starred }}{{ t "entry.starred.toggle.off" }}{{ else }}{{ t "entry.starred.toggle.on" }}{{ end }}</span></button>
                 </li>
                 {{ if .hasSaveEntry }}
                 <li>
@@ -89,36 +130,32 @@
                     <a href="{{ .entry.CommentsURL | safeURL }}"
                         class="page-link"
                         title="{{ t "entry.comments.title" }}"
-                        {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ end }}
-                        rel="noopener noreferrer"
-                        referrerpolicy="no-referrer"
+                        {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ else }}rel="noopener"{{ end }}
                         data-comments-link="true"
                         >{{ icon "comment" }}<span class="icon-label">{{ t "entry.comments.label" }}</span></a>
                 </li>
                 {{ end }}
                 <li>
-                    <a href="{{ route "editEntry" "entryID" .entry.ID }}"
-                    title="{{ t "entry.edit.title" }}"
+                    <button 
+                        class="page-button"
+                        href="{{ route "editEntry" "entryID" .entry.ID }}"
+                        title="{{ t "entry.edit.title" }}"
                     >
-                        {{ icon "edit" }}<span class="icon-label">{{ t "entry.edit.label" }}</span></a>
+                        {{ icon "edit" }}<span class="icon-label">{{ t "entry.edit.label" }}</span></button>
                 </li>
                 {{ if .hasCacheService }}
                     <li>
-                        <a href="#"
+                        <button href="#"
+                            class="page-button"
                             data-toggle-cache="true"
                             data-cache-url="{{ route "toggleCache" "entryID" .entry.ID }}"
                             data-label-loading="{{ t "entry.state.saving" }}"
                             data-label-cached="{{ t "entry.cache.toggle.on" }}"
                             data-label-uncached="{{ t "entry.cache.toggle.off" }}"
+                            data-toast-cached="{{ t "entry.status.toast.cached" }}"
+                            data-toast-uncached="{{ t "entry.status.toast.uncached" }}"
                             data-value="{{ if .entryCached }}cached{{ else }}uncached{{ end }}"
-                            >
-                                {{ if .entryCached }}
-                                {{ icon "uncache" }}<span class="icon-label">{{ t "entry.cache.toggle.off" }}</span>
-                                {{ else }}
-                                {{ icon "cache" }}<span class="icon-label">{{ t "entry.cache.toggle.on" }}</span>
-                                {{ end }}
-                                </span>
-                            </a>
+                        >{{ if .entryCached }}{{ icon "uncache" }}{{ else }}{{ icon "cache" }}{{ end }}<span class="icon-label">{{ if .entryCached }}{{ t "entry.cache.toggle.off" }}{{ else }}{{ t "entry.cache.toggle.on" }}{{ end }}</span></button>
                     </li>
                 {{ end }}
             </ul>
@@ -193,9 +230,7 @@
         <div class="entry-external-link">
             <a
                 href="{{ .entry.URL | safeURL  }}"
-                {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ end }}
-                rel="noopener noreferrer"
-                referrerpolicy="no-referrer"
+                {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ else }}rel="noopener"{{ end }}
                 data-original-link="{{ $.user.MarkReadOnView }}">{{ .entry.URL }}</span></a>
         </div>
         <div class="entry-date">
@@ -270,9 +305,9 @@
     {{ end }}
 
     {{ if .user }}
-        {{ noescape (proxyFilter .entry.Content) }}
+        {{ safeHTML (proxyFilter .entry.Content) }}
     {{ else }}
-        {{ noescape .entry.Content }}
+        {{ safeHTML .entry.Content }}
     {{ end }}
 </article>
 {{ if .entry.Enclosures }}
@@ -292,7 +327,7 @@
         {{ end }}
 
         <div class="entry-enclosure-download">
-            <a href="{{ .URL | safeURL }}" title="{{ t "action.download" }}{{ if gt .Size 0 }} - {{ formatFileSize .Size }}{{ end }}" {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ end }} rel="noopener noreferrer" referrerpolicy="no-referrer">{{ .URL | safeURL  }}</a>
+            <a href="{{ .URL | safeURL }}" title="{{ t "action.download" }}{{ if gt .Size 0 }} - {{ formatFileSize .Size }}{{ end }}" {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ else }}rel="noopener"{{ end }}>{{ .URL | safeURL  }}</a>
             <small>{{ if gt .Size 0 }} - <strong>{{ formatFileSize .Size }}</strong>{{ end }}</small>
         </div>
     </div>

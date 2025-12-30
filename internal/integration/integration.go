@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"miniflux.app/v2/internal/integration/apprise"
+	"miniflux.app/v2/internal/integration/archiveorg"
 	"miniflux.app/v2/internal/integration/betula"
 	"miniflux.app/v2/internal/integration/cubox"
 	"miniflux.app/v2/internal/integration/discord"
@@ -15,6 +16,7 @@ import (
 	"miniflux.app/v2/internal/integration/karakeep"
 	"miniflux.app/v2/internal/integration/linkace"
 	"miniflux.app/v2/internal/integration/linkding"
+	"miniflux.app/v2/internal/integration/linktaco"
 	"miniflux.app/v2/internal/integration/linkwarden"
 	"miniflux.app/v2/internal/integration/matrixbot"
 	"miniflux.app/v2/internal/integration/notion"
@@ -107,6 +109,7 @@ func SendEntry(entry *model.Entry, userIntegrations *model.Integration) {
 	if userIntegrations.WallabagEnabled {
 		slog.Debug("Sending entry to Wallabag",
 			slog.Int64("user_id", userIntegrations.UserID),
+			slog.String("user_tags", userIntegrations.WallabagTags),
 			slog.Int64("entry_id", entry.ID),
 			slog.String("entry_url", entry.URL),
 		)
@@ -117,12 +120,14 @@ func SendEntry(entry *model.Entry, userIntegrations *model.Integration) {
 			userIntegrations.WallabagClientSecret,
 			userIntegrations.WallabagUsername,
 			userIntegrations.WallabagPassword,
+			userIntegrations.WallabagTags,
 			userIntegrations.WallabagOnlyURL,
 		)
 
 		if err := client.CreateEntry(entry.URL, entry.Title, entry.Content); err != nil {
 			slog.Error("Unable to send entry to Wallabag",
 				slog.Int64("user_id", userIntegrations.UserID),
+				slog.String("user_tags", userIntegrations.WallabagTags),
 				slog.Int64("entry_id", entry.ID),
 				slog.String("entry_url", entry.URL),
 				slog.Any("error", err),
@@ -242,24 +247,50 @@ func SendEntry(entry *model.Entry, userIntegrations *model.Integration) {
 		}
 	}
 
-	if userIntegrations.LinkwardenEnabled {
-		slog.Debug("Sending entry to linkwarden",
+	if userIntegrations.LinktacoEnabled {
+		slog.Debug("Sending entry to LinkTaco",
 			slog.Int64("user_id", userIntegrations.UserID),
 			slog.Int64("entry_id", entry.ID),
 			slog.String("entry_url", entry.URL),
 		)
 
-		client := linkwarden.NewClient(
-			userIntegrations.LinkwardenURL,
-			userIntegrations.LinkwardenAPIKey,
+		client := linktaco.NewClient(
+			userIntegrations.LinktacoAPIToken,
+			userIntegrations.LinktacoOrgSlug,
+			userIntegrations.LinktacoTags,
+			userIntegrations.LinktacoVisibility,
 		)
-		if err := client.CreateBookmark(entry.URL, entry.Title); err != nil {
-			slog.Error("Unable to send entry to Linkwarden",
+		if err := client.CreateBookmark(entry.URL, entry.Title, entry.Content); err != nil {
+			slog.Error("Unable to send entry to LinkTaco",
 				slog.Int64("user_id", userIntegrations.UserID),
 				slog.Int64("entry_id", entry.ID),
 				slog.String("entry_url", entry.URL),
 				slog.Any("error", err),
 			)
+		}
+	}
+
+	if userIntegrations.LinkwardenEnabled {
+		attrs := []any{
+			slog.Int64("user_id", userIntegrations.UserID),
+			slog.Int64("entry_id", entry.ID),
+			slog.String("entry_url", entry.URL),
+		}
+
+		if userIntegrations.LinkwardenCollectionID != nil {
+			attrs = append(attrs, slog.Int64("collection_id", *userIntegrations.LinkwardenCollectionID))
+		}
+
+		slog.Debug("Sending entry to linkwarden", attrs...)
+
+		client := linkwarden.NewClient(
+			userIntegrations.LinkwardenURL,
+			userIntegrations.LinkwardenAPIKey,
+			userIntegrations.LinkwardenCollectionID,
+		)
+		if err := client.CreateBookmark(entry.URL, entry.Title); err != nil {
+			attrs = append(attrs, slog.Any("error", err))
+			slog.Error("Unable to send entry to Linkwarden", attrs...)
 		}
 	}
 
@@ -371,21 +402,38 @@ func SendEntry(entry *model.Entry, userIntegrations *model.Integration) {
 		}
 	}
 
+	if userIntegrations.ArchiveorgEnabled {
+		slog.Debug("Sending entry to archive.org",
+			slog.Int64("user_id", userIntegrations.UserID),
+			slog.Int64("entry_id", entry.ID),
+			slog.String("entry_url", entry.URL),
+		)
+
+		archiveorg.NewClient().SendURL(entry.URL, entry.Title)
+	}
+
 	if userIntegrations.WebhookEnabled {
+		var webhookURL string
+		if entry.Feed != nil && entry.Feed.WebhookURL != "" {
+			webhookURL = entry.Feed.WebhookURL
+		} else {
+			webhookURL = userIntegrations.WebhookURL
+		}
+
 		slog.Debug("Sending entry to Webhook",
 			slog.Int64("user_id", userIntegrations.UserID),
 			slog.Int64("entry_id", entry.ID),
 			slog.String("entry_url", entry.URL),
-			slog.String("webhook_url", userIntegrations.WebhookURL),
+			slog.String("webhook_url", webhookURL),
 		)
 
-		webhookClient := webhook.NewClient(userIntegrations.WebhookURL, userIntegrations.WebhookSecret)
+		webhookClient := webhook.NewClient(webhookURL, userIntegrations.WebhookSecret)
 		if err := webhookClient.SendSaveEntryWebhookEvent(entry); err != nil {
 			slog.Error("Unable to send entry to Webhook",
 				slog.Int64("user_id", userIntegrations.UserID),
 				slog.Int64("entry_id", entry.ID),
 				slog.String("entry_url", entry.URL),
-				slog.String("webhook_url", userIntegrations.WebhookURL),
+				slog.String("webhook_url", webhookURL),
 				slog.Any("error", err),
 			)
 		}
@@ -412,14 +460,20 @@ func SendEntry(entry *model.Entry, userIntegrations *model.Integration) {
 	if userIntegrations.KarakeepEnabled {
 		slog.Debug("Sending entry to Karakeep",
 			slog.Int64("user_id", userIntegrations.UserID),
+			slog.String("user_tags", userIntegrations.KarakeepTags),
 			slog.Int64("entry_id", entry.ID),
 			slog.String("entry_url", entry.URL),
 		)
 
-		client := karakeep.NewClient(userIntegrations.KarakeepAPIKey, userIntegrations.KarakeepURL)
+		client := karakeep.NewClient(
+			userIntegrations.KarakeepAPIKey,
+			userIntegrations.KarakeepURL,
+			userIntegrations.KarakeepTags,
+		)
 		if err := client.SaveURL(entry.URL); err != nil {
 			slog.Error("Unable to send entry to Karakeep",
 				slog.Int64("user_id", userIntegrations.UserID),
+				slog.String("user_tags", userIntegrations.KarakeepTags),
 				slog.Int64("entry_id", entry.ID),
 				slog.String("entry_url", entry.URL),
 				slog.Any("error", err),
@@ -472,7 +526,6 @@ func PushEntries(feed *model.Feed, entries model.Entries, userIntegrations *mode
 			)
 		}
 	}
-
 	if userIntegrations.WebhookEnabled {
 		var webhookURL string
 		if feed.WebhookURL != "" {

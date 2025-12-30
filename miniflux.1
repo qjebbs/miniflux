@@ -1,5 +1,5 @@
 .\" Manpage for miniflux.
-.TH "MINIFLUX" "1" "June 23, 2025" "\ \&" "\ \&"
+.TH "MINIFLUX" "1" "September 29, 2025" "\ \&" "\ \&"
 
 .SH NAME
 miniflux \- Minimalist and opinionated feed reader
@@ -223,7 +223,7 @@ Default is 20\&.
 .B DATABASE_MIN_CONNS
 Minimum number of database connections\&.
 .br
-Default is 20\&.
+Default is 1\&.
 .TP
 .B DATABASE_URL
 Postgresql connection parameters\&.
@@ -234,6 +234,11 @@ Default is "user=postgres password=postgres dbname=miniflux2 sslmode=disable"\&.
 Path to a secret key exposed as a file, it should contain $DATABASE_URL value\&.
 .br
 Default is empty\&.
+.TP
+.B DISABLE_API
+Disable miniflux's API\&.
+.br
+Default is false (The API is enabled)\&.
 .TP
 .B DISABLE_HSTS
 Disable HTTP Strict Transport Security header if \fBHTTPS\fR is set\&.
@@ -329,7 +334,7 @@ Default is 300 seconds\&.
 .B HTTPS
 Forces cookies to use secure flag and send HSTS header\&.
 .br
-Default is empty\&.
+Default is disabled\&.
 .TP
 .B INVIDIOUS_INSTANCE
 Set a custom invidious instance to use\&.
@@ -416,12 +421,12 @@ Disabled by default\&.
 .B METRICS_PASSWORD
 Metrics endpoint password for basic HTTP authentication\&.
 .br
-Default is emtpty\&.
+Default is empty\&.
 .TP
 .B METRICS_PASSWORD_FILE
 Path to a file that contains the password for the metrics endpoint HTTP authentication\&.
 .br
-Default is emtpty\&.
+Default is empty\&.
 .TP
 .B METRICS_REFRESH_INTERVAL
 Refresh interval to collect database metrics\&.
@@ -431,12 +436,12 @@ Default is 60 seconds\&.
 .B METRICS_USERNAME
 Metrics endpoint username for basic HTTP authentication\&.
 .br
-Default is emtpty\&.
+Default is empty\&.
 .TP
 .B METRICS_USERNAME_FILE
 Path to a file that contains the username for the metrics endpoint HTTP authentication\&.
 .br
-Default is emtpty\&.
+Default is empty\&.
 .TP
 .B OAUTH2_CLIENT_ID
 OAuth2 client ID\&.
@@ -466,7 +471,7 @@ Default is empty\&.
 .B OAUTH2_OIDC_PROVIDER_NAME
 Name to display for the OIDC provider\&.
 .br
-Default is OpenID Connect\&.
+Default is "OpenID Connect"\&.
 .TP
 .B OAUTH2_PROVIDER
 Possible values are "google" or "oidc"\&.
@@ -486,23 +491,38 @@ Set to 1 to authorize OAuth2 user creation\&.
 Disabled by default\&.
 .TP
 .B POLLING_FREQUENCY
-Refresh interval in minutes for feeds\&.
+Interval for the background job scheduler.
+.br
+Determines how often a batch of feeds is selected for refresh, based on their last refresh time\&.
 .br
 Default is 60 minutes\&.
 .TP
+.B POLLING_LIMIT_PER_HOST
+Limits the number of concurrent requests to the same hostname when polling feeds.
+.br
+This helps prevent overwhelming a single server during batch processing by the worker pool.
+.br
+Default is 0 (disabled)\&.
+.TP
 .B POLLING_PARSING_ERROR_LIMIT
-The maximum number of parsing errors that the program will try before stopping polling a feed. Once the limit is reached, the user must refresh the feed manually. Set to 0 for unlimited.
+The maximum number of parsing errors that the program will try before stopping polling a feed.
+.br
+Once the limit is reached, the user must refresh the feed manually. Set to 0 for unlimited.
 .br
 Default is 3\&.
 .TP
 .B POLLING_SCHEDULER
-Scheduler used for polling feeds. Possible values are "round_robin" or "entry_frequency"\&.
+Determines the strategy used to schedule feed polling.
 .br
-The maximum number of feeds polled for a given period is subject to POLLING_FREQUENCY and BATCH_SIZE\&.
+Supported values are "round_robin" and "entry_frequency".
 .br
-When "entry_frequency" is selected, the refresh interval for a given feed is equal to the average updating interval of the last week of the feed\&.
+- "round_robin": Feeds are polled in a fixed, rotating order.
 .br
-The actual number of feeds polled will not exceed the maximum number of feeds that could be polled for a given period\&.
+- "entry_frequency": The polling interval for each feed is based on the average update frequency over the past week.
+.br
+The number of feeds polled in a given period is limited by the POLLING_FREQUENCY and BATCH_SIZE settings.
+.br
+Regardless of the scheduler used, the total number of polled feeds will not exceed the maximum allowed per polling cycle.
 .br
 Default is "round_robin"\&.
 .TP
@@ -524,7 +544,7 @@ Default is 1\&.
 .B SCHEDULER_ENTRY_FREQUENCY_MAX_INTERVAL
 Maximum interval in minutes for the entry frequency scheduler\&.
 .br
-Default is 24 hours\&.
+Default is 1440 minutes (24 hours)\&.
 .TP
 .B SCHEDULER_ENTRY_FREQUENCY_MIN_INTERVAL
 Minimum interval in minutes for the entry frequency scheduler\&.
@@ -549,7 +569,7 @@ Enabled by default\&.
 .B WEBAUTHN
 Enable or disable WebAuthn/Passkey authentication\&.
 .br
-You must provide a username on the login page if your are using non-residential keys. However, this is not required for discoverable credentials\&.
+You must provide a username on the login page if you are using non-residential keys. However, this is not required for discoverable credentials\&.
 .br
 Default is disabled\&.
 .TP

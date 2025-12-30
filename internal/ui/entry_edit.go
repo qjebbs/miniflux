@@ -50,7 +50,7 @@ func (h *handler) showEditEntryPage(w http.ResponseWriter, r *http.Request) {
 	encountered := make(map[int64]struct{})
 	for _, feed := range feeds {
 		if _, ok := encountered[feed.Category.ID]; !ok {
-			categories = append(categories, feed.Category)
+			categories = append(categories, *feed.Category)
 			encountered[feed.Category.ID] = struct{}{}
 		}
 	}

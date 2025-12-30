@@ -18,21 +18,21 @@ import (
 )
 
 const (
-	defaultHTTPClientTimeout     = 20
-	defaultHTTPClientMaxBodySize = 15 * 1024 * 1024
-	defaultAcceptHeader          = "application/xml, application/atom+xml, application/rss+xml, application/rdf+xml, application/feed+json, text/html, */*;q=0.9"
+	defaultHTTPClientTimeout = 20 * time.Second
+	defaultAcceptHeader      = "application/xml, application/atom+xml, application/rss+xml, application/rdf+xml, application/feed+json, text/html, */*;q=0.9"
 )
 
 type RequestBuilder struct {
-	headers          http.Header
-	clientProxyURL   *url.URL
-	clientTimeout    int
-	useClientProxy   bool
-	withoutRedirects bool
-	ignoreTLSErrors  bool
-	disableHTTP2     bool
-	proxyRotator     *proxyrotator.ProxyRotator
-	feedProxyURL     string
+	headers            http.Header
+	clientProxyURL     *url.URL
+	clientTimeout      time.Duration
+	useClientProxy     bool
+	withoutRedirects   bool
+	ignoreTLSErrors    bool
+	disableHTTP2       bool
+	disableCompression bool
+	proxyRotator       *proxyrotator.ProxyRotator
+	feedProxyURL       string
 }
 
 func NewRequestBuilder() *RequestBuilder {
@@ -104,7 +104,7 @@ func (r *RequestBuilder) WithCustomFeedProxyURL(proxyURL string) *RequestBuilder
 	return r
 }
 
-func (r *RequestBuilder) WithTimeout(timeout int) *RequestBuilder {
+func (r *RequestBuilder) WithTimeout(timeout time.Duration) *RequestBuilder {
 	r.clientTimeout = timeout
 	return r
 }
@@ -121,6 +121,11 @@ func (r *RequestBuilder) DisableHTTP2(value bool) *RequestBuilder {
 
 func (r *RequestBuilder) IgnoreTLSErrors(value bool) *RequestBuilder {
 	r.ignoreTLSErrors = value
+	return r
+}
+
+func (r *RequestBuilder) WithoutCompression() *RequestBuilder {
+	r.disableCompression = true
 	return r
 }
 
@@ -180,7 +185,7 @@ func (r *RequestBuilder) ExecuteRequest(requestURL string) (*http.Response, erro
 	}
 
 	client := &http.Client{
-		Timeout: time.Duration(r.clientTimeout) * time.Second,
+		Timeout: r.clientTimeout,
 	}
 
 	if r.withoutRedirects {
@@ -197,8 +202,18 @@ func (r *RequestBuilder) ExecuteRequest(requestURL string) (*http.Response, erro
 	}
 
 	req.Header = r.headers
-	req.Header.Set("Accept-Encoding", "br, gzip")
-	req.Header.Set("Accept", defaultAcceptHeader)
+	if r.disableCompression {
+		req.Header.Set("Accept-Encoding", "identity")
+	} else {
+		req.Header.Set("Accept-Encoding", "br, gzip")
+	}
+
+	// Set default Accept header if not already set.
+	// Note that for the media proxy requests, we need to forward the browser Accept header.
+	if req.Header.Get("Accept") == "" {
+		req.Header.Set("Accept", defaultAcceptHeader)
+	}
+
 	req.Header.Set("Connection", "close")
 
 	slog.Debug("Making outgoing request", slog.Group("request",

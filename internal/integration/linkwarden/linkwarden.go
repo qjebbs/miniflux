@@ -6,7 +6,9 @@ package linkwarden // import "miniflux.app/v2/internal/integration/linkwarden"
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -17,17 +19,28 @@ import (
 const defaultClientTimeout = 10 * time.Second
 
 type Client struct {
-	baseURL string
-	apiKey  string
+	baseURL      string
+	apiKey       string
+	collectionID *int64
 }
 
-func NewClient(baseURL, apiKey string) *Client {
-	return &Client{baseURL: baseURL, apiKey: apiKey}
+type linkwardenCollection struct {
+	ID *int64 `json:"id"`
+}
+
+type linkwardenRequest struct {
+	URL        string                `json:"url"`
+	Name       string                `json:"name"`
+	Collection *linkwardenCollection `json:"collection,omitempty"`
+}
+
+func NewClient(baseURL, apiKey string, collectionID *int64) *Client {
+	return &Client{baseURL: baseURL, apiKey: apiKey, collectionID: collectionID}
 }
 
 func (c *Client) CreateBookmark(entryURL, entryTitle string) error {
 	if c.baseURL == "" || c.apiKey == "" {
-		return fmt.Errorf("linkwarden: missing base URL or API key")
+		return errors.New("linkwarden: missing base URL or API key")
 	}
 
 	apiEndpoint, err := urllib.JoinBaseURLAndPath(c.baseURL, "/api/v1/links")
@@ -35,10 +48,16 @@ func (c *Client) CreateBookmark(entryURL, entryTitle string) error {
 		return fmt.Errorf(`linkwarden: invalid API endpoint: %v`, err)
 	}
 
-	requestBody, err := json.Marshal(map[string]string{
-		"url":  entryURL,
-		"name": entryTitle,
-	})
+	payload := linkwardenRequest{
+		URL:  entryURL,
+		Name: entryTitle,
+	}
+
+	if c.collectionID != nil {
+		payload.Collection = &linkwardenCollection{ID: c.collectionID}
+	}
+
+	requestBody, err := json.Marshal(payload)
 
 	if err != nil {
 		return fmt.Errorf("linkwarden: unable to encode request body: %v", err)
@@ -60,8 +79,13 @@ func (c *Client) CreateBookmark(entryURL, entryTitle string) error {
 	}
 	defer response.Body.Close()
 
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return fmt.Errorf("linkwarden: unable to read response body: %v", err)
+	}
+
 	if response.StatusCode >= 400 {
-		return fmt.Errorf("linkwarden: unable to create link: url=%s status=%d", apiEndpoint, response.StatusCode)
+		return fmt.Errorf("linkwarden: unable to create link: status=%d body=%s", response.StatusCode, string(responseBody))
 	}
 
 	return nil

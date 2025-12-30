@@ -87,6 +87,7 @@ func (s *Storage) UpdateEntryTitleAndContent(entry *model.Entry) error {
 		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
 	}
 
+	truncatedTitle, truncatedContent := truncateTitleAndContentForTSVectorField(entry.Title, entry.Content)
 	query := `
 		UPDATE
 			entries
@@ -105,8 +106,8 @@ func (s *Storage) UpdateEntryTitleAndContent(entry *model.Entry) error {
 		entry.Title,
 		entry.Content,
 		entry.ReadingTime,
-		truncateStringForTSVectorField(entry.Title),
-		truncateStringForTSVectorField(entry.Content),
+		truncatedTitle,
+		truncatedContent,
 		entry.CoverImage,
 		entry.ImageCount,
 		entry.ID,
@@ -119,6 +120,7 @@ func (s *Storage) UpdateEntryTitleAndContent(entry *model.Entry) error {
 
 // CreateEntry add a new entry.
 func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
+	truncatedTitle, truncatedContent := truncateTitleAndContentForTSVectorField(entry.Title, entry.Content)
 	query := `
 		INSERT INTO entries
 			(
@@ -167,8 +169,8 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.UserID,
 		entry.FeedID,
 		entry.ReadingTime,
-		truncateStringForTSVectorField(entry.Title),
-		truncateStringForTSVectorField(entry.Content),
+		truncatedTitle,
+		truncatedContent,
 		pq.Array(entry.Tags),
 	).Scan(
 		&entry.ID,
@@ -176,7 +178,6 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 		&entry.CreatedAt,
 		&entry.ChangedAt,
 	)
-
 	if err != nil {
 		return fmt.Errorf(`store: unable to create entry %q (feed #%d): %v`, entry.URL, entry.FeedID, err)
 	}
@@ -217,6 +218,7 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		return fmt.Errorf(`unable to update entry medias %q: %v`, entry.URL, err)
 	}
 
+	truncatedTitle, truncatedContent := truncateTitleAndContentForTSVectorField(entry.Title, entry.Content)
 	query := `
 		UPDATE
 			entries
@@ -244,8 +246,8 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.Content,
 		entry.Author,
 		entry.ReadingTime,
-		truncateStringForTSVectorField(entry.Title),
-		truncateStringForTSVectorField(entry.Content),
+		truncatedTitle,
+		truncatedContent,
 		entry.CoverImage,
 		entry.ImageCount,
 		entry.UserID,
@@ -253,7 +255,6 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.Hash,
 		pq.Array(entry.Tags),
 	).Scan(&entry.ID)
-
 	if err != nil {
 		return fmt.Errorf(`store: unable to update entry %q: %v`, entry.URL, err)
 	}
@@ -316,7 +317,7 @@ func (s *Storage) entryExists(tx *sql.Tx, entry *model.Entry) (bool, error) {
 	var result bool
 
 	// Note: This query uses entries_feed_id_hash_key index (filtering on user_id is not necessary).
-	err := tx.QueryRow(`SELECT true FROM entries WHERE feed_id=$1 AND hash=$2`, entry.FeedID, entry.Hash).Scan(&result)
+	err := tx.QueryRow(`SELECT true FROM entries WHERE feed_id=$1 AND hash=$2 LIMIT 1`, entry.FeedID, entry.Hash).Scan(&result)
 
 	if err != nil && err != sql.ErrNoRows {
 		return result, fmt.Errorf(`store: unable to check if entry exists: %v`, err)
@@ -327,7 +328,7 @@ func (s *Storage) entryExists(tx *sql.Tx, entry *model.Entry) (bool, error) {
 
 func (s *Storage) IsNewEntry(feedID int64, entryHash string) bool {
 	var result bool
-	s.db.QueryRow(`SELECT true FROM entries WHERE feed_id=$1 AND hash=$2`, feedID, entryHash).Scan(&result)
+	s.db.QueryRow(`SELECT true FROM entries WHERE feed_id=$1 AND hash=$2 LIMIT 1`, feedID, entryHash).Scan(&result)
 	return !result
 }
 
@@ -350,8 +351,8 @@ func (s *Storage) GetReadTime(feedID int64, entryHash string) int {
 	return result
 }
 
-// cleanupEntries deletes from the database entries marked as "removed" and not visible anymore in the feed.
-func (s *Storage) cleanupEntries(feedID int64, entryHashes []string) error {
+// cleanupRemovedEntriesNotInFeed deletes from the database entries marked as "removed" and not visible anymore in the feed.
+func (s *Storage) cleanupRemovedEntriesNotInFeed(feedID int64, entryHashes []string) error {
 	query := `
 		DELETE FROM
 			entries
@@ -365,6 +366,61 @@ func (s *Storage) cleanupEntries(feedID int64, entryHashes []string) error {
 	}
 
 	return nil
+}
+
+// DeleteRemovedEntriesEnclosures deletes enclosures associated with entries marked as "removed".
+func (s *Storage) DeleteRemovedEntriesEnclosures() (int64, error) {
+	query := `
+		DELETE FROM
+			enclosures
+		WHERE
+		 	enclosures.entry_id IN (SELECT id FROM entries WHERE status=$1)
+	`
+	result, err := s.db.Exec(query, model.EntryStatusRemoved)
+	if err != nil {
+		return 0, fmt.Errorf(`store: unable to delete enclosures from removed entries: %v`, err)
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf(`store: unable to get the number of rows affected while deleting enclosures from removed entries: %v`, err)
+	}
+
+	return count, nil
+}
+
+// ClearRemovedEntriesContent clears the content fields of entries marked as "removed", keeping only their metadata.
+func (s *Storage) ClearRemovedEntriesContent(limit int) (int64, error) {
+	query := `
+		UPDATE
+			entries
+		SET
+			title='',
+			content=NULL,
+			url='',
+			author=NULL,
+			comments_url=NULL,
+			document_vectors=NULL
+		WHERE id IN (
+			SELECT id
+			FROM entries
+			WHERE status = $1 AND content IS NOT NULL
+			ORDER BY id ASC
+			LIMIT $2
+		)
+	`
+
+	result, err := s.db.Exec(query, model.EntryStatusRemoved, limit)
+	if err != nil {
+		return 0, fmt.Errorf(`store: unable to clear content from removed entries: %v`, err)
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf(`store: unable to get the number of rows affected while clearing content from removed entries: %v`, err)
+	}
+
+	return count, nil
 }
 
 // RefreshFeedEntries updates feed entries while refreshing a feed.
@@ -414,8 +470,8 @@ func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries
 	}
 
 	go func() {
-		if err := s.cleanupEntries(feedID, entryHashes); err != nil {
-			slog.Error("Unable to cleanup entries",
+		if err := s.cleanupRemovedEntriesNotInFeed(feedID, entryHashes); err != nil {
+			slog.Error("Unable to cleanup removed entries",
 				slog.Int64("user_id", userID),
 				slog.Int64("feed_id", feedID),
 				slog.Any("error", err),
@@ -426,9 +482,9 @@ func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries
 	return newEntries, nil
 }
 
-// ArchiveEntries changes the status of entries to "removed" after the given number of days.
-func (s *Storage) ArchiveEntries(status string, days, limit int) (int64, error) {
-	if days < 0 || limit <= 0 {
+// ArchiveEntries changes the status of entries to "removed" after the interval (24h minimum).
+func (s *Storage) ArchiveEntries(status string, interval time.Duration, limit int) (int64, error) {
+	if interval < 0 || limit <= 0 {
 		return 0, nil
 	}
 
@@ -453,6 +509,8 @@ func (s *Storage) ArchiveEntries(status string, days, limit int) (int64, error) 
 				)
 	`
 
+	days := max(int(interval/(24*time.Hour)), 1)
+
 	result, err := s.db.Exec(query, model.EntryStatusRemoved, status, fmt.Sprintf("%d days", days), limit)
 	if err != nil {
 		return 0, fmt.Errorf(`store: unable to archive %s entries: %v`, status, err)
@@ -468,8 +526,19 @@ func (s *Storage) ArchiveEntries(status string, days, limit int) (int64, error) 
 
 // SetEntriesStatus update the status of the given list of entries.
 func (s *Storage) SetEntriesStatus(userID int64, entryIDs []int64, status string) error {
-	query := `UPDATE entries SET status=$1, changed_at=now() WHERE user_id=$2 AND id=ANY($3)`
-	if _, err := s.db.Exec(query, status, userID, pq.Array(entryIDs)); err != nil {
+	// Entries that have the model.EntryStatusRemoved status are immutable.
+	query := `
+		UPDATE
+			entries
+		SET
+			status=$1,
+			changed_at=now()
+		WHERE
+			user_id=$2 AND
+			id=ANY($3) AND
+			status!=$4
+		`
+	if _, err := s.db.Exec(query, status, userID, pq.Array(entryIDs), model.EntryStatusRemoved); err != nil {
 		return fmt.Errorf(`store: unable to update entries statuses %v: %v`, entryIDs, err)
 	}
 
@@ -501,12 +570,12 @@ func (s *Storage) SetEntriesStatusCount(userID int64, entryIDs []int64, status s
 	return visible, nil
 }
 
-// SetEntriesBookmarkedState update the bookmarked state for the given list of entries.
-func (s *Storage) SetEntriesBookmarkedState(userID int64, entryIDs []int64, starred bool) error {
+// SetEntriesStarredStateState updates the starred state for the given list of entries.
+func (s *Storage) SetEntriesStarredState(userID int64, entryIDs []int64, starred bool) error {
 	query := `UPDATE entries SET starred=$1, changed_at=now() WHERE user_id=$2 AND id=ANY($3)`
 	result, err := s.db.Exec(query, starred, userID, pq.Array(entryIDs))
 	if err != nil {
-		return fmt.Errorf(`store: unable to update the bookmarked state %v: %v`, entryIDs, err)
+		return fmt.Errorf(`store: unable to update the starred state %v: %v`, entryIDs, err)
 	}
 
 	count, err := result.RowsAffected()
@@ -521,17 +590,17 @@ func (s *Storage) SetEntriesBookmarkedState(userID int64, entryIDs []int64, star
 	return nil
 }
 
-// ToggleBookmark toggles entry bookmark value.
-func (s *Storage) ToggleBookmark(userID int64, entryID int64) error {
+// ToggleStarred toggles entry starred value.
+func (s *Storage) ToggleStarred(userID int64, entryID int64) error {
 	query := `UPDATE entries SET starred = NOT starred, changed_at=now() WHERE user_id=$1 AND id=$2`
 	result, err := s.db.Exec(query, userID, entryID)
 	if err != nil {
-		return fmt.Errorf(`store: unable to toggle bookmark flag for entry #%d: %v`, entryID, err)
+		return fmt.Errorf(`store: unable to toggle starred flag for entry #%d: %v`, entryID, err)
 	}
 
 	count, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf(`store: unable to toggle bookmark flag for entry #%d: %v`, entryID, err)
+		return fmt.Errorf(`store: unable to toggle starred flag for entry #%d: %v`, entryID, err)
 	}
 
 	if count == 0 {
@@ -725,17 +794,20 @@ func (s *Storage) UnshareEntry(userID int64, entryID int64) (err error) {
 	return
 }
 
-// truncateStringForTSVectorField truncates a string to fit within the maximum size for a TSVector field in PostgreSQL.
-func truncateStringForTSVectorField(s string) string {
+func truncateTitleAndContentForTSVectorField(title, content string) (string, string) {
 	// The length of a tsvector (lexemes + positions) must be less than 1 megabyte.
-	const maxTSVectorSize = 1024 * 1024
+	// We don't need to index the entire content, and we need to keep a buffer for the positions.
+	return truncateStringForTSVectorField(title, 200000), truncateStringForTSVectorField(content, 500000)
+}
 
-	if len(s) < maxTSVectorSize {
+// truncateStringForTSVectorField truncates a string and don't break UTF-8 characters.
+func truncateStringForTSVectorField(s string, maxSize int) string {
+	if len(s) < maxSize {
 		return s
 	}
 
 	// Truncate to fit under the limit, ensuring we don't break UTF-8 characters
-	truncated := s[:maxTSVectorSize-1]
+	truncated := s[:maxSize-1]
 
 	// Walk backwards to find the last complete UTF-8 character
 	for i := len(truncated) - 1; i >= 0; i-- {

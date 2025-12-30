@@ -97,7 +97,7 @@ func Parse() {
 	flag.Int64Var(&flagFixCoverImages, "fix-cover", 0, flagFixCoverImagesHelp)
 	flag.Parse()
 
-	cfg := config.NewParser()
+	cfg := config.NewConfigParser()
 
 	if flagConfigFile != "" {
 		config.Opts, err = cfg.ParseFile(flagConfigFile)
@@ -175,16 +175,16 @@ func Parse() {
 		slog.Info("The default value for DATABASE_URL is used")
 	}
 
-	if err := static.CalculateBinaryFileChecksums(); err != nil {
-		printErrorAndExit(fmt.Errorf("unable to calculate binary file checksums: %v", err))
+	if err := static.GenerateBinaryBundles(); err != nil {
+		printErrorAndExit(fmt.Errorf("unable to generate binary files bundle: %v", err))
 	}
 
 	if err := static.GenerateStylesheetsBundles(); err != nil {
-		printErrorAndExit(fmt.Errorf("unable to generate stylesheets bundles: %v", err))
+		printErrorAndExit(fmt.Errorf("unable to generate stylesheets bundle: %v", err))
 	}
 
-	if err := static.GenerateJavascriptBundles(); err != nil {
-		printErrorAndExit(fmt.Errorf("unable to generate javascript bundles: %v", err))
+	if err := static.GenerateJavascriptBundles(config.Opts.WebAuthn()); err != nil {
+		printErrorAndExit(fmt.Errorf("unable to generate javascript bundle: %v", err))
 	}
 
 	db, err := database.NewConnectionPool(
@@ -284,7 +284,7 @@ func Parse() {
 	}
 
 	if flagArchiveRead {
-		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveReadDays(), config.Opts.CleanupArchiveBatchSize()); err != nil {
+		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveReadInterval(), config.Opts.CleanupArchiveBatchSize()); err != nil {
 			printErrorAndExit(err)
 		} else {
 			slog.Info(
@@ -292,7 +292,7 @@ func Parse() {
 				slog.Int64("entries_affected", rowsAffected),
 			)
 		}
-		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveUnreadDays(), config.Opts.CleanupArchiveBatchSize()); err != nil {
+		if rowsAffected, err := store.ArchiveEntries(model.EntryStatusRead, config.Opts.CleanupArchiveUnreadInterval(), config.Opts.CleanupArchiveBatchSize()); err != nil {
 			printErrorAndExit(err)
 		} else {
 			slog.Info(
@@ -340,6 +340,6 @@ func Parse() {
 }
 
 func printErrorAndExit(err error) {
-	fmt.Fprintf(os.Stderr, "%v\n", err)
+	fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
 }

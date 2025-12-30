@@ -7,10 +7,11 @@ import "fmt"
 
 // Category represents a feed category.
 type Category struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	UserID      int64  `json:"user_id"`
-	NSFW        bool   `json:"nsfw"`
+	ID     int64  `json:"id"`
+	Title  string `json:"title"`
+	UserID int64  `json:"user_id"`
+	NSFW   bool   `json:"nsfw"`
+	// Pointers are needed to avoid breaking /v1/categories?counts=true
 	FeedCount   *int   `json:"feed_count,omitempty"`
 	TotalUnread *int   `json:"total_unread,omitempty"`
 	View        string `json:"view,omitempty"`
@@ -40,4 +41,4 @@ func (cr *CategoryRequest) Patch(category *Category) {
 }
 
 // Categories represents a list of categories.
-type Categories []*Category
+type Categories []Category

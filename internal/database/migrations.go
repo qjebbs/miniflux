@@ -12,7 +12,7 @@ import (
 var schemaVersion = len(migrations)
 
 // Order is important. Add new migrations at the end of the list.
-var migrations = []func(tx *sql.Tx) error{
+var migrations = [...]func(tx *sql.Tx) error{
 	func(tx *sql.Tx) (err error) {
 		sql := `
 			CREATE TABLE schema_version (
@@ -20,7 +20,7 @@ var migrations = []func(tx *sql.Tx) error{
 			);
 
 			CREATE TABLE users (
-				id serial not null,
+				id SERIAL,
 				username text not null unique,
 				password text,
 				is_admin bool default 'f',
@@ -32,7 +32,7 @@ var migrations = []func(tx *sql.Tx) error{
 			);
 
 			CREATE TABLE sessions (
-				id serial not null,
+				id SERIAL,
 				user_id int not null,
 				token text not null unique,
 				created_at timestamp with time zone default now(),
@@ -44,7 +44,7 @@ var migrations = []func(tx *sql.Tx) error{
 			);
 
 			CREATE TABLE categories (
-				id serial not null,
+				id SERIAL,
 				user_id int not null,
 				title text not null,
 				primary key (id),
@@ -53,7 +53,7 @@ var migrations = []func(tx *sql.Tx) error{
 			);
 
 			CREATE TABLE feeds (
-				id bigserial not null,
+				id BIGSERIAL,
 				user_id int not null,
 				category_id int not null,
 				title text not null,
@@ -73,7 +73,7 @@ var migrations = []func(tx *sql.Tx) error{
 			CREATE TYPE entry_status as enum('unread', 'read', 'removed');
 
 			CREATE TABLE entries (
-				id bigserial not null,
+				id BIGSERIAL,
 				user_id int not null,
 				feed_id bigint not null,
 				hash text not null,
@@ -92,7 +92,7 @@ var migrations = []func(tx *sql.Tx) error{
 			CREATE INDEX entries_feed_idx on entries using btree(feed_id);
 
 			CREATE TABLE enclosures (
-				id bigserial not null,
+				id BIGSERIAL,
 				user_id int not null,
 				entry_id bigint not null,
 				url text not null,
@@ -104,7 +104,7 @@ var migrations = []func(tx *sql.Tx) error{
 			);
 
 			CREATE TABLE icons (
-				id bigserial not null,
+				id BIGSERIAL,
 				hash text not null unique,
 				mime_type text not null,
 				content bytea not null,
@@ -123,13 +123,9 @@ var migrations = []func(tx *sql.Tx) error{
 		return err
 	},
 	func(tx *sql.Tx) (err error) {
-		sql := `
-			CREATE EXTENSION IF NOT EXISTS hstore;
-			ALTER TABLE users ADD COLUMN extra hstore;
-			CREATE INDEX users_extra_idx ON users using gin(extra);
-			`
-		_, err = tx.Exec(sql)
-		return err
+		// This used to create a HSTORE `extra` column in the table `users`,
+		// which hasn't been used since Miniflux 2.0.27.
+		return nil
 	},
 	func(tx *sql.Tx) (err error) {
 		sql := `
@@ -334,7 +330,7 @@ var migrations = []func(tx *sql.Tx) error{
 	func(tx *sql.Tx) (err error) {
 		sql := `
 			CREATE TABLE api_keys (
-				id serial not null,
+				id SERIAL,
 				user_id int not null references users(id) on delete cascade,
 				token text not null unique,
 				description text not null,
@@ -436,6 +432,18 @@ var migrations = []func(tx *sql.Tx) error{
 		return err
 	},
 	func(tx *sql.Tx) (err error) {
+
+		hasExtra := false
+		if err := tx.QueryRow(`
+			SELECT true 
+			FROM information_schema.columns
+			WHERE
+				table_name='users' AND
+				column_name='extra';
+			`).Scan(&hasExtra); err != nil && err != sql.ErrNoRows {
+			return err
+		}
+
 		_, err = tx.Exec(`
 			ALTER TABLE users
 				ADD column stylesheet text not null default '',
@@ -444,6 +452,11 @@ var migrations = []func(tx *sql.Tx) error{
 		`)
 		if err != nil {
 			return err
+		}
+
+		if !hasExtra {
+			// No need to migrate things from the `extra` column if it's not present
+			return nil
 		}
 
 		_, err = tx.Exec(`
@@ -495,7 +508,7 @@ var migrations = []func(tx *sql.Tx) error{
 		return err
 	},
 	func(tx *sql.Tx) (err error) {
-		if _, err = tx.Exec(`ALTER TABLE users DROP COLUMN extra;`); err != nil {
+		if _, err = tx.Exec(`ALTER TABLE users DROP COLUMN IF EXISTS extra;`); err != nil {
 			return err
 		}
 		_, err = tx.Exec(`
@@ -1131,6 +1144,238 @@ var migrations = []func(tx *sql.Tx) error{
 			ALTER TABLE feeds
 				ADD COLUMN block_filter_entry_rules text not null default '',
 				ADD COLUMN keep_filter_entry_rules text not null default ''
+		`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+			CREATE TYPE linktaco_link_visibility AS ENUM (
+				'PUBLIC',
+				'PRIVATE'
+  			);
+			ALTER TABLE integrations
+				ADD COLUMN linktaco_enabled bool default 'f',
+				ADD COLUMN linktaco_api_token text default '',
+				ADD COLUMN linktaco_org_slug text default '',
+				ADD COLUMN linktaco_tags text default '',
+				ADD COLUMN linktaco_visibility linktaco_link_visibility default 'PUBLIC';
+		`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+			ALTER TABLE integrations ADD COLUMN wallabag_tags text default '';
+		`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	// This migration replaces deprecated timezones by their equivalent on Debian Trixie.
+	func(tx *sql.Tx) (err error) {
+		var deprecatedTimeZoneMap = map[string]string{
+			// Africa
+			"Africa/Asmera": "Africa/Asmara",
+
+			// America - Argentina
+			"America/Argentina/ComodRivadavia": "America/Argentina/Catamarca",
+			"America/Buenos_Aires":             "America/Argentina/Buenos_Aires",
+			"America/Catamarca":                "America/Argentina/Catamarca",
+			"America/Cordoba":                  "America/Argentina/Cordoba",
+			"America/Jujuy":                    "America/Argentina/Jujuy",
+			"America/Mendoza":                  "America/Argentina/Mendoza",
+			"America/Rosario":                  "America/Argentina/Cordoba",
+
+			// America - US
+			"America/Fort_Wayne":   "America/Indiana/Indianapolis",
+			"America/Indianapolis": "America/Indiana/Indianapolis",
+			"America/Knox_IN":      "America/Indiana/Knox",
+			"America/Louisville":   "America/Kentucky/Louisville",
+
+			// America - Greenland
+			"America/Godthab": "America/Nuuk",
+
+			// Antarctica
+			"Antarctica/South_Pole": "Pacific/Auckland",
+
+			// Asia
+			"Asia/Ashkhabad":     "Asia/Ashgabat",
+			"Asia/Calcutta":      "Asia/Kolkata",
+			"Asia/Choibalsan":    "Asia/Ulaanbaatar",
+			"Asia/Chungking":     "Asia/Chongqing",
+			"Asia/Dacca":         "Asia/Dhaka",
+			"Asia/Katmandu":      "Asia/Kathmandu",
+			"Asia/Macao":         "Asia/Macau",
+			"Asia/Rangoon":       "Asia/Yangon",
+			"Asia/Saigon":        "Asia/Ho_Chi_Minh",
+			"Asia/Thimbu":        "Asia/Thimphu",
+			"Asia/Ujung_Pandang": "Asia/Makassar",
+			"Asia/Ulan_Bator":    "Asia/Ulaanbaatar",
+
+			// Atlantic
+			"Atlantic/Faeroe": "Atlantic/Faroe",
+
+			// Australia
+			"Australia/ACT":        "Australia/Sydney",
+			"Australia/LHI":        "Australia/Lord_Howe",
+			"Australia/North":      "Australia/Darwin",
+			"Australia/NSW":        "Australia/Sydney",
+			"Australia/Queensland": "Australia/Brisbane",
+			"Australia/South":      "Australia/Adelaide",
+			"Australia/Tasmania":   "Australia/Hobart",
+			"Australia/Victoria":   "Australia/Melbourne",
+			"Australia/West":       "Australia/Perth",
+
+			// Brazil
+			"Brazil/Acre":      "America/Rio_Branco",
+			"Brazil/DeNoronha": "America/Noronha",
+			"Brazil/East":      "America/Sao_Paulo",
+			"Brazil/West":      "America/Manaus",
+
+			// Canada
+			"Canada/Atlantic":     "America/Halifax",
+			"Canada/Central":      "America/Winnipeg",
+			"Canada/Eastern":      "America/Toronto",
+			"Canada/Mountain":     "America/Edmonton",
+			"Canada/Newfoundland": "America/St_Johns",
+			"Canada/Pacific":      "America/Vancouver",
+			"Canada/Saskatchewan": "America/Regina",
+			"Canada/Yukon":        "America/Whitehorse",
+
+			// Europe
+			"CET":               "Europe/Paris",
+			"EET":               "Europe/Sofia",
+			"Europe/Kiev":       "Europe/Kyiv",
+			"Europe/Uzhgorod":   "Europe/Kyiv",
+			"Europe/Zaporozhye": "Europe/Kyiv",
+			"MET":               "Europe/Paris",
+			"WET":               "Europe/Lisbon",
+
+			// Chile
+			"Chile/Continental":  "America/Santiago",
+			"Chile/EasterIsland": "Pacific/Easter",
+
+			// Fixed offset and generic zones
+			"CST6CDT": "America/Chicago",
+			"EST":     "America/New_York",
+			"EST5EDT": "America/New_York",
+			"HST":     "Pacific/Honolulu",
+			"MST":     "America/Denver",
+			"MST7MDT": "America/Denver",
+			"PST8PDT": "America/Los_Angeles",
+
+			// Countries/Regions
+			"Cuba":      "America/Havana",
+			"Egypt":     "Africa/Cairo",
+			"Eire":      "Europe/Dublin",
+			"GB":        "Europe/London",
+			"GB-Eire":   "Europe/London",
+			"Hongkong":  "Asia/Hong_Kong",
+			"Iceland":   "Atlantic/Reykjavik",
+			"Iran":      "Asia/Tehran",
+			"Israel":    "Asia/Jerusalem",
+			"Jamaica":   "America/Jamaica",
+			"Japan":     "Asia/Tokyo",
+			"Libya":     "Africa/Tripoli",
+			"Poland":    "Europe/Warsaw",
+			"Portugal":  "Europe/Lisbon",
+			"PRC":       "Asia/Shanghai",
+			"ROC":       "Asia/Taipei",
+			"ROK":       "Asia/Seoul",
+			"Singapore": "Asia/Singapore",
+			"Turkey":    "Europe/Istanbul",
+
+			// GMT variations
+			"GMT+0":     "GMT",
+			"GMT-0":     "GMT",
+			"GMT0":      "GMT",
+			"Greenwich": "GMT",
+			"UCT":       "UTC",
+			"Universal": "UTC",
+			"Zulu":      "UTC",
+
+			// Mexico
+			"Mexico/BajaNorte": "America/Tijuana",
+			"Mexico/BajaSur":   "America/Mazatlan",
+			"Mexico/General":   "America/Mexico_City",
+
+			// US zones
+			"Navajo":            "America/Denver",
+			"US/Alaska":         "America/Anchorage",
+			"US/Aleutian":       "America/Adak",
+			"US/Arizona":        "America/Phoenix",
+			"US/Central":        "America/Chicago",
+			"US/Eastern":        "America/New_York",
+			"US/East-Indiana":   "America/Indiana/Indianapolis",
+			"US/Hawaii":         "Pacific/Honolulu",
+			"US/Indiana-Starke": "America/Indiana/Knox",
+			"US/Michigan":       "America/Detroit",
+			"US/Mountain":       "America/Denver",
+			"US/Pacific":        "America/Los_Angeles",
+			"US/Samoa":          "Pacific/Pago_Pago",
+
+			// Pacific
+			"Kwajalein":         "Pacific/Kwajalein",
+			"NZ":                "Pacific/Auckland",
+			"NZ-CHAT":           "Pacific/Chatham",
+			"Pacific/Enderbury": "Pacific/Kanton",
+			"Pacific/Ponape":    "Pacific/Pohnpei",
+			"Pacific/Truk":      "Pacific/Chuuk",
+
+			// Special cases
+			"Factory": "UTC", // Factory is used for unconfigured systems
+			"W-SU":    "Europe/Moscow",
+		}
+
+		// Loop through each user and correct the timezone
+		rows, err := tx.Query(`SELECT id, timezone FROM users`)
+		if err != nil {
+			return err
+		}
+
+		userTimezoneMap := make(map[int64]string)
+		for rows.Next() {
+			var userID int64
+			var userTimezone string
+			if err := rows.Scan(&userID, &userTimezone); err != nil {
+				return err
+			}
+			userTimezoneMap[userID] = userTimezone
+		}
+		rows.Close()
+
+		for userID, userTimezone := range userTimezoneMap {
+			if newTimezone, found := deprecatedTimeZoneMap[userTimezone]; found {
+				if _, err := tx.Exec(`UPDATE users SET timezone = $1 WHERE id = $2`, newTimezone, userID); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+			ALTER TABLE integrations ADD COLUMN archiveorg_enabled bool default 'f'
+		`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `DROP EXTENSION IF EXISTS hstore;`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+			ALTER TABLE integrations ADD COLUMN karakeep_tags text default '';
+		`
+		_, err = tx.Exec(sql)
+		return err
+	},
+	func(tx *sql.Tx) (err error) {
+		sql := `
+			ALTER TABLE integrations ADD COLUMN linkwarden_collection_id int;
 		`
 		_, err = tx.Exec(sql)
 		return err

@@ -67,7 +67,7 @@ func TestRewriteWithNoMatchingRule(t *testing.T) {
 }
 
 func TestRewriteYoutubeVideoLink(t *testing.T) {
-	config.Opts = config.NewOptions()
+	config.Opts = config.NewConfigOptions()
 
 	controlEntry := &model.Entry{
 		URL:     "https://www.youtube.com/watch?v=1234",
@@ -87,7 +87,7 @@ func TestRewriteYoutubeVideoLink(t *testing.T) {
 }
 
 func TestRewriteYoutubeShortLink(t *testing.T) {
-	config.Opts = config.NewOptions()
+	config.Opts = config.NewConfigOptions()
 
 	controlEntry := &model.Entry{
 		URL:     "https://www.youtube.com/shorts/1LUWKWZkPjo",
@@ -107,7 +107,7 @@ func TestRewriteYoutubeShortLink(t *testing.T) {
 }
 
 func TestRewriteIncorrectYoutubeLink(t *testing.T) {
-	config.Opts = config.NewOptions()
+	config.Opts = config.NewConfigOptions()
 
 	controlEntry := &model.Entry{
 		URL:     "https://www.youtube.com/some-page",
@@ -131,9 +131,8 @@ func TestRewriteYoutubeLinkAndCustomEmbedURL(t *testing.T) {
 	os.Setenv("YOUTUBE_EMBED_URL_OVERRIDE", "https://invidious.custom/embed/")
 
 	var err error
-	parser := config.NewParser()
+	parser := config.NewConfigParser()
 	config.Opts, err = parser.ParseEnvironmentVariables()
-
 	if err != nil {
 		t.Fatalf(`Parsing failure: %v`, err)
 	}
@@ -156,7 +155,7 @@ func TestRewriteYoutubeLinkAndCustomEmbedURL(t *testing.T) {
 }
 
 func TestRewriteYoutubeVideoLinkUsingInvidious(t *testing.T) {
-	config.Opts = config.NewOptions()
+	config.Opts = config.NewConfigOptions()
 	controlEntry := &model.Entry{
 		URL:     "https://www.youtube.com/watch?v=1234",
 		Title:   `A title`,
@@ -176,7 +175,7 @@ func TestRewriteYoutubeVideoLinkUsingInvidious(t *testing.T) {
 }
 
 func TestRewriteYoutubeShortLinkUsingInvidious(t *testing.T) {
-	config.Opts = config.NewOptions()
+	config.Opts = config.NewConfigOptions()
 	controlEntry := &model.Entry{
 		URL:     "https://www.youtube.com/shorts/1LUWKWZkPjo",
 		Title:   `A title`,
@@ -192,6 +191,137 @@ func TestRewriteYoutubeShortLinkUsingInvidious(t *testing.T) {
 
 	if !reflect.DeepEqual(testEntry, controlEntry) {
 		t.Errorf(`Not expected output: got "%+v" instead of "%+v"`, testEntry, controlEntry)
+	}
+}
+
+func TestAddYoutubeVideoFromId(t *testing.T) {
+	config.Opts = config.NewConfigOptions()
+
+	scenarios := map[string]string{
+		// Test with single YouTube ID
+		`Some content with youtube ID <script type="text/javascript" data-reactid="6">window.__APOLLO_STATE__ = {youtube_id: "9uASADiYe_8"}</script>`: `<iframe width="650" height="350" frameborder="0" src="https://www.youtube-nocookie.com/embed/9uASADiYe_8" allowfullscreen></iframe><br>Some content with youtube ID <script type="text/javascript" data-reactid="6">window.__APOLLO_STATE__ = {youtube_id: "9uASADiYe_8"}</script>`,
+
+		// Test with multiple YouTube IDs
+		`Content with youtube_id: "dQw4w9WgXcQ" and youtube_id: "jNQXAC9IVRw"`: `<iframe width="650" height="350" frameborder="0" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe><br><iframe width="650" height="350" frameborder="0" src="https://www.youtube-nocookie.com/embed/jNQXAC9IVRw" allowfullscreen></iframe><br>Content with youtube_id: "dQw4w9WgXcQ" and youtube_id: "jNQXAC9IVRw"`,
+
+		// Test with YouTube ID using equals sign
+		`Some content with youtube_id = "dQw4w9WgXcQ"`: `<iframe width="650" height="350" frameborder="0" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe><br>Some content with youtube_id = "dQw4w9WgXcQ"`,
+
+		// Test with spaces around delimiters
+		`Some content with youtube_id : "dQw4w9WgXcQ"`: `<iframe width="650" height="350" frameborder="0" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe><br>Some content with youtube_id : "dQw4w9WgXcQ"`,
+
+		// Test with YouTube ID without quotes (regex requires quotes)
+		`Some content with youtube_id: dQw4w9WgXcQ and more`: `Some content with youtube_id: dQw4w9WgXcQ and more`,
+
+		// Test with no YouTube ID
+		`Some regular content without any video ID`: `Some regular content without any video ID`,
+
+		// Test with invalid YouTube ID (wrong length)
+		`Some content with youtube_id: "invalid"`: `Some content with youtube_id: "invalid"`,
+
+		// Test with empty content
+		``: ``,
+	}
+
+	for input, expected := range scenarios {
+		actual := addYoutubeVideoFromId(input)
+		if actual != expected {
+			t.Errorf(`addYoutubeVideoFromId test failed for input "%s"`, input)
+			t.Errorf(`Expected: "%s"`, expected)
+			t.Errorf(`Actual: "%s"`, actual)
+		}
+	}
+}
+
+func TestAddYoutubeVideoFromIdWithCustomEmbedURL(t *testing.T) {
+	os.Clearenv()
+	os.Setenv("YOUTUBE_EMBED_URL_OVERRIDE", "https://invidious.custom/embed/")
+
+	var err error
+	parser := config.NewConfigParser()
+	config.Opts, err = parser.ParseEnvironmentVariables()
+	if err != nil {
+		t.Fatalf(`Parsing failure: %v`, err)
+	}
+
+	input := `Some content with youtube_id: "dQw4w9WgXcQ"`
+	expected := `<iframe width="650" height="350" frameborder="0" src="https://invidious.custom/embed/dQw4w9WgXcQ" allowfullscreen></iframe><br>Some content with youtube_id: "dQw4w9WgXcQ"`
+
+	actual := addYoutubeVideoFromId(input)
+	if actual != expected {
+		t.Errorf(`addYoutubeVideoFromId with custom embed URL failed`)
+		t.Errorf(`Expected: "%s"`, expected)
+		t.Errorf(`Actual: "%s"`, actual)
+	}
+}
+
+func TestAddInvidiousVideo(t *testing.T) {
+	scenarios := map[string][]string{
+		// Test with various Invidious instances
+		"https://invidious.io/watch?v=dQw4w9WgXcQ": {
+			"Some video content",
+			`<iframe width="650" height="350" frameborder="0" src="https://invidious.io/embed/dQw4w9WgXcQ" allowfullscreen></iframe><br>Some video content`,
+		},
+		"https://yewtu.be/watch?v=jNQXAC9IVRw": {
+			"Another video description",
+			`<iframe width="650" height="350" frameborder="0" src="https://yewtu.be/embed/jNQXAC9IVRw" allowfullscreen></iframe><br>Another video description`,
+		},
+		"http://invidious.snopyta.org/watch?v=dQw4w9WgXcQ": {
+			"HTTP instance test",
+			`<iframe width="650" height="350" frameborder="0" src="https://invidious.snopyta.org/embed/dQw4w9WgXcQ" allowfullscreen></iframe><br>HTTP instance test`,
+		},
+		"https://youtube.com/watch?v=dQw4w9WgXcQ": {
+			"YouTube URL (also matches regex)",
+			`<iframe width="650" height="350" frameborder="0" src="https://youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe><br>YouTube URL (also matches regex)`,
+		},
+		"https://example.org/watch?v=dQw4w9WgXcQ": {
+			"Any domain with watch pattern",
+			`<iframe width="650" height="350" frameborder="0" src="https://example.org/embed/dQw4w9WgXcQ" allowfullscreen></iframe><br>Any domain with watch pattern`,
+		},
+
+		// Test with query parameters
+		"https://invidious.io/watch?v=dQw4w9WgXcQ&t=30s": {
+			"Video with timestamp",
+			`<iframe width="650" height="350" frameborder="0" src="https://invidious.io/embed/dQw4w9WgXcQ?t=30s" allowfullscreen></iframe><br>Video with timestamp`,
+		},
+
+		// Test with more complex query parameters
+		"https://invidious.io/watch?v=dQw4w9WgXcQ&t=30s&autoplay=1": {
+			"Video with multiple parameters",
+			`<iframe width="650" height="350" frameborder="0" src="https://invidious.io/embed/dQw4w9WgXcQ?autoplay=1&t=30s" allowfullscreen></iframe><br>Video with multiple parameters`,
+		},
+
+		// Test with non-matching URLs (should return content unchanged)
+		"https://invidious.io/": {
+			"Invidious homepage",
+			"Invidious homepage",
+		},
+		"https://invidious.io/some-other-page": {
+			"Other page",
+			"Other page",
+		},
+		"https://invidious.io/search?q=test": {
+			"Search page",
+			"Search page",
+		},
+
+		// Test with empty content
+		"https://empty.invidious.io/watch?v=dQw4w9WgXcQ": {
+			"",
+			`<iframe width="650" height="350" frameborder="0" src="https://empty.invidious.io/embed/dQw4w9WgXcQ" allowfullscreen></iframe><br>`,
+		},
+	}
+
+	for entryURL, testData := range scenarios {
+		entryContent := testData[0]
+		expected := testData[1]
+
+		actual := addInvidiousVideo(entryURL, entryContent)
+		if actual != expected {
+			t.Errorf(`addInvidiousVideo test failed for URL "%s" and content "%s"`, entryURL, entryContent)
+			t.Errorf(`Expected: "%s"`, expected)
+			t.Errorf(`Actual: "%s"`, actual)
+		}
 	}
 }
 
@@ -666,6 +796,24 @@ func TestRewriteRemoveCustom(t *testing.T) {
 	}
 }
 
+func TestRewriteRemoveQuotedSelector(t *testing.T) {
+	controlEntry := &model.Entry{
+		URL:     "https://example.org/article",
+		Title:   `A title`,
+		Content: `<div>Lorem Ipsum</div>`,
+	}
+	testEntry := &model.Entry{
+		URL:     "https://example.org/article",
+		Title:   `A title`,
+		Content: `<div>Lorem Ipsum<img alt="LINUX KERNEL" src="/assets/categories/linuxkernel.webp" width="100" height="100"></div>`,
+	}
+	ApplyContentRewriteRules(testEntry, `remove("img[src^='/assets/categories/']")`)
+
+	if !reflect.DeepEqual(testEntry, controlEntry) {
+		t.Errorf(`Not expected output: got "%+v" instead of "%+v"`, testEntry, controlEntry)
+	}
+}
+
 func TestRewriteAddCastopodEpisode(t *testing.T) {
 	controlEntry := &model.Entry{
 		URL:     "https://podcast.demo/@demo/episodes/test",
@@ -1094,6 +1242,161 @@ func TestFixGhostCardMultipleSplit(t *testing.T) {
 		<a href="https://example.org/article2">Example Article 2 - Example</a>`,
 	}
 	ApplyContentRewriteRules(testEntry, `fix_ghost_cards`)
+
+	if !reflect.DeepEqual(testEntry, controlEntry) {
+		t.Errorf(`Not expected output: got "%+v" instead of "%+v"`, testEntry, controlEntry)
+	}
+}
+
+func TestStripImageQueryParams(t *testing.T) {
+	testEntry := &model.Entry{
+		URL:   "https://example.org/article",
+		Title: `News Article Title`,
+		Content: `
+		<article>
+			<p>Article content with images having query parameters:</p>
+			<img src="https://example.org/images/image1.jpg?width=200&height=113&q=80&blur=90" alt="Image with params">
+			<img src="https://example.org/images/image2.jpg?width=800&height=600&q=85" alt="Another image with params">
+
+			<p>More images with various query parameters:</p>
+			<img src="https://example.org/image123.jpg?blur=50&size=small&format=webp" alt="Complex query params">
+			<img src="https://example.org/image123.jpg?size=large&quality=95&cache=123" alt="Different params">
+
+			<p>Image without query parameters:</p>
+			<img src="https://example.org/single-image.jpg" alt="Clean image">
+
+			<p>Images with various other params:</p>
+			<img src="https://example.org/normal1.jpg?width=300&format=jpg" alt="Normal 1">
+			<img src="https://example.org/normal1.jpg?width=600&quality=high" alt="Normal 2">
+		</article>`,
+	}
+
+	controlEntry := &model.Entry{
+		URL:   "https://example.org/article",
+		Title: `News Article Title`,
+		Content: `<article>
+			<p>Article content with images having query parameters:</p>
+			<img src="https://example.org/images/image1.jpg" alt="Image with params"/>
+			<img src="https://example.org/images/image2.jpg?width=800&amp;height=600&amp;q=85" alt="Another image with params"/>
+
+			<p>More images with various query parameters:</p>
+			<img src="https://example.org/image123.jpg" alt="Complex query params"/>
+			<img src="https://example.org/image123.jpg?size=large&amp;quality=95&amp;cache=123" alt="Different params"/>
+
+			<p>Image without query parameters:</p>
+			<img src="https://example.org/single-image.jpg" alt="Clean image"/>
+
+			<p>Images with various other params:</p>
+			<img src="https://example.org/normal1.jpg?width=300&amp;format=jpg" alt="Normal 1"/>
+			<img src="https://example.org/normal1.jpg?width=600&amp;quality=high" alt="Normal 2"/>
+		</article>`,
+	}
+	ApplyContentRewriteRules(testEntry, `remove_img_blur_params`)
+
+	if !reflect.DeepEqual(testEntry, controlEntry) {
+		t.Errorf(`Not expected output: got "%+v" instead of "%+v"`, testEntry, controlEntry)
+	}
+}
+
+func TestStripImageQueryParamsNoChanges(t *testing.T) {
+	testEntry := &model.Entry{
+		URL:   "https://example.org/article",
+		Title: `Article Without Images`,
+		Content: `<p>No images here:</p>
+		<div>Just some text content</div>
+		<a href="https://example.org">A link</a>`,
+	}
+
+	controlEntry := &model.Entry{
+		URL:   "https://example.org/article",
+		Title: `Article Without Images`,
+		Content: `<p>No images here:</p>
+		<div>Just some text content</div>
+		<a href="https://example.org">A link</a>`,
+	}
+	ApplyContentRewriteRules(testEntry, `remove_img_blur_params`)
+
+	if !reflect.DeepEqual(testEntry, controlEntry) {
+		t.Errorf(`Not expected output: got "%+v" instead of "%+v"`, testEntry, controlEntry)
+	}
+}
+
+func TestStripImageQueryParamsEdgeCases(t *testing.T) {
+	testEntry := &model.Entry{
+		URL:   "https://example.org/article",
+		Title: `Edge Cases`,
+		Content: `
+		<p>Edge cases for image query parameter stripping:</p>
+
+		<!-- Various query parameters -->
+		<img src="https://example.org/image1.jpg?blur=80&width=300" alt="Multiple params">
+
+		<!-- Complex query parameters -->
+		<img src="https://example.org/image2.jpg?BLUR=60&format=webp&cache=123" alt="Complex params">
+		<img src="https://example.org/image3.jpg?quality=high&version=2" alt="Other params">
+
+		<!-- Query params in middle of string -->
+		<img src="https://example.org/image4.jpg?size=large&blur=30&format=webp&quality=90" alt="Middle params">
+
+		<!-- Image without query params -->
+		<img src="https://example.org/clean.jpg" alt="Clean image">
+		`,
+	}
+
+	controlEntry := &model.Entry{
+		URL:   "https://example.org/article",
+		Title: `Edge Cases`,
+		Content: `<p>Edge cases for image query parameter stripping:</p>
+
+		<!-- Various query parameters -->
+		<img src="https://example.org/image1.jpg" alt="Multiple params"/>
+
+		<!-- Complex query parameters -->
+		<img src="https://example.org/image2.jpg?BLUR=60&amp;format=webp&amp;cache=123" alt="Complex params"/>
+		<img src="https://example.org/image3.jpg?quality=high&amp;version=2" alt="Other params"/>
+
+		<!-- Query params in middle of string -->
+		<img src="https://example.org/image4.jpg" alt="Middle params"/>
+
+		<!-- Image without query params -->
+		<img src="https://example.org/clean.jpg" alt="Clean image"/>
+		`,
+	}
+	ApplyContentRewriteRules(testEntry, `remove_img_blur_params`)
+
+	if !reflect.DeepEqual(testEntry, controlEntry) {
+		t.Errorf(`Not expected output: got "%+v" instead of "%+v"`, testEntry, controlEntry)
+	}
+}
+
+func TestStripImageQueryParamsSimple(t *testing.T) {
+	testEntry := &model.Entry{
+		URL:   "https://example.org/article",
+		Title: `Simple Test`,
+		Content: `
+		<p>Testing query parameter stripping:</p>
+
+		<!-- Images with various query parameters -->
+		<img src="https://example.org/test1.jpg?blur=0&width=300" alt="With blur zero">
+		<img src="https://example.org/test2.jpg?blur=50&width=300&format=webp" alt="With blur fifty">
+		<img src="https://example.org/test3.jpg?width=800&quality=high" alt="No blur param">
+		<img src="https://example.org/test4.jpg" alt="No params at all">
+		`,
+	}
+
+	controlEntry := &model.Entry{
+		URL:   "https://example.org/article",
+		Title: `Simple Test`,
+		Content: `<p>Testing query parameter stripping:</p>
+
+		<!-- Images with various query parameters -->
+		<img src="https://example.org/test1.jpg?blur=0&amp;width=300" alt="With blur zero"/>
+		<img src="https://example.org/test2.jpg" alt="With blur fifty"/>
+		<img src="https://example.org/test3.jpg?width=800&amp;quality=high" alt="No blur param"/>
+		<img src="https://example.org/test4.jpg" alt="No params at all"/>
+		`,
+	}
+	ApplyContentRewriteRules(testEntry, `remove_img_blur_params`)
 
 	if !reflect.DeepEqual(testEntry, controlEntry) {
 		t.Errorf(`Not expected output: got "%+v" instead of "%+v"`, testEntry, controlEntry)

@@ -5,6 +5,8 @@ package rewrite // import "miniflux.app/v2/internal/reader/rewrite"
 
 // List of predefined rewrite rules (alphabetically sorted)
 // domain => rule name
+//
+// See https://miniflux.app/docs/rules.html#rewrite-rules
 var predefinedRules = map[string]string{
 	"abstrusegoose.com":      "add_image_title",
 	"amazingsuperpowers.com": "add_image_title",
@@ -12,6 +14,7 @@ var predefinedRules = map[string]string{
 	"cowbirdsinlove.com":     "add_image_title",
 	"drawingboardcomic.com":  "add_image_title",
 	"exocomics.com":          "add_image_title",
+	"explainxkcd.com":        "add_image_title",
 	"framatube.org":          "nl2br,convert_text_link",
 	"happletea.com":          "add_image_title",
 	"ilpost.it":              `remove(".art_tag, #audioPlayerArticle, .author-container, .caption, .ilpostShare, .lastRecents, #mc_embed_signup, .outbrain_inread, p:has(.leggi-anche), .youtube-overlay")`,
@@ -25,6 +28,7 @@ var predefinedRules = map[string]string{
 	"oglaf.com":              `replace("media.oglaf.com/story/tt(.+).gif"|"media.oglaf.com/comic/$1.jpg"),add_image_title`,
 	"optipess.com":           "add_image_title",
 	"peebleslab.com":         "add_image_title",
+	"phoronix.com":           `remove("img[src^='/assets/categories/']")`,
 	"quantamagazine.org":     `add_youtube_video_from_id, remove("h6:not(.byline,.post__title__kicker), #comments, .next-post__content, .footer__section, figure .outer--content, script")`,
 	"qwantz.com":             "add_image_title,add_mailto_subject",
 	"sentfromthemoon.com":    "add_image_title",

@@ -187,16 +187,6 @@ function throttle(fn, delay, atleast) {
     }
 }
 
-function initializeForkKeyboardShortcuts() {
-    if (document.querySelector("body[data-disable-keyboard-shortcuts=true]")) return;
-
-    const keyboardHandler = new KeyboardHandler();
-
-    keyboardHandler.on("N", () => handleNSFW());
-
-    keyboardHandler.listen();
-}
-
 function initializeForkClickHandlers() {
     // Entry actions
     onClick(":is(a, button)[data-mark-above-read]", (event) => setEntriesAboveStatusRead(event.target));
@@ -229,7 +219,6 @@ function initializeForkClickHandlers() {
 
 }
 
-initializeForkKeyboardShortcuts();
 initializeForkClickHandlers();
 document.addEventListener("DOMContentLoaded", () => {
     initMasonryLayout();

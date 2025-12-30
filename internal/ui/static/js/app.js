@@ -1185,6 +1185,7 @@ function initializeKeyboardShortcuts() {
     keyboardHandler.on("z t", scrollToCurrentItemAction);
 
     // Item actions
+    keyboardHandler.on("N", () => handleNSFW());
     keyboardHandler.on("o", openSelectedItemAction);
     keyboardHandler.on("Enter", () => openSelectedItemAction());
     keyboardHandler.on("v", () => openOriginalLinkAction(false));

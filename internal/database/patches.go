@@ -17,7 +17,7 @@ func patch(db *sql.DB) error {
 			url text not null,
 			url_hash text not null unique,
 			mime_type text not null default '',
-			content bytea not null default null,
+			content bytea,
 			size int8 not null default 0,
 			cached bool not null default 'f',
 			error_count int not null default 0,

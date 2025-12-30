@@ -80,7 +80,7 @@ function setEntryStatusRead(element) {
 
 function setEntriesAboveStatusRead(element) {
     let currentItem = findEntry(element);
-    let items = DomHelper.getVisibleElements(".items .item");
+    let items = getVisibleElements(".items .item");
     if (!currentItem || items.length === 0) {
         return;
     }

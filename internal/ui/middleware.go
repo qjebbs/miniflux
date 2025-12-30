@@ -40,13 +40,13 @@ func (m *middleware) handleUserSession(next http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 			} else {
 				slog.Debug("Redirecting to login page because no user session has been found",
-					slog.Any("url", r.RequestURI),
+					slog.String("url", r.RequestURI),
 				)
 				html.Redirect(w, r, route.Path(m.router, "login"))
 			}
 		} else {
 			slog.Debug("User session found",
-				slog.Any("url", r.RequestURI),
+				slog.String("url", r.RequestURI),
 				slog.Int64("user_id", session.UserID),
 				slog.Int64("user_session_id", session.ID),
 			)
@@ -63,6 +63,13 @@ func (m *middleware) handleUserSession(next http.Handler) http.Handler {
 
 func (m *middleware) handleAppSession(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if mux.CurrentRoute(r).GetName() == "feedIcon" {
+			// Skip app session handling for the feed icon route to avoid unnecessary session creation
+			// when fetching feed icons.
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		var err error
 		session := m.getAppSessionValueFromCookie(r)
 
@@ -95,7 +102,7 @@ func (m *middleware) handleAppSession(next http.Handler) http.Handler {
 
 			if !crypto.ConstantTimeCmp(session.Data.CSRF, formValue) && !crypto.ConstantTimeCmp(session.Data.CSRF, headerValue) {
 				slog.Warn("Invalid or missing CSRF token",
-					slog.Any("url", r.RequestURI),
+					slog.String("url", r.RequestURI),
 					slog.String("form_csrf", formValue),
 					slog.String("header_csrf", headerValue),
 				)
@@ -119,7 +126,6 @@ func (m *middleware) handleAppSession(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, request.FlashErrorMessageContextKey, session.Data.FlashErrorMessage)
 		ctx = context.WithValue(ctx, request.UserLanguageContextKey, session.Data.Language)
 		ctx = context.WithValue(ctx, request.UserThemeContextKey, session.Data.Theme)
-		ctx = context.WithValue(ctx, request.PocketRequestTokenContextKey, session.Data.PocketRequestToken)
 		ctx = context.WithValue(ctx, request.NSFWContextKey, session.Data.NSFW)
 		ctx = context.WithValue(ctx, request.LastForceRefreshContextKey, session.Data.LastForceRefresh)
 		ctx = context.WithValue(ctx, request.WebAuthnDataContextKey, session.Data.WebAuthnSessionData)
@@ -136,7 +142,7 @@ func (m *middleware) getAppSessionValueFromCookie(r *http.Request) *model.Sessio
 	session, err := m.store.AppSession(cookieValue)
 	if err != nil {
 		slog.Debug("Unable to fetch app session from the database; another session will be created",
-			slog.Any("cookie_value", cookieValue),
+			slog.String("cookie_value", cookieValue),
 			slog.Any("error", err),
 		)
 		return nil
@@ -155,6 +161,7 @@ func (m *middleware) isPublicRoute(r *http.Request) bool {
 		"oauth2Redirect",
 		"oauth2Callback",
 		"appIcon",
+		"feedIcon",
 		"favicon",
 		"webManifest",
 		"robots",
@@ -179,7 +186,7 @@ func (m *middleware) getUserSessionFromCookie(r *http.Request) *model.UserSessio
 	session, err := m.store.UserSessionByToken(cookieValue)
 	if err != nil {
 		slog.Error("Unable to fetch user session from the database",
-			slog.Any("cookie_value", cookieValue),
+			slog.String("cookie_value", cookieValue),
 			slog.Any("error", err),
 		)
 		return nil

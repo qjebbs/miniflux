@@ -6,6 +6,7 @@ package storage // import "miniflux.app/v2/internal/storage"
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"miniflux.app/v2/internal/model"
@@ -40,9 +41,9 @@ func NewFeedQueryBuilder(store *Storage, userID int64) *FeedQueryBuilder {
 // WithCategoryID filter by category ID.
 func (f *FeedQueryBuilder) WithCategoryID(categoryID int64) *FeedQueryBuilder {
 	if categoryID > 0 {
-		f.conditions = append(f.conditions, fmt.Sprintf("f.category_id = $%d", len(f.args)+1))
+		f.conditions = append(f.conditions, "f.category_id = $"+strconv.Itoa(len(f.args)+1))
 		f.args = append(f.args, categoryID)
-		f.counterConditions = append(f.counterConditions, fmt.Sprintf("f.category_id = $%d", len(f.counterArgs)+1))
+		f.counterConditions = append(f.counterConditions, "f.category_id = $"+strconv.Itoa(len(f.counterArgs)+1))
 		f.counterArgs = append(f.counterArgs, categoryID)
 		f.counterJoinFeeds = true
 	}
@@ -52,7 +53,7 @@ func (f *FeedQueryBuilder) WithCategoryID(categoryID int64) *FeedQueryBuilder {
 // WithFeedID filter by feed ID.
 func (f *FeedQueryBuilder) WithFeedID(feedID int64) *FeedQueryBuilder {
 	if feedID > 0 {
-		f.conditions = append(f.conditions, fmt.Sprintf("f.id = $%d", len(f.args)+1))
+		f.conditions = append(f.conditions, "f.id = $"+strconv.Itoa(len(f.args)+1))
 		f.args = append(f.args, feedID)
 	}
 	return f
@@ -151,9 +152,11 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			f.parsing_error_msg,
 			f.scraper_rules,
 			f.rewrite_rules,
+			f.url_rewrite_rules,
 			f.blocklist_rules,
 			f.keeplist_rules,
-			f.url_rewrite_rules,
+			f.block_filter_entry_rules,
+			f.keep_filter_entry_rules,
 			f.crawler,
 			f.user_agent,
 			f.cookie,
@@ -171,20 +174,25 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			f.category_id,
 			c.title as category_title,
 			fi.icon_id,
+			i.external_id,
 			u.timezone,
 			f.apprise_service_urls,
 			f.webhook_url,
 			f.disable_http2,
 			f.ntfy_enabled,
 			f.ntfy_priority,
+			f.ntfy_topic,
 			f.pushover_enabled,
-			f.pushover_priority
+			f.pushover_priority,
+			f.proxy_url
 		FROM
 			feeds f
 		LEFT JOIN
 			categories c ON c.id=f.category_id
 		LEFT JOIN
 			feed_icons fi ON fi.feed_id=f.id
+		LEFT JOIN
+			icons i ON i.id=fi.icon_id
 		LEFT JOIN
 			users u ON u.id=f.user_id
 		WHERE %s
@@ -208,6 +216,7 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 	for rows.Next() {
 		var feed model.Feed
 		var iconID sql.NullInt64
+		var externalIconID sql.NullString
 		var tz string
 		feed.Category = &model.Category{}
 
@@ -226,9 +235,11 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			&feed.ParsingErrorMsg,
 			&feed.ScraperRules,
 			&feed.RewriteRules,
+			&feed.UrlRewriteRules,
 			&feed.BlocklistRules,
 			&feed.KeeplistRules,
-			&feed.UrlRewriteRules,
+			&feed.BlockFilterEntryRules,
+			&feed.KeepFilterEntryRules,
 			&feed.Crawler,
 			&feed.UserAgent,
 			&feed.Cookie,
@@ -246,24 +257,27 @@ func (f *FeedQueryBuilder) GetFeeds() (model.Feeds, error) {
 			&feed.Category.ID,
 			&feed.Category.Title,
 			&iconID,
+			&externalIconID,
 			&tz,
 			&feed.AppriseServiceURLs,
 			&feed.WebhookURL,
 			&feed.DisableHTTP2,
 			&feed.NtfyEnabled,
 			&feed.NtfyPriority,
+			&feed.NtfyTopic,
 			&feed.PushoverEnabled,
 			&feed.PushoverPriority,
+			&feed.ProxyURL,
 		)
 
 		if err != nil {
 			return nil, fmt.Errorf(`store: unable to fetch feeds row: %w`, err)
 		}
 
-		if iconID.Valid {
-			feed.Icon = &model.FeedIcon{FeedID: feed.ID, IconID: iconID.Int64}
+		if iconID.Valid && externalIconID.Valid {
+			feed.Icon = &model.FeedIcon{FeedID: feed.ID, IconID: iconID.Int64, ExternalIconID: externalIconID.String}
 		} else {
-			feed.Icon = &model.FeedIcon{FeedID: feed.ID, IconID: 0}
+			feed.Icon = &model.FeedIcon{FeedID: feed.ID, IconID: 0, ExternalIconID: ""}
 		}
 
 		if readCounters != nil {
@@ -326,9 +340,10 @@ func (f *FeedQueryBuilder) fetchFeedCounter() (unreadCounters map[int64]int, rea
 			return nil, nil, fmt.Errorf(`store: unable to fetch feed counter row: %w`, err)
 		}
 
-		if status == model.EntryStatusRead {
+		switch status {
+		case model.EntryStatusRead:
 			readCounters[feedID] = count
-		} else if status == model.EntryStatusUnread {
+		case model.EntryStatusUnread:
 			unreadCounters[feedID] = count
 		}
 	}

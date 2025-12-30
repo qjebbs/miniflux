@@ -192,7 +192,7 @@ func (s *Storage) CategoriesWithFeedCount(userID int64, nsfw bool) (model.Catego
 }
 
 // CreateCategory creates a new category.
-func (s *Storage) CreateCategory(userID int64, request *model.CategoryRequest) (*model.Category, error) {
+func (s *Storage) CreateCategory(userID int64, request *model.CategoryCreationRequest) (*model.Category, error) {
 	var category model.Category
 
 	query := `
@@ -218,7 +218,7 @@ func (s *Storage) CreateCategory(userID int64, request *model.CategoryRequest) (
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf(`store: unable to create category %q: %v`, request.Title, err)
+		return nil, fmt.Errorf(`store: unable to create category %q for user ID %d: %v`, request.Title, userID, err)
 	}
 
 	return &category, nil

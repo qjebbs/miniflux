@@ -46,7 +46,7 @@ class TouchHandler {
             return element;
         }
 
-        return DomHelper.findParent(element, this.className);
+        return findParent(element, this.className);
     }
 
     onTouchStart(event) {

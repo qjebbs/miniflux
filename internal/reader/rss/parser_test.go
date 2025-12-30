@@ -67,6 +67,10 @@ func TestParseRss2Sample(t *testing.T) {
 		t.Errorf("Incorrect title, got: %s", feed.Title)
 	}
 
+	if feed.Description != "Liftoff to Space Exploration." {
+		t.Errorf("Incorrect description, got: %s", feed.Description)
+	}
+
 	if feed.FeedURL != "http://liftoff.msfc.nasa.gov/rss.xml" {
 		t.Errorf("Incorrect feed URL, got: %s", feed.FeedURL)
 	}
@@ -235,6 +239,14 @@ func TestParseEntryWithoutTitleAndDescription(t *testing.T) {
 	feed, err := Parse("https://example.org/", bytes.NewReader([]byte(data)))
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if feed.Description != "" {
+		t.Errorf("Expected empty feed description, got: %s", feed.Description)
+	}
+
+	if len(feed.Entries) != 1 {
+		t.Errorf("Expected 1 entry, got: %d", len(feed.Entries))
 	}
 
 	if feed.Entries[0].Title != "https://example.org/item" {
@@ -617,6 +629,34 @@ func TestParseEntryWithMultipleAtomLinks(t *testing.T) {
 
 	if feed.Entries[0].URL != "https://example.org/b" {
 		t.Errorf("Incorrect entry link, got: %s", feed.Entries[0].URL)
+	}
+}
+
+func TestParseEntryWithoutLinkAndWithEnclosureURLs(t *testing.T) {
+	data := `<?xml version="1.0" encoding="utf-8"?>
+		<rss version="2.0">
+		<channel>
+			<link>https://example.org/feed</link>
+			<item>
+				<guid isPermaLink="false">guid</guid>
+				<enclosure url=" " length="155844084" type="audio/mpeg" />
+				<enclosure url="https://audio-file" length="155844084" type="audio/mpeg" />
+				<enclosure url="https://another-audio-file" length="155844084" type="audio/mpeg" />
+			</item>
+		</channel>
+		</rss>`
+
+	feed, err := Parse("https://example.org/", bytes.NewReader([]byte(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(feed.Entries) != 1 {
+		t.Fatalf("Expected 1 entry, got: %d", len(feed.Entries))
+	}
+
+	if feed.Entries[0].URL != "https://audio-file" {
+		t.Errorf("Incorrect entry link, got: %q", feed.Entries[0].URL)
 	}
 }
 
@@ -1959,6 +1999,9 @@ func TestParseEntryWithCategories(t *testing.T) {
 				<link>https://example.org/item</link>
 				<category>Category 1</category>
 				<category><![CDATA[Category 2]]></category>
+				<category>Category 2</category>
+				<category>Category 0</category>
+				<category>   </category>
 			</item>
 		</channel>
 		</rss>`
@@ -1968,11 +2011,11 @@ func TestParseEntryWithCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(feed.Entries[0].Tags) != 2 {
+	if len(feed.Entries[0].Tags) != 3 {
 		t.Fatalf("Incorrect number of tags, got: %d", len(feed.Entries[0].Tags))
 	}
 
-	expected := []string{"Category 1", "Category 2"}
+	expected := []string{"Category 0", "Category 1", "Category 2"}
 	result := feed.Entries[0].Tags
 
 	for i, tag := range result {
@@ -2010,7 +2053,7 @@ func TestParseFeedWithItunesCategories(t *testing.T) {
 		t.Errorf("Incorrect number of tags, got: %d", len(feed.Entries[0].Tags))
 	}
 
-	expected := []string{"Society & Culture", "Documentary", "Health", "Mental Health"}
+	expected := []string{"Documentary", "Health", "Mental Health", "Society & Culture"}
 	result := feed.Entries[0].Tags
 
 	for i, tag := range result {
@@ -2079,12 +2122,12 @@ func TestParseEntryWithMediaCategories(t *testing.T) {
 		t.Errorf("Incorrect number of tags, got: %d", len(feed.Entries[0].Tags))
 	}
 
-	expected := []string{"Visual Art", "Ace Ventura - Pet Detective"}
+	expected := []string{"Ace Ventura - Pet Detective", "Visual Art"}
 	result := feed.Entries[0].Tags
 
 	for i, tag := range result {
 		if tag != expected[i] {
-			t.Errorf("Incorrect tag, got: %q", tag)
+			t.Errorf("Incorrect entry tag, got %q instead of %q", tag, expected[i])
 		}
 	}
 }

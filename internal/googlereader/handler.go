@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"miniflux.app/v2/internal/config"
@@ -20,6 +19,7 @@ import (
 	"miniflux.app/v2/internal/integration"
 	"miniflux.app/v2/internal/mediaproxy"
 	"miniflux.app/v2/internal/model"
+	"miniflux.app/v2/internal/proxyrotator"
 	"miniflux.app/v2/internal/reader/fetcher"
 	mff "miniflux.app/v2/internal/reader/handler"
 	mfs "miniflux.app/v2/internal/reader/subscription"
@@ -34,177 +34,11 @@ type handler struct {
 	router *mux.Router
 }
 
-const (
-	// StreamPrefix is the prefix for astreams (read/starred/reading list and so on)
-	StreamPrefix = "user/-/state/com.google/"
-	// UserStreamPrefix is the user specific prefix for streams (read/starred/reading list and so on)
-	UserStreamPrefix = "user/%d/state/com.google/"
-	// LabelPrefix is the prefix for a label stream
-	LabelPrefix = "user/-/label/"
-	// UserLabelPrefix is the user specific prefix prefix for a label stream
-	UserLabelPrefix = "user/%d/label/"
-	// FeedPrefix is the prefix for a feed stream
-	FeedPrefix = "feed/"
-	// Read is the suffix for read stream
-	Read = "read"
-	// Starred is the suffix for starred stream
-	Starred = "starred"
-	// ReadingList is the suffix for reading list stream
-	ReadingList = "reading-list"
-	// KeptUnread is the suffix for kept unread stream
-	KeptUnread = "kept-unread"
-	// Broadcast is the suffix for broadcast stream
-	Broadcast = "broadcast"
-	// BroadcastFriends is the suffix for broadcast friends stream
-	BroadcastFriends = "broadcast-friends"
-	// Like is the suffix for like stream
-	Like = "like"
-	// EntryIDLong is the long entry id representation
-	EntryIDLong = "tag:google.com,2005:reader/item/%016x"
+var (
+	errEmptyFeedTitle   = errors.New("googlereader: empty feed title")
+	errFeedNotFound     = errors.New("googlereader: feed not found")
+	errCategoryNotFound = errors.New("googlereader: category not found")
 )
-
-const (
-	// ParamItemIDs - name of the parameter with the item ids
-	ParamItemIDs = "i"
-	// ParamStreamID - name of the parameter containing the stream to be included
-	ParamStreamID = "s"
-	// ParamStreamExcludes - name of the parameter containing streams to be excluded
-	ParamStreamExcludes = "xt"
-	// ParamStreamFilters - name of the parameter containing streams to be included
-	ParamStreamFilters = "it"
-	// ParamStreamMaxItems - name of the parameter containing number of items per page/max items returned
-	ParamStreamMaxItems = "n"
-	// ParamStreamOrder - name of the parameter containing the sort criteria
-	ParamStreamOrder = "r"
-	// ParamStreamStartTime - name of the parameter containing epoch timestamp, filtering items older than
-	ParamStreamStartTime = "ot"
-	// ParamStreamStopTime - name of the parameter containing epoch timestamp, filtering items newer than
-	ParamStreamStopTime = "nt"
-	// ParamTagsRemove - name of the parameter containing tags (streams) to be removed
-	ParamTagsRemove = "r"
-	// ParamTagsAdd - name of the parameter containing tags (streams) to be added
-	ParamTagsAdd = "a"
-	// ParamSubscribeAction - name of the parameter indicating the action to take for subscription/edit
-	ParamSubscribeAction = "ac"
-	// ParamTitle - name of the parameter for the title of the subscription
-	ParamTitle = "t"
-	// ParamQuickAdd - name of the parameter for a URL being quick subscribed to
-	ParamQuickAdd = "quickadd"
-	// ParamDestination - name of the parameter for the new name of a tag
-	ParamDestination = "dest"
-	// ParamContinuation -  name of the parameter for callers to pass to receive the next page of results
-	ParamContinuation = "c"
-)
-
-// StreamType represents the possible stream types
-type StreamType int
-
-const (
-	// NoStream - no stream type
-	NoStream StreamType = iota
-	// ReadStream - read stream type
-	ReadStream
-	// StarredStream - starred stream type
-	StarredStream
-	// ReadingListStream - reading list stream type
-	ReadingListStream
-	// KeptUnreadStream - kept unread stream type
-	KeptUnreadStream
-	// BroadcastStream - broadcast stream type
-	BroadcastStream
-	// BroadcastFriendsStream - broadcast friends stream type
-	BroadcastFriendsStream
-	// LabelStream - label stream type
-	LabelStream
-	// FeedStream - feed stream type
-	FeedStream
-	// LikeStream - like stream type
-	LikeStream
-)
-
-// Stream defines a stream type and its ID.
-type Stream struct {
-	Type StreamType
-	ID   string
-}
-
-func (s Stream) String() string {
-	return fmt.Sprintf("%v - '%s'", s.Type, s.ID)
-}
-
-func (st StreamType) String() string {
-	switch st {
-	case NoStream:
-		return "NoStream"
-	case ReadStream:
-		return "ReadStream"
-	case StarredStream:
-		return "StarredStream"
-	case ReadingListStream:
-		return "ReadingListStream"
-	case KeptUnreadStream:
-		return "KeptUnreadStream"
-	case BroadcastStream:
-		return "BroadcastStream"
-	case BroadcastFriendsStream:
-		return "BroadcastFriendsStream"
-	case LabelStream:
-		return "LabelStream"
-	case FeedStream:
-		return "FeedStream"
-	case LikeStream:
-		return "LikeStream"
-	default:
-		return st.String()
-	}
-}
-
-// RequestModifiers are the parsed request parameters.
-type RequestModifiers struct {
-	ExcludeTargets    []Stream
-	FilterTargets     []Stream
-	Streams           []Stream
-	Count             int
-	Offset            int
-	SortDirection     string
-	StartTime         int64
-	StopTime          int64
-	ContinuationToken string
-	UserID            int64
-}
-
-func (r RequestModifiers) String() string {
-	var results []string
-
-	results = append(results, fmt.Sprintf("UserID: %d", r.UserID))
-
-	var streamStr []string
-	for _, s := range r.Streams {
-		streamStr = append(streamStr, s.String())
-	}
-	results = append(results, fmt.Sprintf("Streams: [%s]", strings.Join(streamStr, ", ")))
-
-	var exclusions []string
-	for _, s := range r.ExcludeTargets {
-		exclusions = append(exclusions, s.String())
-	}
-	results = append(results, fmt.Sprintf("Exclusions: [%s]", strings.Join(exclusions, ", ")))
-
-	var filters []string
-	for _, s := range r.FilterTargets {
-		filters = append(filters, s.String())
-	}
-	results = append(results, fmt.Sprintf("Filters: [%s]", strings.Join(filters, ", ")))
-
-	results = append(results, fmt.Sprintf("Count: %d", r.Count))
-	results = append(results, fmt.Sprintf("Offset: %d", r.Offset))
-	results = append(results, fmt.Sprintf("Sort Direction: %s", r.SortDirection))
-	results = append(results, fmt.Sprintf("Continuation Token: %s", r.ContinuationToken))
-	results = append(results, fmt.Sprintf("Start Time: %d", r.StartTime))
-	results = append(results, fmt.Sprintf("Stop Time: %d", r.StopTime))
-
-	return strings.Join(results, "; ")
-}
 
 // Serve handles Google Reader API calls.
 func Serve(router *mux.Router, store *storage.Storage) {
@@ -227,88 +61,8 @@ func Serve(router *mux.Router, store *storage.Storage) {
 	sr.HandleFunc("/subscription/quickadd", handler.quickAddHandler).Methods(http.MethodPost).Name("QuickAdd")
 	sr.HandleFunc("/stream/items/ids", handler.streamItemIDsHandler).Methods(http.MethodGet).Name("StreamItemIDs")
 	sr.HandleFunc("/stream/items/contents", handler.streamItemContentsHandler).Methods(http.MethodPost).Name("StreamItemsContents")
+	sr.HandleFunc("/mark-all-as-read", handler.markAllAsReadHandler).Methods(http.MethodPost).Name("MarkAllAsRead")
 	sr.PathPrefix("/").HandlerFunc(handler.serveHandler).Methods(http.MethodPost, http.MethodGet).Name("GoogleReaderApiEndpoint")
-}
-
-func getStreamFilterModifiers(r *http.Request) (RequestModifiers, error) {
-	userID := request.UserID(r)
-
-	result := RequestModifiers{
-		SortDirection: "desc",
-		UserID:        userID,
-	}
-	streamOrder := request.QueryStringParam(r, ParamStreamOrder, "d")
-	if streamOrder == "o" {
-		result.SortDirection = "asc"
-	}
-	var err error
-	result.Streams, err = getStreams(request.QueryStringParamList(r, ParamStreamID), userID)
-	if err != nil {
-		return RequestModifiers{}, err
-	}
-	result.ExcludeTargets, err = getStreams(request.QueryStringParamList(r, ParamStreamExcludes), userID)
-	if err != nil {
-		return RequestModifiers{}, err
-	}
-
-	result.FilterTargets, err = getStreams(request.QueryStringParamList(r, ParamStreamFilters), userID)
-	if err != nil {
-		return RequestModifiers{}, err
-	}
-
-	result.Count = request.QueryIntParam(r, ParamStreamMaxItems, 0)
-	result.Offset = request.QueryIntParam(r, ParamContinuation, 0)
-	result.StartTime = request.QueryInt64Param(r, ParamStreamStartTime, int64(0))
-	result.StopTime = request.QueryInt64Param(r, ParamStreamStopTime, int64(0))
-	return result, nil
-}
-
-func getStream(streamID string, userID int64) (Stream, error) {
-	switch {
-	case strings.HasPrefix(streamID, FeedPrefix):
-		return Stream{Type: FeedStream, ID: strings.TrimPrefix(streamID, FeedPrefix)}, nil
-	case strings.HasPrefix(streamID, fmt.Sprintf(UserStreamPrefix, userID)) || strings.HasPrefix(streamID, StreamPrefix):
-		id := strings.TrimPrefix(streamID, fmt.Sprintf(UserStreamPrefix, userID))
-		id = strings.TrimPrefix(id, StreamPrefix)
-		switch id {
-		case Read:
-			return Stream{ReadStream, ""}, nil
-		case Starred:
-			return Stream{StarredStream, ""}, nil
-		case ReadingList:
-			return Stream{ReadingListStream, ""}, nil
-		case KeptUnread:
-			return Stream{KeptUnreadStream, ""}, nil
-		case Broadcast:
-			return Stream{BroadcastStream, ""}, nil
-		case BroadcastFriends:
-			return Stream{BroadcastFriendsStream, ""}, nil
-		case Like:
-			return Stream{LikeStream, ""}, nil
-		default:
-			return Stream{NoStream, ""}, fmt.Errorf("googlereader: unknown stream with id: %s", id)
-		}
-	case strings.HasPrefix(streamID, fmt.Sprintf(UserLabelPrefix, userID)) || strings.HasPrefix(streamID, LabelPrefix):
-		id := strings.TrimPrefix(streamID, fmt.Sprintf(UserLabelPrefix, userID))
-		id = strings.TrimPrefix(id, LabelPrefix)
-		return Stream{LabelStream, id}, nil
-	case streamID == "":
-		return Stream{NoStream, ""}, nil
-	default:
-		return Stream{NoStream, ""}, fmt.Errorf("googlereader: unknown stream type: %s", streamID)
-	}
-}
-
-func getStreams(streamIDs []string, userID int64) ([]Stream, error) {
-	streams := make([]Stream, 0)
-	for _, streamID := range streamIDs {
-		stream, err := getStream(streamID, userID)
-		if err != nil {
-			return []Stream{}, err
-		}
-		streams = append(streams, stream)
-	}
-	return streams, nil
 }
 
 func checkAndSimplifyTags(addTags []Stream, removeTags []Stream) (map[StreamType]bool, error) {
@@ -317,12 +71,12 @@ func checkAndSimplifyTags(addTags []Stream, removeTags []Stream) (map[StreamType
 		switch s.Type {
 		case ReadStream:
 			if _, ok := tags[KeptUnreadStream]; ok {
-				return nil, fmt.Errorf("googlereader: %s ad %s should not be supplied simultaneously", KeptUnread, Read)
+				return nil, fmt.Errorf("googlereader: %s and %s should not be supplied simultaneously", keptUnreadStreamSuffix, readStreamSuffix)
 			}
 			tags[ReadStream] = true
 		case KeptUnreadStream:
 			if _, ok := tags[ReadStream]; ok {
-				return nil, fmt.Errorf("googlereader: %s ad %s should not be supplied simultaneously", KeptUnread, Read)
+				return nil, fmt.Errorf("googlereader: %s and %s should not be supplied simultaneously", keptUnreadStreamSuffix, readStreamSuffix)
 			}
 			tags[ReadStream] = false
 		case StarredStream:
@@ -337,17 +91,17 @@ func checkAndSimplifyTags(addTags []Stream, removeTags []Stream) (map[StreamType
 		switch s.Type {
 		case ReadStream:
 			if _, ok := tags[ReadStream]; ok {
-				return nil, fmt.Errorf("googlereader: %s ad %s should not be supplied simultaneously", KeptUnread, Read)
+				return nil, fmt.Errorf("googlereader: %s and %s should not be supplied simultaneously", keptUnreadStreamSuffix, readStreamSuffix)
 			}
 			tags[ReadStream] = false
 		case KeptUnreadStream:
 			if _, ok := tags[ReadStream]; ok {
-				return nil, fmt.Errorf("googlereader: %s ad %s should not be supplied simultaneously", KeptUnread, Read)
+				return nil, fmt.Errorf("googlereader: %s and %s should not be supplied simultaneously", keptUnreadStreamSuffix, readStreamSuffix)
 			}
 			tags[ReadStream] = true
 		case StarredStream:
 			if _, ok := tags[StarredStream]; ok {
-				return nil, fmt.Errorf("googlereader: %s should not be supplied for add and remove simultaneously", Starred)
+				return nil, fmt.Errorf("googlereader: %s should not be supplied for add and remove simultaneously", starredStreamSuffix)
 			}
 			tags[StarredStream] = false
 		case BroadcastStream, LikeStream:
@@ -358,28 +112,6 @@ func checkAndSimplifyTags(addTags []Stream, removeTags []Stream) (map[StreamType
 	}
 
 	return tags, nil
-}
-
-func getItemIDs(r *http.Request) ([]int64, error) {
-	items := r.Form[ParamItemIDs]
-	if len(items) == 0 {
-		return nil, fmt.Errorf("googlereader: no items requested")
-	}
-
-	itemIDs := make([]int64, len(items))
-
-	for i, item := range items {
-		var itemID int64
-		_, err := fmt.Sscanf(item, EntryIDLong, &itemID)
-		if err != nil {
-			itemID, err = strconv.ParseInt(item, 16, 64)
-			if err != nil {
-				return nil, fmt.Errorf("googlereader: could not parse item: %v", item)
-			}
-		}
-		itemIDs[i] = itemID
-	}
-	return itemIDs, nil
 }
 
 func checkOutputFormat(r *http.Request) error {
@@ -468,7 +200,7 @@ func (h *handler) clientLoginHandler(w http.ResponseWriter, r *http.Request) {
 		slog.String("username", username),
 	)
 
-	result := login{SID: token, LSID: token, Auth: token}
+	result := loginResponse{SID: token, LSID: token, Auth: token}
 	if output == "json" {
 		json.OK(w, r, result)
 		return
@@ -537,12 +269,12 @@ func (h *handler) editTagHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addTags, err := getStreams(r.PostForm[ParamTagsAdd], userID)
+	addTags, err := getStreams(r.PostForm[paramTagsAdd], userID)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
 	}
-	removeTags, err := getStreams(r.PostForm[ParamTagsRemove], userID)
+	removeTags, err := getStreams(r.PostForm[paramTagsRemove], userID)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -558,9 +290,9 @@ func (h *handler) editTagHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	itemIDs, err := getItemIDs(r)
+	itemIDs, err := parseItemIDsFromRequest(r)
 	if err != nil {
-		json.ServerError(w, r, err)
+		json.BadRequest(w, r, err)
 		return
 	}
 
@@ -655,7 +387,7 @@ func (h *handler) editTagHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	OK(w, r)
+	sendOkayResponse(w)
 }
 
 func (h *handler) quickAddHandler(w http.ResponseWriter, r *http.Request) {
@@ -675,7 +407,7 @@ func (h *handler) quickAddHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	feedURL := r.Form.Get(ParamQuickAdd)
+	feedURL := r.Form.Get(paramQuickAdd)
 	if !validator.IsValidURL(feedURL) {
 		json.BadRequest(w, r, fmt.Errorf("googlereader: invalid URL: %s", feedURL))
 		return
@@ -683,14 +415,16 @@ func (h *handler) quickAddHandler(w http.ResponseWriter, r *http.Request) {
 
 	requestBuilder := fetcher.NewRequestBuilder()
 	requestBuilder.WithTimeout(config.Opts.HTTPClientTimeout())
-	requestBuilder.WithProxy(config.Opts.HTTPClientProxy())
+	requestBuilder.WithProxyRotator(proxyrotator.ProxyRotatorInstance)
 
 	var rssBridgeURL string
+	var rssBridgeToken string
 	if intg, err := h.store.Integration(userID); err == nil && intg != nil && intg.RSSBridgeEnabled {
 		rssBridgeURL = intg.RSSBridgeURL
+		rssBridgeToken = intg.RSSBridgeToken
 	}
 
-	subscriptions, localizedError := mfs.NewSubscriptionFinder(requestBuilder).FindSubscriptions(feedURL, rssBridgeURL)
+	subscriptions, localizedError := mfs.NewSubscriptionFinder(requestBuilder).FindSubscriptions(feedURL, rssBridgeURL, rssBridgeToken)
 	if localizedError != nil {
 		json.ServerError(w, r, localizedError.Error())
 		return
@@ -722,7 +456,7 @@ func (h *handler) quickAddHandler(w http.ResponseWriter, r *http.Request) {
 	json.OK(w, r, quickAddResponse{
 		NumResults: 1,
 		Query:      newFeed.FeedURL,
-		StreamID:   fmt.Sprintf(FeedPrefix+"%d", newFeed.ID),
+		StreamID:   fmt.Sprintf(feedPrefix+"%d", newFeed.ID),
 		StreamName: newFeed.Title,
 	})
 }
@@ -735,17 +469,16 @@ func getFeed(stream Stream, store *storage.Storage, userID int64) (*model.Feed, 
 	return store.FeedByID(userID, feedID)
 }
 
-func getOrCreateCategory(category Stream, store *storage.Storage, userID int64) (*model.Category, error) {
+func getOrCreateCategory(streamCategory Stream, store *storage.Storage, userID int64) (*model.Category, error) {
 	switch {
-	case category.ID == "":
+	case streamCategory.ID == "":
 		return store.FirstCategory(userID)
-	case store.CategoryTitleExists(userID, category.ID):
-		return store.CategoryByTitle(userID, category.ID)
+	case store.CategoryTitleExists(userID, streamCategory.ID):
+		return store.CategoryByTitle(userID, streamCategory.ID)
 	default:
-		catRequest := model.CategoryRequest{
-			Title: category.ID,
-		}
-		return store.CreateCategory(userID, &catRequest)
+		return store.CreateCategory(userID, &model.CategoryCreationRequest{
+			Title: streamCategory.ID,
+		})
 	}
 }
 
@@ -796,14 +529,25 @@ func unsubscribe(streams []Stream, store *storage.Storage, userID int64) error {
 	return nil
 }
 
-func rename(stream Stream, title string, store *storage.Storage, userID int64) error {
+func rename(feedStream Stream, title string, store *storage.Storage, userID int64) error {
+	slog.Debug("[GoogleReader] Renaming feed",
+		slog.Int64("user_id", userID),
+		slog.Any("feed_stream", feedStream),
+		slog.String("new_title", title),
+	)
+
 	if title == "" {
-		return errors.New("empty title")
+		return errEmptyFeedTitle
 	}
-	feed, err := getFeed(stream, store, userID)
+
+	feed, err := getFeed(feedStream, store, userID)
 	if err != nil {
 		return err
 	}
+	if feed == nil {
+		return errFeedNotFound
+	}
+
 	feedModification := model.FeedModificationRequest{
 		Title: &title,
 	}
@@ -811,20 +555,42 @@ func rename(stream Stream, title string, store *storage.Storage, userID int64) e
 	return store.UpdateFeed(feed)
 }
 
-func move(stream Stream, destination Stream, store *storage.Storage, userID int64) error {
-	feed, err := getFeed(stream, store, userID)
+func move(feedStream Stream, labelStream Stream, store *storage.Storage, userID int64) error {
+	slog.Debug("[GoogleReader] Moving feed",
+		slog.Int64("user_id", userID),
+		slog.Any("feed_stream", feedStream),
+		slog.Any("label_stream", labelStream),
+	)
+
+	feed, err := getFeed(feedStream, store, userID)
 	if err != nil {
 		return err
 	}
-	category, err := getOrCreateCategory(destination, store, userID)
+	if feed == nil {
+		return errFeedNotFound
+	}
+
+	category, err := getOrCreateCategory(labelStream, store, userID)
 	if err != nil {
 		return err
 	}
+	if category == nil {
+		return errCategoryNotFound
+	}
+
 	feedModification := model.FeedModificationRequest{
 		CategoryID: &category.ID,
 	}
 	feedModification.Patch(feed)
 	return store.UpdateFeed(feed)
+}
+
+func (h *handler) feedIconURL(f *model.Feed) string {
+	if f.Icon != nil && f.Icon.ExternalIconID != "" {
+		return config.Opts.RootURL() + route.Path(h.router, "feedIcon", "externalIconID", f.Icon.ExternalIconID)
+	} else {
+		return ""
+	}
 }
 
 func (h *handler) editSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
@@ -843,20 +609,20 @@ func (h *handler) editSubscriptionHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	streamIds, err := getStreams(r.Form[ParamStreamID], userID)
+	streamIds, err := getStreams(r.Form[paramStreamID], userID)
 	if err != nil || len(streamIds) == 0 {
 		json.BadRequest(w, r, errors.New("googlereader: no valid stream IDs provided"))
 		return
 	}
 
-	newLabel, err := getStream(r.Form.Get(ParamTagsAdd), userID)
+	newLabel, err := getStream(r.Form.Get(paramTagsAdd), userID)
 	if err != nil {
-		json.BadRequest(w, r, fmt.Errorf("googlereader: invalid data in %s", ParamTagsAdd))
+		json.BadRequest(w, r, fmt.Errorf("googlereader: invalid data in %s", paramTagsAdd))
 		return
 	}
 
-	title := r.Form.Get(ParamTitle)
-	action := r.Form.Get(ParamSubscribeAction)
+	title := r.Form.Get(paramTitle)
+	action := r.Form.Get(paramSubscribeAction)
 
 	switch action {
 	case "subscribe":
@@ -874,32 +640,41 @@ func (h *handler) editSubscriptionHandler(w http.ResponseWriter, r *http.Request
 	case "edit":
 		if title != "" {
 			if err := rename(streamIds[0], title, h.store, userID); err != nil {
-				json.ServerError(w, r, err)
+				if errors.Is(err, errFeedNotFound) || errors.Is(err, errEmptyFeedTitle) {
+					json.BadRequest(w, r, err)
+				} else {
+					json.ServerError(w, r, err)
+				}
 				return
 			}
 		}
 
-		if r.Form.Has(ParamTagsAdd) {
+		if r.Form.Has(paramTagsAdd) {
 			if newLabel.Type != LabelStream {
 				json.BadRequest(w, r, errors.New("destination must be a label"))
 				return
 			}
 
 			if err := move(streamIds[0], newLabel, h.store, userID); err != nil {
-				json.ServerError(w, r, err)
+				if errors.Is(err, errFeedNotFound) || errors.Is(err, errCategoryNotFound) {
+					json.BadRequest(w, r, err)
+				} else {
+					json.ServerError(w, r, err)
+				}
 				return
 			}
 		}
 	default:
-		json.ServerError(w, r, fmt.Errorf("googlereader: unrecognized action %s", action))
+		json.BadRequest(w, r, fmt.Errorf("googlereader: unrecognized action %s", action))
 		return
 	}
 
-	OK(w, r)
+	sendOkayResponse(w)
 }
 
 func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Request) {
 	userID := request.UserID(r)
+	userName := request.UserName(r)
 	clientIP := request.ClientIP(r)
 
 	slog.Debug("[GoogleReader] Handle /stream/items/contents",
@@ -919,25 +694,20 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 		json.ServerError(w, r, err)
 		return
 	}
-	var user *model.User
-	if user, err = h.store.UserByID(userID); err != nil {
-		json.ServerError(w, r, err)
-		return
-	}
 
-	requestModifiers, err := getStreamFilterModifiers(r)
+	requestModifiers, err := parseStreamFilterFromRequest(r)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
 	}
 
-	userReadingList := fmt.Sprintf(UserStreamPrefix, userID) + ReadingList
-	userRead := fmt.Sprintf(UserStreamPrefix, userID) + Read
-	userStarred := fmt.Sprintf(UserStreamPrefix, userID) + Starred
+	userReadingList := fmt.Sprintf(userStreamPrefix, userID) + readingListStreamSuffix
+	userRead := fmt.Sprintf(userStreamPrefix, userID) + readStreamSuffix
+	userStarred := fmt.Sprintf(userStreamPrefix, userID) + starredStreamSuffix
 
-	itemIDs, err := getItemIDs(r)
+	itemIDs, err := parseItemIDsFromRequest(r)
 	if err != nil {
-		json.ServerError(w, r, err)
+		json.BadRequest(w, r, err)
 		return
 	}
 
@@ -950,6 +720,7 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 	)
 
 	builder := h.store.NewEntryQueryBuilder(userID)
+	builder.WithEnclosures()
 	builder.WithoutStatus(model.EntryStatusRemoved)
 	builder.WithEntryIDs(itemIDs)
 	builder.WithSorting(model.DefaultSortingOrder, requestModifiers.SortDirection)
@@ -960,28 +731,17 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if len(entries) == 0 {
-		json.BadRequest(w, r, fmt.Errorf("googlereader: no items returned from the database for item IDs: %v", itemIDs))
-		return
-	}
-
-	result := streamContentItems{
+	result := streamContentItemsResponse{
 		Direction: "ltr",
-		ID:        fmt.Sprintf("feed/%d", entries[0].FeedID),
-		Title:     entries[0].Feed.Title,
-		Alternate: []contentHREFType{
-			{
-				HREF: entries[0].Feed.SiteURL,
-				Type: "text/html",
-			},
-		},
-		Updated: time.Now().Unix(),
+		ID:        "user/-/state/com.google/reading-list",
+		Title:     "Reading List",
+		Updated:   time.Now().Unix(),
 		Self: []contentHREF{
 			{
 				HREF: config.Opts.RootURL() + route.Path(h.router, "StreamItemsContents"),
 			},
 		},
-		Author: user.Username,
+		Author: userName,
 	}
 	contentItems := make([]contentItem, len(entries))
 	for i, entry := range entries {
@@ -992,7 +752,7 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 		categories := make([]string, 0)
 		categories = append(categories, userReadingList)
 		if entry.Feed.Category.Title != "" {
-			categories = append(categories, fmt.Sprintf(UserLabelPrefix, userID)+entry.Feed.Category.Title)
+			categories = append(categories, fmt.Sprintf(userLabelPrefix, userID)+entry.Feed.Category.Title)
 		}
 		if entry.Status == model.EntryStatusRead {
 			categories = append(categories, userRead)
@@ -1003,11 +763,10 @@ func (h *handler) streamItemContentsHandler(w http.ResponseWriter, r *http.Reque
 		}
 
 		entry.Content = mediaproxy.RewriteDocumentWithAbsoluteProxyURL(h.router, entry.Content)
-
-		entry.Enclosures.ProxifyEnclosureURL(h.router)
+		entry.Enclosures.ProxifyEnclosureURL(h.router, config.Opts.MediaProxyMode(), config.Opts.MediaProxyResourceTypes())
 
 		contentItems[i] = contentItem{
-			ID:            fmt.Sprintf(EntryIDLong, entry.ID),
+			ID:            convertEntryIDToLongFormItemID(entry.ID),
 			Title:         entry.Title,
 			Author:        entry.Author,
 			TimestampUsec: fmt.Sprintf("%d", entry.Date.UnixMicro()),
@@ -1063,9 +822,9 @@ func (h *handler) disableTagHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	streams, err := getStreams(r.Form[ParamStreamID], userID)
+	streams, err := getStreams(r.Form[paramStreamID], userID)
 	if err != nil {
-		json.BadRequest(w, r, fmt.Errorf("googlereader: invalid data in %s", ParamStreamID))
+		json.BadRequest(w, r, fmt.Errorf("googlereader: invalid data in %s", paramStreamID))
 		return
 	}
 
@@ -1084,7 +843,7 @@ func (h *handler) disableTagHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	OK(w, r)
+	sendOkayResponse(w)
 }
 
 func (h *handler) renameTagHandler(w http.ResponseWriter, r *http.Request) {
@@ -1103,15 +862,15 @@ func (h *handler) renameTagHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	source, err := getStream(r.Form.Get(ParamStreamID), userID)
+	source, err := getStream(r.Form.Get(paramStreamID), userID)
 	if err != nil {
-		json.BadRequest(w, r, fmt.Errorf("googlereader: invalid data in %s", ParamStreamID))
+		json.BadRequest(w, r, fmt.Errorf("googlereader: invalid data in %s", paramStreamID))
 		return
 	}
 
-	destination, err := getStream(r.Form.Get(ParamDestination), userID)
+	destination, err := getStream(r.Form.Get(paramDestination), userID)
 	if err != nil {
-		json.BadRequest(w, r, fmt.Errorf("googlereader: invalid data in %s", ParamDestination))
+		json.BadRequest(w, r, fmt.Errorf("googlereader: invalid data in %s", paramDestination))
 		return
 	}
 
@@ -1134,21 +893,24 @@ func (h *handler) renameTagHandler(w http.ResponseWriter, r *http.Request) {
 		json.NotFound(w, r)
 		return
 	}
-	categoryRequest := model.CategoryRequest{
+
+	categoryModificationRequest := model.CategoryModificationRequest{
 		Title: destination.ID,
 	}
-	verr := validator.ValidateCategoryModification(h.store, userID, category.ID, &categoryRequest)
-	if verr != nil {
-		json.BadRequest(w, r, verr.Error())
+
+	if validationError := validator.ValidateCategoryModification(h.store, userID, category.ID, &categoryModificationRequest); validationError != nil {
+		json.BadRequest(w, r, validationError.Error())
 		return
 	}
-	categoryRequest.Patch(category)
-	err = h.store.UpdateCategory(category)
-	if err != nil {
+
+	categoryModificationRequest.Patch(category)
+
+	if err := h.store.UpdateCategory(category); err != nil {
 		json.ServerError(w, r, err)
 		return
 	}
-	OK(w, r)
+
+	sendOkayResponse(w)
 }
 
 func (h *handler) tagListHandler(w http.ResponseWriter, r *http.Request) {
@@ -1172,13 +934,13 @@ func (h *handler) tagListHandler(w http.ResponseWriter, r *http.Request) {
 		json.ServerError(w, r, err)
 		return
 	}
-	result.Tags = make([]subscriptionCategory, 0)
-	result.Tags = append(result.Tags, subscriptionCategory{
-		ID: fmt.Sprintf(UserStreamPrefix, userID) + Starred,
+	result.Tags = make([]subscriptionCategoryResponse, 0)
+	result.Tags = append(result.Tags, subscriptionCategoryResponse{
+		ID: fmt.Sprintf(userStreamPrefix, userID) + starredStreamSuffix,
 	})
 	for _, category := range categories {
-		result.Tags = append(result.Tags, subscriptionCategory{
-			ID:    fmt.Sprintf(UserLabelPrefix, userID) + category.Title,
+		result.Tags = append(result.Tags, subscriptionCategoryResponse{
+			ID:    fmt.Sprintf(userLabelPrefix, userID) + category.Title,
 			Label: category.Title,
 			Type:  "folder",
 		})
@@ -1207,15 +969,16 @@ func (h *handler) subscriptionListHandler(w http.ResponseWriter, r *http.Request
 		json.ServerError(w, r, err)
 		return
 	}
-	result.Subscriptions = make([]subscription, 0)
+
+	result.Subscriptions = make([]subscriptionResponse, 0)
 	for _, feed := range feeds {
-		result.Subscriptions = append(result.Subscriptions, subscription{
-			ID:         fmt.Sprintf(FeedPrefix+"%d", feed.ID),
+		result.Subscriptions = append(result.Subscriptions, subscriptionResponse{
+			ID:         fmt.Sprintf(feedPrefix+"%d", feed.ID),
 			Title:      feed.Title,
 			URL:        feed.FeedURL,
-			Categories: []subscriptionCategory{{fmt.Sprintf(UserLabelPrefix, userID) + feed.Category.Title, feed.Category.Title, "folder"}},
+			Categories: []subscriptionCategoryResponse{{fmt.Sprintf(userLabelPrefix, userID) + feed.Category.Title, feed.Category.Title, "folder"}},
 			HTMLURL:    feed.SiteURL,
-			IconURL:    "", // TODO: Icons are base64 encoded in the DB.
+			IconURL:    h.feedIconURL(feed),
 		})
 	}
 	json.OK(w, r, result)
@@ -1252,7 +1015,7 @@ func (h *handler) userInfoHandler(w http.ResponseWriter, r *http.Request) {
 		json.ServerError(w, r, err)
 		return
 	}
-	userInfo := userInfo{UserID: fmt.Sprint(user.ID), UserName: user.Username, UserProfileID: fmt.Sprint(user.ID), UserEmail: user.Username}
+	userInfo := userInfoResponse{UserID: fmt.Sprint(user.ID), UserName: user.Username, UserProfileID: fmt.Sprint(user.ID), UserEmail: user.Username}
 	json.OK(w, r, userInfo)
 }
 
@@ -1272,7 +1035,7 @@ func (h *handler) streamItemIDsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rm, err := getStreamFilterModifiers(r)
+	rm, err := parseStreamFilterFromRequest(r)
 	if err != nil {
 		json.ServerError(w, r, err)
 		return
@@ -1328,7 +1091,7 @@ func (h *handler) handleReadingListStreamHandler(w http.ResponseWriter, r *http.
 				slog.String("handler", "handleReadingListStreamHandler"),
 				slog.String("client_ip", clientIP),
 				slog.String("user_agent", r.UserAgent()),
-				slog.Any("filter_type", s.Type),
+				slog.Int("filter_type", int(s.Type)),
 			)
 		}
 	}
@@ -1498,4 +1261,83 @@ func (h *handler) handleFeedStreamHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	json.OK(w, r, streamIDResponse{itemRefs, continuation})
+}
+
+func (h *handler) markAllAsReadHandler(w http.ResponseWriter, r *http.Request) {
+	userID := request.UserID(r)
+	clientIP := request.ClientIP(r)
+
+	slog.Debug("[GoogleReader] Handle /mark-all-as-read",
+		slog.String("handler", "markAllAsReadHandler"),
+		slog.String("client_ip", clientIP),
+		slog.String("user_agent", r.UserAgent()),
+	)
+
+	if err := r.ParseForm(); err != nil {
+		json.BadRequest(w, r, err)
+		return
+	}
+
+	stream, err := getStream(r.Form.Get(paramStreamID), userID)
+	if err != nil {
+		json.BadRequest(w, r, err)
+		return
+	}
+
+	var before time.Time
+	if timestampParamValue := r.Form.Get(paramTimestamp); timestampParamValue != "" {
+		timestampParsedValue, err := strconv.ParseInt(timestampParamValue, 10, 64)
+		if err != nil {
+			json.BadRequest(w, r, err)
+			return
+		}
+
+		if timestampParsedValue > 0 {
+			// It's unclear if the timestamp is in seconds or microseconds, so we try both using a naive approach.
+			if len(timestampParamValue) >= 16 {
+				before = time.UnixMicro(timestampParsedValue)
+			} else {
+				before = time.Unix(timestampParsedValue, 0)
+			}
+		}
+	}
+
+	if before.IsZero() {
+		before = time.Now()
+	}
+
+	switch stream.Type {
+	case FeedStream:
+		feedID, err := strconv.ParseInt(stream.ID, 10, 64)
+		if err != nil {
+			json.BadRequest(w, r, err)
+			return
+		}
+		err = h.store.MarkFeedAsRead(userID, feedID, before)
+		if err != nil {
+			json.ServerError(w, r, err)
+			return
+		}
+	case LabelStream:
+		category, err := h.store.CategoryByTitle(userID, stream.ID)
+		if err != nil {
+			json.ServerError(w, r, err)
+			return
+		}
+		if category == nil {
+			json.NotFound(w, r)
+			return
+		}
+		if err := h.store.MarkCategoryAsRead(userID, category.ID, before); err != nil {
+			json.ServerError(w, r, err)
+			return
+		}
+	case ReadingListStream:
+		if err = h.store.MarkAllAsReadBeforeDate(userID, before); err != nil {
+			json.ServerError(w, r, err)
+			return
+		}
+	}
+
+	sendOkayResponse(w)
 }

@@ -20,13 +20,12 @@ type SessionData struct {
 	Language            string          `json:"language"`
 	Theme               string          `json:"theme"`
 	NSFW                string          `json:"nsfw"`
-	PocketRequestToken  string          `json:"pocket_request_token"`
 	LastForceRefresh    string          `json:"last_force_refresh"`
 	WebAuthnSessionData WebAuthnSession `json:"webauthn_session_data"`
 }
 
 func (s *SessionData) String() string {
-	return fmt.Sprintf(`CSRF=%q, OAuth2State=%q, OAuth2CodeVerifier=%q, FlashMsg=%q, FlashErrMsg=%q, Lang=%q, Theme=%q,  NSFW=%q, PocketTkn=%q, LastForceRefresh=%s, WebAuthnSession=%q`,
+	return fmt.Sprintf(`CSRF=%q, OAuth2State=%q, OAuth2CodeVerifier=%q, FlashMsg=%q, FlashErrMsg=%q, Lang=%q, Theme=%q,  NSFW=%q, LastForceRefresh=%s, WebAuthnSession=%q`,
 		s.CSRF,
 		s.OAuth2State,
 		s.OAuth2CodeVerifier,
@@ -35,7 +34,6 @@ func (s *SessionData) String() string {
 		s.Language,
 		s.Theme,
 		s.NSFW,
-		s.PocketRequestToken,
 		s.LastForceRefresh,
 		s.WebAuthnSessionData,
 	)

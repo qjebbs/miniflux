@@ -289,7 +289,6 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			e.created_at,
 			e.changed_at,
 			e.tags,
-			(SELECT true FROM enclosures WHERE entry_id=e.id LIMIT 1) as has_enclosure,
 			f.title as feed_title,
 			f.feed_url,
 			f.site_url,
@@ -308,6 +307,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			f.proxify_media,
 			f.cache_media,
 			fi.icon_id,
+			i.external_id AS icon_external_id,
 			u.timezone
 		FROM
 			entries e
@@ -317,6 +317,8 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			categories c ON c.id=f.category_id
 		LEFT JOIN
 			feed_icons fi ON fi.feed_id=f.id
+		LEFT JOIN
+			icons i ON i.id=fi.icon_id
 		LEFT JOIN
 			users u ON u.id=e.user_id
 		WHERE %s %s
@@ -333,10 +335,13 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 	defer rows.Close()
 
 	entries := make(model.Entries, 0)
+	entryMap := make(map[int64]*model.Entry)
+	var entryIDs []int64
+
 	for rows.Next() {
 		var iconID sql.NullInt64
+		var externalIconID sql.NullString
 		var tz string
-		var hasEnclosure sql.NullBool
 
 		entry := model.NewEntry()
 
@@ -360,7 +365,6 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.CreatedAt,
 			&entry.ChangedAt,
 			pq.Array(&entry.Tags),
-			&hasEnclosure,
 			&entry.Feed.Title,
 			&entry.Feed.FeedURL,
 			&entry.Feed.SiteURL,
@@ -379,6 +383,7 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.Feed.ProxifyMedia,
 			&entry.Feed.CacheMedia,
 			&iconID,
+			&externalIconID,
 			&tz,
 		)
 
@@ -386,20 +391,15 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			return nil, fmt.Errorf("store: unable to fetch entry row: %v", err)
 		}
 
-		if hasEnclosure.Valid && hasEnclosure.Bool && e.fetchEnclosures {
-			entry.Enclosures, err = e.store.GetEnclosures(entry.ID)
-			if err != nil {
-				return nil, fmt.Errorf("store: unable to fetch enclosures for entry #%d: %w", entry.ID, err)
-			}
-		}
-
-		if iconID.Valid {
+		if iconID.Valid && externalIconID.Valid && externalIconID.String != "" {
+			entry.Feed.Icon.FeedID = entry.FeedID
 			entry.Feed.Icon.IconID = iconID.Int64
+			entry.Feed.Icon.ExternalIconID = externalIconID.String
 		} else {
 			entry.Feed.Icon.IconID = 0
 		}
 
-		// Make sure that timestamp fields contains timezone information (API)
+		// Make sure that timestamp fields contain timezone information (API)
 		entry.Date = timezone.Convert(tz, entry.Date)
 		entry.CreatedAt = timezone.Convert(tz, entry.CreatedAt)
 		entry.ChangedAt = timezone.Convert(tz, entry.ChangedAt)
@@ -409,7 +409,23 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 		entry.Feed.UserID = entry.UserID
 		entry.Feed.Icon.FeedID = entry.FeedID
 		entry.Feed.Category.UserID = entry.UserID
+
 		entries = append(entries, entry)
+		entryMap[entry.ID] = entry
+		entryIDs = append(entryIDs, entry.ID)
+	}
+
+	if e.fetchEnclosures && len(entryIDs) > 0 {
+		enclosures, err := e.store.GetEnclosuresForEntries(entryIDs)
+		if err != nil {
+			return nil, fmt.Errorf("store: unable to fetch enclosures: %w", err)
+		}
+
+		for entryID, entryEnclosures := range enclosures {
+			if entry, exists := entryMap[entryID]; exists {
+				entry.Enclosures = entryEnclosures
+			}
+		}
 	}
 
 	return entries, nil

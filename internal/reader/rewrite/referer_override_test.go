@@ -34,11 +34,6 @@ func TestGetRefererForURL(t *testing.T) {
 			expected: "https://www.instagram.com",
 		},
 		{
-			name:     "Piokok URL",
-			url:      "https://sp1.piokok.com/example.jpg",
-			expected: "https://sp1.piokok.com",
-		},
-		{
 			name:     "Weibo Video URL",
 			url:      "https://f.video.weibocdn.com/example.mp4",
 			expected: "https://weibo.com",
@@ -47,6 +42,11 @@ func TestGetRefererForURL(t *testing.T) {
 			name:     "HelloGithub Image URL",
 			url:      "https://img.hellogithub.com/example.png",
 			expected: "https://hellogithub.com",
+		},
+		{
+			name:     "Park Blogs",
+			url:      "https://www.parkablogs.com/sites/default/files/2025/image.jpg",
+			expected: "https://www.parkablogs.com",
 		},
 		{
 			name:     "Non-matching URL",

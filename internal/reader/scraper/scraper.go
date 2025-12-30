@@ -119,8 +119,7 @@ func findContentUsingCustomRules(page io.Reader, rules string) (baseURL string, 
 }
 
 func getPredefinedScraperRules(websiteURL string) string {
-	urlDomain := urllib.Domain(websiteURL)
-	urlDomain = strings.TrimPrefix(urlDomain, "www.")
+	urlDomain := urllib.DomainWithoutWWW(websiteURL)
 
 	if rules, ok := predefinedRules[urlDomain]; ok {
 		return rules

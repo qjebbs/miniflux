@@ -51,7 +51,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 					slog.String("user_agent", r.UserAgent()),
 					slog.Any("error", err),
 				)
-				Unauthorized(w, r)
+				sendUnauthorizedResponse(w)
 				return
 			}
 
@@ -62,7 +62,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 					slog.String("client_ip", clientIP),
 					slog.String("user_agent", r.UserAgent()),
 				)
-				Unauthorized(w, r)
+				sendUnauthorizedResponse(w)
 				return
 			}
 		} else {
@@ -74,7 +74,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 					slog.String("client_ip", clientIP),
 					slog.String("user_agent", r.UserAgent()),
 				)
-				Unauthorized(w, r)
+				sendUnauthorizedResponse(w)
 				return
 			}
 			fields := strings.Fields(authorization)
@@ -84,7 +84,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 					slog.String("client_ip", clientIP),
 					slog.String("user_agent", r.UserAgent()),
 				)
-				Unauthorized(w, r)
+				sendUnauthorizedResponse(w)
 				return
 			}
 			if fields[0] != "GoogleLogin" {
@@ -93,7 +93,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 					slog.String("client_ip", clientIP),
 					slog.String("user_agent", r.UserAgent()),
 				)
-				Unauthorized(w, r)
+				sendUnauthorizedResponse(w)
 				return
 			}
 			auths := strings.Split(fields[1], "=")
@@ -103,7 +103,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 					slog.String("client_ip", clientIP),
 					slog.String("user_agent", r.UserAgent()),
 				)
-				Unauthorized(w, r)
+				sendUnauthorizedResponse(w)
 				return
 			}
 			if auths[0] != "auth" {
@@ -112,7 +112,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 					slog.String("client_ip", clientIP),
 					slog.String("user_agent", r.UserAgent()),
 				)
-				Unauthorized(w, r)
+				sendUnauthorizedResponse(w)
 				return
 			}
 			token = auths[1]
@@ -126,7 +126,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 				slog.String("user_agent", r.UserAgent()),
 				slog.String("token", token),
 			)
-			Unauthorized(w, r)
+			sendUnauthorizedResponse(w)
 			return
 		}
 		var integration *model.Integration
@@ -139,7 +139,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 				slog.String("user_agent", r.UserAgent()),
 				slog.Any("error", err),
 			)
-			Unauthorized(w, r)
+			sendUnauthorizedResponse(w)
 			return
 		}
 		expectedToken := getAuthToken(integration.GoogleReaderUsername, integration.GoogleReaderPassword)
@@ -149,7 +149,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 				slog.String("client_ip", clientIP),
 				slog.String("user_agent", r.UserAgent()),
 			)
-			Unauthorized(w, r)
+			sendUnauthorizedResponse(w)
 			return
 		}
 		if user, err = m.store.UserByID(integration.UserID); err != nil {
@@ -159,7 +159,7 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 				slog.String("user_agent", r.UserAgent()),
 				slog.Any("error", err),
 			)
-			Unauthorized(w, r)
+			sendUnauthorizedResponse(w)
 			return
 		}
 
@@ -169,22 +169,15 @@ func (m *middleware) apiKeyAuth(next http.Handler) http.Handler {
 				slog.String("client_ip", clientIP),
 				slog.String("user_agent", r.UserAgent()),
 			)
-			Unauthorized(w, r)
+			sendUnauthorizedResponse(w)
 			return
 		}
-
-		slog.Info("[GoogleReader] User authenticated successfully",
-			slog.Bool("authentication_successful", true),
-			slog.String("client_ip", clientIP),
-			slog.String("user_agent", r.UserAgent()),
-			slog.Int64("user_id", user.ID),
-			slog.String("username", user.Username),
-		)
 
 		m.store.SetLastLogin(integration.UserID)
 
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, request.UserIDContextKey, user.ID)
+		ctx = context.WithValue(ctx, request.UserNameContextKey, user.Username)
 		ctx = context.WithValue(ctx, request.UserTimezoneContextKey, user.Timezone)
 		ctx = context.WithValue(ctx, request.IsAdminUserContextKey, user.IsAdmin)
 		ctx = context.WithValue(ctx, request.IsAuthenticatedContextKey, true)

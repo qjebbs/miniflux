@@ -47,7 +47,7 @@ func (h *handler) updateCategory(w http.ResponseWriter, r *http.Request) {
 	view.Set("countUnread", h.store.CountUnreadEntries(loggedUser.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(loggedUser.ID, nsfw))
 
-	categoryRequest := &model.CategoryRequest{
+	categoryRequest := &model.CategoryModificationRequest{
 		Title: categoryForm.Title,
 		NSFW:  categoryForm.NSFW,
 		View:  categoryForm.View,

@@ -59,12 +59,15 @@ func (h *handler) showChooseSubscriptionPage(w http.ResponseWriter, r *http.Requ
 		Password:                    subscriptionForm.Password,
 		ScraperRules:                subscriptionForm.ScraperRules,
 		RewriteRules:                subscriptionForm.RewriteRules,
+		UrlRewriteRules:             subscriptionForm.UrlRewriteRules,
 		BlocklistRules:              subscriptionForm.BlocklistRules,
 		KeeplistRules:               subscriptionForm.KeeplistRules,
-		UrlRewriteRules:             subscriptionForm.UrlRewriteRules,
+		KeepFilterEntryRules:        subscriptionForm.KeepFilterEntryRules,
+		BlockFilterEntryRules:       subscriptionForm.BlockFilterEntryRules,
 		FetchViaProxy:               subscriptionForm.FetchViaProxy,
 		NSFW:                        subscriptionForm.NSFW,
 		DisableHTTP2:                subscriptionForm.DisableHTTP2,
+		ProxyURL:                    subscriptionForm.ProxyURL,
 	})
 	if localizedError != nil {
 		view.Set("form", subscriptionForm)

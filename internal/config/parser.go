@@ -10,27 +10,26 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 )
 
-// Parser handles configuration parsing.
-type Parser struct {
-	opts *Options
+// parser handles configuration parsing.
+type parser struct {
+	opts *options
 }
 
 // NewParser returns a new Parser.
-func NewParser() *Parser {
-	return &Parser{
+func NewParser() *parser {
+	return &parser{
 		opts: NewOptions(),
 	}
 }
 
 // ParseEnvironmentVariables loads configuration values from environment variables.
-func (p *Parser) ParseEnvironmentVariables() (*Options, error) {
+func (p *parser) ParseEnvironmentVariables() (*options, error) {
 	err := p.parseLines(os.Environ())
 	if err != nil {
 		return nil, err
@@ -39,7 +38,7 @@ func (p *Parser) ParseEnvironmentVariables() (*Options, error) {
 }
 
 // ParseFile loads configuration values from a local file.
-func (p *Parser) ParseFile(filename string) (*Options, error) {
+func (p *parser) ParseFile(filename string) (*options, error) {
 	fp, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -53,7 +52,7 @@ func (p *Parser) ParseFile(filename string) (*Options, error) {
 	return p.opts, nil
 }
 
-func (p *Parser) parseFileContent(r io.Reader) (lines []string) {
+func (p *parser) parseFileContent(r io.Reader) (lines []string) {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -64,13 +63,15 @@ func (p *Parser) parseFileContent(r io.Reader) (lines []string) {
 	return lines
 }
 
-func (p *Parser) parseLines(lines []string) (err error) {
+func (p *parser) parseLines(lines []string) (err error) {
 	var port string
 
-	for _, line := range lines {
-		fields := strings.SplitN(line, "=", 2)
-		key := strings.TrimSpace(fields[0])
-		value := strings.TrimSpace(fields[1])
+	for lineNum, line := range lines {
+		key, value, ok := strings.Cut(line, "=")
+		if !ok {
+			return fmt.Errorf("config: unable to parse configuration, invalid format on line %d", lineNum)
+		}
+		key, value = strings.TrimSpace(key), strings.TrimSpace(value)
 
 		switch key {
 		case "LOG_FILE":
@@ -87,14 +88,6 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			if parsedValue == "json" || parsedValue == "text" {
 				p.opts.logFormat = parsedValue
 			}
-		case "DEBUG":
-			slog.Warn("The DEBUG environment variable is deprecated, use LOG_LEVEL instead")
-			parsedValue := parseBool(value, defaultDebug)
-			if parsedValue {
-				p.opts.logLevel = "debug"
-			}
-		case "SERVER_TIMING_HEADER":
-			p.opts.serverTimingHeader = parseBool(value, defaultTiming)
 		case "BASE_URL":
 			p.opts.baseURL, p.opts.rootURL, p.opts.basePath, err = parseBaseURL(value)
 			if err != nil {
@@ -103,7 +96,7 @@ func (p *Parser) parseLines(lines []string) (err error) {
 		case "PORT":
 			port = value
 		case "LISTEN_ADDR":
-			p.opts.listenAddr = parseString(value, defaultListenAddr)
+			p.opts.listenAddr = parseStringList(value, []string{defaultListenAddr})
 		case "DATABASE_URL":
 			p.opts.databaseURL = parseString(value, defaultDatabaseURL)
 		case "DATABASE_URL_FILE":
@@ -164,40 +157,21 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.schedulerEntryFrequencyFactor = parseInt(value, defaultSchedulerEntryFrequencyFactor)
 		case "SCHEDULER_ROUND_ROBIN_MIN_INTERVAL":
 			p.opts.schedulerRoundRobinMinInterval = parseInt(value, defaultSchedulerRoundRobinMinInterval)
+		case "SCHEDULER_ROUND_ROBIN_MAX_INTERVAL":
+			p.opts.schedulerRoundRobinMaxInterval = parseInt(value, defaultSchedulerRoundRobinMaxInterval)
 		case "POLLING_PARSING_ERROR_LIMIT":
 			p.opts.pollingParsingErrorLimit = parseInt(value, defaultPollingParsingErrorLimit)
-		case "PROXY_IMAGES":
-			slog.Warn("The PROXY_IMAGES environment variable is deprecated, use MEDIA_PROXY_MODE instead")
-			p.opts.mediaProxyMode = parseString(value, defaultMediaProxyMode)
-		case "PROXY_HTTP_CLIENT_TIMEOUT":
-			slog.Warn("The PROXY_HTTP_CLIENT_TIMEOUT environment variable is deprecated, use MEDIA_PROXY_HTTP_CLIENT_TIMEOUT instead")
-			p.opts.mediaProxyHTTPClientTimeout = parseInt(value, defaultMediaProxyHTTPClientTimeout)
 		case "MEDIA_PROXY_HTTP_CLIENT_TIMEOUT":
 			p.opts.mediaProxyHTTPClientTimeout = parseInt(value, defaultMediaProxyHTTPClientTimeout)
-		case "PROXY_OPTION":
-			slog.Warn("The PROXY_OPTION environment variable is deprecated, use MEDIA_PROXY_MODE instead")
-			p.opts.mediaProxyMode = parseString(value, defaultMediaProxyMode)
 		case "MEDIA_PROXY_MODE":
 			p.opts.mediaProxyMode = parseString(value, defaultMediaProxyMode)
-		case "PROXY_MEDIA_TYPES":
-			slog.Warn("The PROXY_MEDIA_TYPES environment variable is deprecated, use MEDIA_PROXY_RESOURCE_TYPES instead")
-			p.opts.mediaProxyResourceTypes = parseStringList(value, []string{defaultMediaResourceTypes})
 		case "MEDIA_PROXY_RESOURCE_TYPES":
 			p.opts.mediaProxyResourceTypes = parseStringList(value, []string{defaultMediaResourceTypes})
-		case "PROXY_IMAGE_URL":
-			slog.Warn("The PROXY_IMAGE_URL environment variable is deprecated, use MEDIA_PROXY_CUSTOM_URL instead")
-			p.opts.mediaProxyCustomURL = parseString(value, defaultMediaProxyURL)
-		case "PROXY_URL":
-			slog.Warn("The PROXY_URL environment variable is deprecated, use MEDIA_PROXY_CUSTOM_URL instead")
-			p.opts.mediaProxyCustomURL = parseString(value, defaultMediaProxyURL)
-		case "PROXY_PRIVATE_KEY":
-			slog.Warn("The PROXY_PRIVATE_KEY environment variable is deprecated, use MEDIA_PROXY_PRIVATE_KEY instead")
-			randomKey := make([]byte, 16)
-			rand.Read(randomKey)
-			p.opts.mediaProxyPrivateKey = parseBytes(value, randomKey)
 		case "MEDIA_PROXY_PRIVATE_KEY":
 			randomKey := make([]byte, 16)
-			rand.Read(randomKey)
+			if _, err := rand.Read(randomKey); err != nil {
+				return fmt.Errorf("config: unable to generate random key: %w", err)
+			}
 			p.opts.mediaProxyPrivateKey = parseBytes(value, randomKey)
 		case "MEDIA_PROXY_CUSTOM_URL":
 			p.opts.mediaProxyCustomURL = parseString(value, defaultMediaProxyURL)
@@ -211,10 +185,6 @@ func (p *Parser) parseLines(lines []string) (err error) {
 			p.opts.adminPassword = parseString(value, defaultAdminPassword)
 		case "ADMIN_PASSWORD_FILE":
 			p.opts.adminPassword = readSecretFile(value, defaultAdminPassword)
-		case "POCKET_CONSUMER_KEY":
-			p.opts.pocketConsumerKey = parseString(value, defaultPocketConsumerKey)
-		case "POCKET_CONSUMER_KEY_FILE":
-			p.opts.pocketConsumerKey = readSecretFile(value, defaultPocketConsumerKey)
 		case "OAUTH2_USER_CREATION":
 			p.opts.oauth2UserCreationAllowed = parseBool(value, defaultOAuth2UserCreation)
 		case "OAUTH2_CLIENT_ID":
@@ -244,7 +214,12 @@ func (p *Parser) parseLines(lines []string) (err error) {
 		case "CACHE_LOCATION":
 			p.opts.cacheLocation = parseString(value, defaultCacheLocation)
 		case "HTTP_CLIENT_PROXY":
-			p.opts.httpClientProxy = parseString(value, defaultHTTPClientProxy)
+			p.opts.httpClientProxyURL, err = url.Parse(parseString(value, defaultHTTPClientProxy))
+			if err != nil {
+				return fmt.Errorf("config: invalid HTTP_CLIENT_PROXY value: %w", err)
+			}
+		case "HTTP_CLIENT_PROXIES":
+			p.opts.httpClientProxies = parseStringList(value, []string{})
 		case "HTTP_CLIENT_USER_AGENT":
 			p.opts.httpClientUserAgent = parseString(value, defaultHTTPClientUserAgent)
 		case "HTTP_SERVER_TIMEOUT":
@@ -293,8 +268,15 @@ func (p *Parser) parseLines(lines []string) (err error) {
 	}
 
 	if port != "" {
-		p.opts.listenAddr = ":" + port
+		p.opts.listenAddr = []string{":" + port}
 	}
+
+	youtubeEmbedURL, err := url.Parse(p.opts.youTubeEmbedUrlOverride)
+	if err != nil {
+		return fmt.Errorf("config: invalid YOUTUBE_EMBED_URL_OVERRIDE value: %w", err)
+	}
+	p.opts.youTubeEmbedDomain = youtubeEmbedURL.Hostname()
+
 	return nil
 }
 
@@ -303,9 +285,7 @@ func parseBaseURL(value string) (string, string, string, error) {
 		return defaultBaseURL, defaultRootURL, "", nil
 	}
 
-	if value[len(value)-1:] == "/" {
-		value = value[:len(value)-1]
-	}
+	value = strings.TrimSuffix(value, "/")
 
 	parsedURL, err := url.Parse(value)
 	if err != nil {
@@ -361,15 +341,14 @@ func parseStringList(value string, fallback []string) []string {
 	}
 
 	var strList []string
-	strMap := make(map[string]bool)
+	present := make(map[string]bool)
 
-	items := strings.Split(value, ",")
-	for _, item := range items {
-		itemValue := strings.TrimSpace(item)
-
-		if _, found := strMap[itemValue]; !found {
-			strMap[itemValue] = true
-			strList = append(strList, itemValue)
+	for item := range strings.SplitSeq(value, ",") {
+		if itemValue := strings.TrimSpace(item); itemValue != "" {
+			if !present[itemValue] {
+				present[itemValue] = true
+				strList = append(strList, itemValue)
+			}
 		}
 	}
 

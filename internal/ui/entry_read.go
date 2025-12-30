@@ -40,6 +40,11 @@ func (h *handler) showReadEntryPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if user.AlwaysOpenExternalLinks {
+		html.Redirect(w, r, entry.URL)
+		return
+	}
+
 	nsfw := request.IsNSFWEnabled(r)
 	entryPaginationBuilder := storage.NewEntryPaginationBuilder(h.store, user.ID, entry.ID, "changed_at", "desc")
 	entryPaginationBuilder.WithStatus(model.EntryStatusRead)

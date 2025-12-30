@@ -145,7 +145,7 @@ a:hover {
 /* Page header and footer*/
 .page-header {
     padding-inline: 3px;
-    margin-bottom: 25px;
+    margin-bottom: 10px;
 }
 
 .page-footer {
@@ -426,6 +426,7 @@ textarea, input[type="number"] {
     width: 250px;
     font-size: 99%;
     margin-top: 5px;
+    margin-bottom: 10px;;
     appearance: none;
 }
 
@@ -1012,6 +1013,29 @@ article.category-has-unread {
     font-weight: 600;
 }
 
+.entry-tags-list {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.entry-tags-list li {
+    display: inline-block;
+}
+
+.entry-tags-list li::after {
+    content: ", ";
+}
+
+.entry-tags-list li:last-child::after {
+    content: "";
+}
+
+.entry-additional-tags {
+    font-size: 0.8em;
+    margin-top: 10px;
+}
+
 .entry-website img {
     vertical-align: top;
 }
@@ -1041,7 +1065,6 @@ article.category-has-unread {
     color: var(--entry-content-color);
     line-height: 1.4em;
     overflow-wrap: break-word;
-    touch-action: pan-y pinch-zoom;
 }
 
 .entry-content h1, h2, h3, h4, h5, h6 {
@@ -1222,6 +1245,12 @@ details.entry-enclosures {
 .enclosure-video video,
 .enclosure-image img {
     max-width: 100%;
+}
+
+.entry-external-link {
+    font-size: 0.8em;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 /* Confirmation */

@@ -62,8 +62,8 @@
             <ul class="list-item">
                 <a href="{{ route "feedEntries" "feedID" .Feed.ID }}">
                     <span class="title">
-                        {{ if ne .Feed.Icon.IconID 0 }}
-                            <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .Feed.Title }}">
+                        {{ if and (.Feed.Icon) (gt .Feed.Icon.IconID 0) }}
+                            <img src="{{ route "feedIcon" "externalIconID" .Feed.Icon.ExternalIconID }}" width="16" height="16" loading="lazy" alt="{{ .Feed.Title }}">
                         {{ end }}
                         {{ .Feed.Title }}
                     </span>
@@ -105,8 +105,8 @@
             <ul class="list-item">
                 <a href="{{ route "feedEntriesStarred" "feedID" .Feed.ID }}">
                     <span class="title">
-                        {{ if ne .Feed.Icon.IconID 0 }}
-                            <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="{{ .Feed.Title }}">
+                        {{ if and (.Feed.Icon) (gt .Feed.Icon.IconID 0) }}
+                            <img src="{{ route "feedIcon" "externalIconID" .Feed.Icon.ExternalIconID }}" width="16" height="16" loading="lazy" alt="{{ .Feed.Title }}">
                         {{ end }}
                         {{ .Feed.Title }}
                     </span>

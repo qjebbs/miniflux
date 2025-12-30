@@ -59,7 +59,7 @@ func (h *handler) submitEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entry, err := scraper.FetchEntry(entryForm.URL, "", entryForm.UserAgent, entryForm.Cookies)
+	entry, err := scraper.FetchEntry(user, entryForm.URL, "", entryForm.UserAgent, entryForm.Cookies)
 	if err != nil {
 		v.Set("errorMessage", err.Error())
 		html.OK(w, r, v.Render("add_entry"))

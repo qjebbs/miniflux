@@ -5,8 +5,6 @@ package ui // import "miniflux.app/v2/internal/ui"
 
 import (
 	"net/http"
-	"regexp"
-	"strings"
 
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/html"
@@ -63,14 +61,6 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 	view.Set("countWebAuthnCerts", h.store.CountWebAuthnCredentialsByUserID(loggedUser.ID))
 	view.Set("webAuthnCerts", creds)
 
-	// Sanitize the end of the block & Keep rules
-	cleanEnd := regexp.MustCompile(`(?m)\r\n\s*$`)
-	settingsForm.BlockFilterEntryRules = cleanEnd.ReplaceAllLiteralString(settingsForm.BlockFilterEntryRules, "")
-	settingsForm.KeepFilterEntryRules = cleanEnd.ReplaceAllLiteralString(settingsForm.KeepFilterEntryRules, "")
-	// Clean carriage returns for Windows environments
-	settingsForm.BlockFilterEntryRules = strings.ReplaceAll(settingsForm.BlockFilterEntryRules, "\r\n", "\n")
-	settingsForm.KeepFilterEntryRules = strings.ReplaceAll(settingsForm.KeepFilterEntryRules, "\r\n", "\n")
-
 	if validationErr := settingsForm.Validate(); validationErr != nil {
 		view.Set("errorMessage", validationErr.Translate(loggedUser.Language))
 		html.OK(w, r, view.Render("settings"))
@@ -78,22 +68,24 @@ func (h *handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userModificationRequest := &model.UserModificationRequest{
-		Username:              model.OptionalString(settingsForm.Username),
-		Password:              model.OptionalString(settingsForm.Password),
-		Theme:                 model.OptionalString(settingsForm.Theme),
-		Language:              model.OptionalString(settingsForm.Language),
-		Timezone:              model.OptionalString(settingsForm.Timezone),
-		EntryDirection:        model.OptionalString(settingsForm.EntryDirection),
-		EntriesPerPage:        model.OptionalNumber(settingsForm.EntriesPerPage),
-		DisplayMode:           model.OptionalString(settingsForm.DisplayMode),
-		GestureNav:            model.OptionalString(settingsForm.GestureNav),
-		DefaultReadingSpeed:   model.OptionalNumber(settingsForm.DefaultReadingSpeed),
-		CJKReadingSpeed:       model.OptionalNumber(settingsForm.CJKReadingSpeed),
-		DefaultHomePage:       model.OptionalString(settingsForm.DefaultHomePage),
-		MediaPlaybackRate:     model.OptionalNumber(settingsForm.MediaPlaybackRate),
-		BlockFilterEntryRules: model.OptionalString(settingsForm.BlockFilterEntryRules),
-		KeepFilterEntryRules:  model.OptionalString(settingsForm.KeepFilterEntryRules),
-		ExternalFontHosts:     model.OptionalString(settingsForm.ExternalFontHosts),
+		Username:               model.OptionalString(settingsForm.Username),
+		Password:               model.OptionalString(settingsForm.Password),
+		Theme:                  model.OptionalString(settingsForm.Theme),
+		Language:               model.OptionalString(settingsForm.Language),
+		Timezone:               model.OptionalString(settingsForm.Timezone),
+		EntryDirection:         model.OptionalString(settingsForm.EntryDirection),
+		EntryOrder:             model.OptionalString(settingsForm.EntryOrder),
+		EntriesPerPage:         model.OptionalNumber(settingsForm.EntriesPerPage),
+		CategoriesSortingOrder: model.OptionalString(settingsForm.CategoriesSortingOrder),
+		DisplayMode:            model.OptionalString(settingsForm.DisplayMode),
+		GestureNav:             model.OptionalString(settingsForm.GestureNav),
+		DefaultReadingSpeed:    model.OptionalNumber(settingsForm.DefaultReadingSpeed),
+		CJKReadingSpeed:        model.OptionalNumber(settingsForm.CJKReadingSpeed),
+		DefaultHomePage:        model.OptionalString(settingsForm.DefaultHomePage),
+		MediaPlaybackRate:      model.OptionalNumber(settingsForm.MediaPlaybackRate),
+		BlockFilterEntryRules:  model.OptionalString(settingsForm.BlockFilterEntryRules),
+		KeepFilterEntryRules:   model.OptionalString(settingsForm.KeepFilterEntryRules),
+		ExternalFontHosts:      model.OptionalString(settingsForm.ExternalFontHosts),
 	}
 
 	if validationErr := validator.ValidateUserModification(h.store, loggedUser.ID, userModificationRequest); validationErr != nil {

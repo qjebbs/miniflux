@@ -4,11 +4,8 @@
 package ui // import "miniflux.app/v2/internal/ui"
 
 import (
-	"fmt"
 	"net/http"
-	"time"
 
-	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/html"
 	"miniflux.app/v2/internal/http/route"
@@ -18,7 +15,6 @@ import (
 )
 
 func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
-	beginPreProcessing := time.Now()
 	user, err := h.store.UserByID(request.UserID(r))
 	if err != nil {
 		html.ServerError(w, r, err)
@@ -26,7 +22,6 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nsfw := request.IsNSFWEnabled(r)
-	beginSqlCountUnreadEntries := time.Now()
 	offset := request.QueryIntParam(r, "offset", 0)
 	builder := h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithStatus(model.EntryStatusUnread)
@@ -38,13 +33,11 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
-	finishSqlCountUnreadEntries := time.Now()
 
 	if offset >= countUnread {
 		offset = 0
 	}
 
-	beginSqlFetchUnreadEntries := time.Now()
 	builder = h.store.NewEntryQueryBuilder(user.ID)
 	builder.WithStatus(model.EntryStatusUnread)
 	builder.WithSorting(user.EntryOrder, user.EntryDirection)
@@ -60,7 +53,6 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 		html.ServerError(w, r, err)
 		return
 	}
-	finishSqlFetchUnreadEntries := time.Now()
 
 	sess := session.New(h.store, request.SessionID(r))
 	view := view.New(h.tpl, r, sess)
@@ -73,20 +65,5 @@ func (h *handler) showUnreadPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("hasSaveEntry", h.store.HasSaveEntry(user.ID))
 	view.Set("pageEntriesType", "unread")
 
-	finishPreProcessing := time.Now()
-
-	beginTemplateRendering := time.Now()
-	render := view.Render("unread_entries")
-	finishTemplateRendering := time.Now()
-
-	if config.Opts.HasServerTimingHeader() {
-		w.Header().Set("Server-Timing", fmt.Sprintf("pre_processing;dur=%d,sql_count_unread_entries;dur=%d,sql_fetch_unread_entries;dur=%d,template_rendering;dur=%d",
-			finishPreProcessing.Sub(beginPreProcessing).Milliseconds(),
-			finishSqlCountUnreadEntries.Sub(beginSqlCountUnreadEntries).Milliseconds(),
-			finishSqlFetchUnreadEntries.Sub(beginSqlFetchUnreadEntries).Milliseconds(),
-			finishTemplateRendering.Sub(beginTemplateRendering).Milliseconds(),
-		))
-	}
-
-	html.OK(w, r, render)
+	html.OK(w, r, view.Render("unread_entries"))
 }

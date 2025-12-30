@@ -21,7 +21,7 @@ import (
 )
 
 // FetchEntry downloads a web page and returns an Entry.
-func FetchEntry(websiteURL, rules, userAgent string, cookie string) (*model.Entry, error) {
+func FetchEntry(user *model.User, websiteURL, rules, userAgent string, cookie string) (*model.Entry, error) {
 	requestBuilder := fetcher.NewRequestBuilder()
 	if userAgent != "" {
 		requestBuilder.WithUserAgent(userAgent, config.Opts.HTTPClientUserAgent())
@@ -55,12 +55,12 @@ func FetchEntry(websiteURL, rules, userAgent string, cookie string) (*model.Entr
 	if err != nil {
 		return nil, err
 	}
-	content := sanitizer.Sanitize(websiteURL, r.Content)
+	content := sanitizer.SanitizeHTML(websiteURL, r.Content, &sanitizer.SanitizerOptions{OpenLinksInNewTab: user.OpenExternalLinksInNewTab})
 	entry := &model.Entry{
 		URL:     websiteURL,
 		Title:   title,
 		Content: content,
-		Hash:    crypto.Hash(websiteURL),
+		Hash:    crypto.SHA256(websiteURL),
 		Date:    time.Now(),
 	}
 

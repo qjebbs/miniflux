@@ -14,6 +14,7 @@ import (
 // https://firefox.settings.services.mozilla.com/v1/buckets/main/collections/query-stripping/records
 // https://github.com/Smile4ever/Neat-URL/blob/master/data/default-params-by-category.json
 // https://github.com/brave/brave-core/blob/master/components/query_filter/utils.cc
+// https://developers.google.com/analytics/devguides/collection/ga4/reference/config
 var trackingParams = map[string]bool{
 	// Facebook Click Identifiers
 	"fbclid":          true,
@@ -30,6 +31,14 @@ var trackingParams = map[string]bool{
 	"gbraid": true,
 	"wbraid": true,
 	"gclsrc": true,
+
+	// Google Analytics
+	"campaign_id":      true,
+	"campaign_medium":  true,
+	"campaign_name":    true,
+	"campaign_source":  true,
+	"campaign_term":    true,
+	"campaign_content": true,
 
 	// Yandex Click Identifiers
 	"yclid":  true,
@@ -80,17 +89,18 @@ var trackingParams = map[string]bool{
 	"_branch_referrer": true,
 }
 
-func RemoveTrackingParameters(inputURL string) (string, error) {
-	parsedURL, err := url.Parse(inputURL)
-	if err != nil {
-		return "", fmt.Errorf("urlcleaner: error parsing URL: %v", err)
+// Outbound tracking parameters are appending the website's url to outbound links.
+var trackingParamsOutbound = map[string]bool{
+	// Ghost
+	"ref": true,
+}
+
+func RemoveTrackingParameters(parsedFeedURL, parsedSiteURL, parsedInputUrl *url.URL) (string, error) {
+	if parsedFeedURL == nil || parsedSiteURL == nil || parsedInputUrl == nil {
+		return "", fmt.Errorf("urlcleaner: one of the URLs is nil")
 	}
 
-	if !strings.HasPrefix(parsedURL.Scheme, "http") {
-		return inputURL, nil
-	}
-
-	queryParams := parsedURL.Query()
+	queryParams := parsedInputUrl.Query()
 	hasTrackers := false
 
 	// Remove tracking parameters
@@ -100,18 +110,25 @@ func RemoveTrackingParameters(inputURL string) (string, error) {
 			queryParams.Del(param)
 			hasTrackers = true
 		}
+		if trackingParamsOutbound[lowerParam] {
+			// handle duplicate parameters like ?a=b&a=c&a=d…
+			for _, value := range queryParams[param] {
+				if value == parsedFeedURL.Hostname() || value == parsedSiteURL.Hostname() {
+					queryParams.Del(param)
+					hasTrackers = true
+					break
+				}
+			}
+		}
 	}
 
 	// Do not modify the URL if there are no tracking parameters
 	if !hasTrackers {
-		return inputURL, nil
+		return parsedInputUrl.String(), nil
 	}
 
-	parsedURL.RawQuery = queryParams.Encode()
-
-	// Remove trailing "?" if query string is empty
-	cleanedURL := parsedURL.String()
-	cleanedURL = strings.TrimSuffix(cleanedURL, "?")
+	parsedInputUrl.RawQuery = queryParams.Encode()
+	cleanedURL := strings.TrimSuffix(parsedInputUrl.String(), "?")
 
 	return cleanedURL, nil
 }

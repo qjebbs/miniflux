@@ -34,7 +34,6 @@ func (f *funcMap) Map() template.FuncMap {
 	return template.FuncMap{
 		"formatFileSize":   formatFileSize,
 		"dict":             dict,
-		"hasKey":           hasKey,
 		"truncate":         truncate,
 		"isEmail":          isEmail,
 		"baseURL":          config.Opts.BaseURL,
@@ -86,9 +85,7 @@ func (f *funcMap) Map() template.FuncMap {
 		"mustBeProxyfied": func(mediaType string) bool {
 			return slices.Contains(config.Opts.MediaProxyResourceTypes(), mediaType)
 		},
-		"domain":    urllib.Domain,
-		"hasPrefix": strings.HasPrefix,
-		"contains":  strings.Contains,
+		"domain": urllib.Domain,
 		"replace": func(str, old, new string) string {
 			return strings.Replace(str, old, new, 1)
 		},
@@ -109,8 +106,11 @@ func (f *funcMap) Map() template.FuncMap {
 		"deRef":     func(i *int) int { return *i },
 		"duration":  duration,
 		"urlEncode": url.PathEscape,
+		"subtract": func(a, b int) int {
+			return a - b
+		},
 
-		// These functions are overrode at runtime after the parsing.
+		// These functions are overridden at runtime after parsing.
 		"elapsed": func(timezone string, t time.Time) string {
 			return ""
 		},
@@ -138,20 +138,9 @@ func dict(values ...interface{}) (map[string]interface{}, error) {
 	return dict, nil
 }
 
-func hasKey(dict map[string]string, key string) bool {
-	if value, found := dict[key]; found {
-		return value != ""
-	}
-	return false
-}
-
 func truncate(str string, max int) string {
-	runes := 0
-	for i := range str {
-		runes++
-		if runes > max {
-			return str[:i] + "…"
-		}
+	if runes := []rune(str); len(runes) > max {
+		return string(runes[:max]) + "…"
 	}
 	return str
 }

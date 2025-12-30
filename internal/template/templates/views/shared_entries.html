@@ -48,14 +48,14 @@
                 <h2 id="entry-title-{{ .ID }}" class="item-title">
                     <a href="{{ route "readEntry" "entryID" .ID }}">
                         {{ if ne .Feed.Icon.IconID 0 }}
-                        <img src="{{ route "icon" "iconID" .Feed.Icon.IconID }}" width="16" height="16" loading="lazy" alt="">
+                        <img src="{{ route "feedIcon" "externalIconID" .Feed.Icon.ExternalIconID }}" width="16" height="16" loading="lazy" alt="">
                         {{ end }}
                         {{ .Title }}
                     </a>
                     {{ if .ShareCode }}
                     <a href="{{ route "sharedEntry" "shareCode" .ShareCode }}"
                         title="{{ t "entry.shared_entry.title" }}"
-                        target="_blank">{{ icon "share" }}</a>
+                        {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ end }}>{{ icon "share" }}</a>
                     {{ end }}
                 </h2>
                 <span class="category"><a href="{{ route "categoryEntries" "categoryID" .Feed.Category.ID }}">{{ .Feed.Category.Title }}</a></span>

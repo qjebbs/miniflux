@@ -20,6 +20,11 @@ func (c *Category) String() string {
 	return fmt.Sprintf("ID=%d, UserID=%d, Title=%s", c.ID, c.UserID, c.Title)
 }
 
+type (
+	CategoryCreationRequest     = CategoryRequest
+	CategoryModificationRequest = CategoryRequest
+)
+
 // CategoryRequest represents the request to create or update a category.
 type CategoryRequest struct {
 	Title string `json:"title"`

@@ -54,7 +54,7 @@ func (h *handler) bookmarklet(w http.ResponseWriter, r *http.Request) {
 	view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	view.Set("defaultUserAgent", config.Opts.HTTPClientUserAgent())
-	view.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
+	view.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyURLConfigured())
 
 	html.OK(w, r, view.Render("add_subscription"))
 }

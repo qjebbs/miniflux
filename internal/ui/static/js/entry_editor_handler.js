@@ -11,7 +11,7 @@ class EntryEditorHandler {
     static submitHandler() {
         let preview = document.querySelector('#preview-content');
         let editor = document.querySelector('#form-content');
-        let previewParent = DomHelper.findParent(preview, "tab-content");
+        let previewParent = findParent(preview, "tab-content");
         if (previewParent.classList.contains('active')) {
             editor.value = preview.innerHTML;
         }

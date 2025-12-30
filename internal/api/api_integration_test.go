@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"strings"
 	"testing"
@@ -48,7 +48,7 @@ func newIntegrationTestConfig() *integrationTestConfig {
 		testFeedURL:           getDefaultEnvValues("TEST_MINIFLUX_FEED_URL", "https://miniflux.app/feed.xml"),
 		testFeedTitle:         getDefaultEnvValues("TEST_MINIFLUX_FEED_TITLE", "Miniflux"),
 		testSubscriptionTitle: getDefaultEnvValues("TEST_MINIFLUX_SUBSCRIPTION_TITLE", "Miniflux Releases"),
-		testWebsiteURL:        getDefaultEnvValues("TEST_MINIFLUX_WEBSITE_URL", "https://miniflux.app"),
+		testWebsiteURL:        getDefaultEnvValues("TEST_MINIFLUX_WEBSITE_URL", "https://miniflux.app/"),
 	}
 }
 
@@ -729,6 +729,116 @@ func TestRegularUsersCannotUpdateOtherUsers(t *testing.T) {
 	}
 }
 
+func TestAPIKeysEndpoint(t *testing.T) {
+	testConfig := newIntegrationTestConfig()
+	if !testConfig.isConfigured() {
+		t.Skip(skipIntegrationTestsMessage)
+	}
+
+	adminClient := miniflux.NewClient(testConfig.testBaseURL, testConfig.testAdminUsername, testConfig.testAdminPassword)
+	regularTestUser, err := adminClient.CreateUser(testConfig.genRandomUsername(), testConfig.testRegularPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer adminClient.DeleteUser(regularTestUser.ID)
+
+	regularUserClient := miniflux.NewClient(testConfig.testBaseURL, regularTestUser.Username, testConfig.testRegularPassword)
+	apiKeys, err := regularUserClient.APIKeys()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(apiKeys) != 0 {
+		t.Fatalf(`Expected no API keys, got %d`, len(apiKeys))
+	}
+
+	// Create an API key for the user.
+	apiKey, err := regularUserClient.CreateAPIKey("Test API Key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if apiKey.ID == 0 {
+		t.Fatalf(`Invalid API key ID, got "%v"`, apiKey.ID)
+	}
+	if apiKey.UserID != regularTestUser.ID {
+		t.Fatalf(`Invalid user ID for API key, got "%v" instead of "%v"`, apiKey.UserID, regularTestUser.ID)
+	}
+	if apiKey.Token == "" {
+		t.Fatalf(`Invalid API key token, got "%v"`, apiKey.Token)
+	}
+	if apiKey.Description != "Test API Key" {
+		t.Fatalf(`Invalid API key description, got "%v" instead of "Test API Key"`, apiKey.Description)
+	}
+
+	// Create a duplicate API key with the same description.
+	if _, err := regularUserClient.CreateAPIKey("Test API Key"); err == nil {
+		t.Fatal(`Creating a duplicate API key with the same description should raise an error`)
+	}
+
+	// Fetch the API keys again.
+	apiKeys, err = regularUserClient.APIKeys()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(apiKeys) != 1 {
+		t.Fatalf(`Expected 1 API key, got %d`, len(apiKeys))
+	}
+	if apiKeys[0].ID != apiKey.ID {
+		t.Fatalf(`Invalid API key ID, got "%v" instead of "%v"`, apiKeys[0].ID, apiKey.ID)
+	}
+	if apiKeys[0].UserID != regularTestUser.ID {
+		t.Fatalf(`Invalid user ID for API key, got "%v" instead of "%v"`, apiKeys[0].UserID, regularTestUser.ID)
+	}
+	if apiKeys[0].Token != apiKey.Token {
+		t.Fatalf(`Invalid API key token, got "%v" instead of "%v"`, apiKeys[0].Token, apiKey.Token)
+	}
+	if apiKeys[0].Description != "Test API Key" {
+		t.Fatalf(`Invalid API key description, got "%v" instead of "Test API Key"`, apiKeys[0].Description)
+	}
+
+	// Create a new client using the API key.
+	apiKeyClient := miniflux.NewClient(testConfig.testBaseURL, apiKey.Token)
+
+	// Fetch the user using the API key client.
+	user, err := apiKeyClient.Me()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify the user matches the regular test user.
+	if user.ID != regularTestUser.ID {
+		t.Fatalf(`Expected user ID %d, got %d`, regularTestUser.ID, user.ID)
+	}
+
+	// Delete the API key.
+	if err := regularUserClient.DeleteAPIKey(apiKey.ID); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify the API key is deleted.
+	apiKeys, err = regularUserClient.APIKeys()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(apiKeys) != 0 {
+		t.Fatalf(`Expected no API keys after deletion, got %d`, len(apiKeys))
+	}
+
+	// Try to delete the API key again, it should return an error.
+	err = regularUserClient.DeleteAPIKey(apiKey.ID)
+	if err == nil {
+		t.Fatal(`Deleting a non-existent API key should raise an error`)
+	}
+	if !errors.Is(err, miniflux.ErrNotFound) {
+		t.Fatalf(`Expected "not found" error, got %v`, err)
+	}
+
+	// Try to create an API key with an empty description.
+	if _, err := regularUserClient.CreateAPIKey(""); err == nil {
+		t.Fatal(`Creating an API key with an empty description should raise an error`)
+	}
+}
+
 func TestMarkUserAsReadEndpoint(t *testing.T) {
 	testConfig := newIntegrationTestConfig()
 	if !testConfig.isConfigured() {
@@ -824,6 +934,10 @@ func TestCreateCategoryEndpoint(t *testing.T) {
 	if category.Title != categoryName {
 		t.Errorf(`Invalid title, got "%v" instead of "%v"`, category.Title, categoryName)
 	}
+
+	if category.HideGlobally {
+		t.Errorf(`Invalid hide globally value, got "%v"`, category.HideGlobally)
+	}
 }
 
 func TestCreateCategoryWithEmptyTitle(t *testing.T) {
@@ -865,7 +979,49 @@ func TestCannotCreateDuplicatedCategory(t *testing.T) {
 	}
 }
 
-func TestUpdateCatgoryEndpoint(t *testing.T) {
+func TestCreateCategoryWithOptions(t *testing.T) {
+	testConfig := newIntegrationTestConfig()
+	if !testConfig.isConfigured() {
+		t.Skip(skipIntegrationTestsMessage)
+	}
+
+	adminClient := miniflux.NewClient(testConfig.testBaseURL, testConfig.testAdminUsername, testConfig.testAdminPassword)
+
+	regularTestUser, err := adminClient.CreateUser(testConfig.genRandomUsername(), testConfig.testRegularPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer adminClient.DeleteUser(regularTestUser.ID)
+
+	regularUserClient := miniflux.NewClient(testConfig.testBaseURL, regularTestUser.Username, testConfig.testRegularPassword)
+
+	newCategory, err := regularUserClient.CreateCategoryWithOptions(&miniflux.CategoryCreationRequest{
+		Title:        "My category",
+		HideGlobally: true,
+	})
+	if err != nil {
+		t.Fatalf(`Creating a category with options should not raise an error: %v`, err)
+	}
+
+	categories, err := regularUserClient.Categories()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, category := range categories {
+		if category.ID == newCategory.ID {
+			if category.Title != newCategory.Title {
+				t.Errorf(`Invalid title, got %q instead of %q`, category.Title, newCategory.Title)
+			}
+			if category.HideGlobally != true {
+				t.Errorf(`Invalid hide globally value, got "%v"`, category.HideGlobally)
+			}
+			break
+		}
+	}
+}
+
+func TestUpdateCategoryEndpoint(t *testing.T) {
 	testConfig := newIntegrationTestConfig()
 	if !testConfig.isConfigured() {
 		t.Skip(skipIntegrationTestsMessage)
@@ -902,6 +1058,91 @@ func TestUpdateCatgoryEndpoint(t *testing.T) {
 
 	if updatedCategory.Title != "new title" {
 		t.Errorf(`Invalid title, got "%v" instead of "%v"`, updatedCategory.Title, "new title")
+	}
+
+	if updatedCategory.HideGlobally {
+		t.Errorf(`Invalid hide globally value, got "%v"`, updatedCategory.HideGlobally)
+	}
+}
+
+func TestUpdateCategoryWithOptions(t *testing.T) {
+	testConfig := newIntegrationTestConfig()
+	if !testConfig.isConfigured() {
+		t.Skip(skipIntegrationTestsMessage)
+	}
+
+	adminClient := miniflux.NewClient(testConfig.testBaseURL, testConfig.testAdminUsername, testConfig.testAdminPassword)
+
+	regularTestUser, err := adminClient.CreateUser(testConfig.genRandomUsername(), testConfig.testRegularPassword, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer adminClient.DeleteUser(regularTestUser.ID)
+
+	regularUserClient := miniflux.NewClient(testConfig.testBaseURL, regularTestUser.Username, testConfig.testRegularPassword)
+
+	newCategory, err := regularUserClient.CreateCategoryWithOptions(&miniflux.CategoryCreationRequest{
+		Title: "My category",
+	})
+	if err != nil {
+		t.Fatalf(`Creating a category with options should not raise an error: %v`, err)
+	}
+
+	updatedCategory, err := regularUserClient.UpdateCategoryWithOptions(newCategory.ID, &miniflux.CategoryModificationRequest{
+		Title: miniflux.SetOptionalField("new title"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if updatedCategory.ID != newCategory.ID {
+		t.Errorf(`Invalid categoryID, got "%v"`, updatedCategory.ID)
+	}
+
+	if updatedCategory.Title != "new title" {
+		t.Errorf(`Invalid title, got "%v" instead of "%v"`, updatedCategory.Title, "new title")
+	}
+
+	if updatedCategory.HideGlobally {
+		t.Errorf(`Invalid hide globally value, got "%v"`, updatedCategory.HideGlobally)
+	}
+
+	updatedCategory, err = regularUserClient.UpdateCategoryWithOptions(newCategory.ID, &miniflux.CategoryModificationRequest{
+		HideGlobally: miniflux.SetOptionalField(true),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if updatedCategory.ID != newCategory.ID {
+		t.Errorf(`Invalid categoryID, got "%v"`, updatedCategory.ID)
+	}
+
+	if updatedCategory.Title != "new title" {
+		t.Errorf(`Invalid title, got "%v" instead of "%v"`, updatedCategory.Title, "new title")
+	}
+
+	if !updatedCategory.HideGlobally {
+		t.Errorf(`Invalid hide globally value, got "%v"`, updatedCategory.HideGlobally)
+	}
+
+	updatedCategory, err = regularUserClient.UpdateCategoryWithOptions(newCategory.ID, &miniflux.CategoryModificationRequest{
+		HideGlobally: miniflux.SetOptionalField(false),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if updatedCategory.ID != newCategory.ID {
+		t.Errorf(`Invalid categoryID, got %q`, updatedCategory.ID)
+	}
+
+	if updatedCategory.Title != "new title" {
+		t.Errorf(`Invalid title, got %q instead of %q`, updatedCategory.Title, "new title")
+	}
+
+	if updatedCategory.HideGlobally {
+		t.Errorf(`Invalid hide globally value, got "%v"`, updatedCategory.HideGlobally)
 	}
 }
 

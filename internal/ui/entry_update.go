@@ -45,7 +45,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 			entryForm.Content = content
 		}
 	}
-	entryForm.Content = sanitizer.Sanitize(entryForm.URL, entryForm.Content)
+	entryForm.Content = sanitizer.SanitizeHTML(entryForm.URL, entryForm.Content, &sanitizer.SanitizerOptions{OpenLinksInNewTab: user.OpenExternalLinksInNewTab})
 
 	nsfw := request.IsNSFWEnabled(r)
 	sess := session.New(h.store, request.SessionID(r))
@@ -68,7 +68,7 @@ func (h *handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 	if entryForm.EntryID == 0 {
 		entry = entryForm.Merge(&model.Entry{
 			UserID:  user.ID,
-			Hash:    crypto.Hash(entryForm.URL),
+			Hash:    crypto.SHA256(entryForm.URL),
 			Date:    time.Now(),
 			Status:  model.EntryStatusUnread,
 			Starred: true,

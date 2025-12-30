@@ -22,7 +22,7 @@ var queries = []string{
 
 // URLHash returns the hash of a media url
 func URLHash(mediaURL string) string {
-	return crypto.Hash(strings.Trim(mediaURL, " "))
+	return crypto.SHA256(strings.Trim(mediaURL, " "))
 }
 
 // FindMedia try to find the media cache of the URL.

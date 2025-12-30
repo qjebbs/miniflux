@@ -5,11 +5,9 @@ package subscription // import "miniflux.app/v2/internal/reader/subscription"
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/url"
-	"regexp"
 	"strings"
 
 	"miniflux.app/v2/internal/config"
@@ -22,10 +20,6 @@ import (
 	"miniflux.app/v2/internal/urllib"
 
 	"github.com/PuerkitoBio/goquery"
-)
-
-var (
-	youtubeChannelRegex = regexp.MustCompile(`channel/(.*)$`)
 )
 
 type SubscriptionFinder struct {
@@ -48,7 +42,7 @@ func (f *SubscriptionFinder) FeedResponseInfo() *model.FeedCreationRequestFromSu
 	return f.feedResponseInfo
 }
 
-func (f *SubscriptionFinder) FindSubscriptions(websiteURL, rssBridgeURL string) (Subscriptions, *locale.LocalizedErrorWrapper) {
+func (f *SubscriptionFinder) FindSubscriptions(websiteURL, rssBridgeURL string, rssBridgeToken string) (Subscriptions, *locale.LocalizedErrorWrapper) {
 	responseHandler := fetcher.NewResponseHandler(f.requestBuilder.ExecuteRequest(websiteURL))
 	defer responseHandler.Close()
 
@@ -108,7 +102,7 @@ func (f *SubscriptionFinder) FindSubscriptions(websiteURL, rssBridgeURL string) 
 	// Step 5) Check if the website URL can use RSS-Bridge.
 	if rssBridgeURL != "" {
 		slog.Debug("Try to detect feeds with RSS-Bridge", slog.String("website_url", websiteURL))
-		if subscriptions, localizedError := f.FindSubscriptionsFromRSSBridge(websiteURL, rssBridgeURL); localizedError != nil {
+		if subscriptions, localizedError := f.FindSubscriptionsFromRSSBridge(websiteURL, rssBridgeURL, rssBridgeToken); localizedError != nil {
 			return nil, localizedError
 		} else if len(subscriptions) > 0 {
 			slog.Debug("Subscriptions found from RSS-Bridge", slog.String("website_url", websiteURL), slog.Any("subscriptions", subscriptions))
@@ -189,14 +183,15 @@ func (f *SubscriptionFinder) FindSubscriptionsFromWebPage(websiteURL, contentTyp
 
 func (f *SubscriptionFinder) FindSubscriptionsFromWellKnownURLs(websiteURL string) (Subscriptions, *locale.LocalizedErrorWrapper) {
 	knownURLs := map[string]string{
-		"atom.xml":  parser.FormatAtom,
-		"feed.xml":  parser.FormatAtom,
-		"feed/":     parser.FormatAtom,
-		"rss.xml":   parser.FormatRSS,
-		"rss/":      parser.FormatRSS,
-		"index.rss": parser.FormatRSS,
-		"index.xml": parser.FormatRSS,
-		"feed.atom": parser.FormatAtom,
+		"atom.xml":     parser.FormatAtom,
+		"feed.atom":    parser.FormatAtom,
+		"feed.xml":     parser.FormatAtom,
+		"feed/":        parser.FormatAtom,
+		"index.rss":    parser.FormatRSS,
+		"index.xml":    parser.FormatRSS,
+		"rss.xml":      parser.FormatRSS,
+		"rss/":         parser.FormatRSS,
+		"rss/feed.xml": parser.FormatRSS,
 	}
 
 	websiteURLRoot := urllib.RootURL(websiteURL)
@@ -253,13 +248,14 @@ func (f *SubscriptionFinder) FindSubscriptionsFromWellKnownURLs(websiteURL strin
 	return subscriptions, nil
 }
 
-func (f *SubscriptionFinder) FindSubscriptionsFromRSSBridge(websiteURL, rssBridgeURL string) (Subscriptions, *locale.LocalizedErrorWrapper) {
+func (f *SubscriptionFinder) FindSubscriptionsFromRSSBridge(websiteURL, rssBridgeURL string, rssBridgeToken string) (Subscriptions, *locale.LocalizedErrorWrapper) {
 	slog.Debug("Trying to detect feeds using RSS-Bridge",
 		slog.String("website_url", websiteURL),
 		slog.String("rssbridge_url", rssBridgeURL),
+		slog.String("rssbridge_token", rssBridgeToken),
 	)
 
-	bridges, err := rssbridge.DetectBridges(rssBridgeURL, websiteURL)
+	bridges, err := rssbridge.DetectBridges(rssBridgeURL, rssBridgeToken, websiteURL)
 	if err != nil {
 		return nil, locale.NewLocalizedErrorWrapper(err, "error.unable_to_detect_rssbridge", err)
 	}
@@ -267,6 +263,7 @@ func (f *SubscriptionFinder) FindSubscriptionsFromRSSBridge(websiteURL, rssBridg
 	slog.Debug("RSS-Bridge results",
 		slog.String("website_url", websiteURL),
 		slog.String("rssbridge_url", rssBridgeURL),
+		slog.String("rssbridge_token", rssBridgeToken),
 		slog.Int("nb_bridges", len(bridges)),
 	)
 
@@ -297,8 +294,8 @@ func (f *SubscriptionFinder) FindSubscriptionsFromYouTubeChannelPage(websiteURL 
 		return nil, nil
 	}
 
-	if matches := youtubeChannelRegex.FindStringSubmatch(decodedUrl.Path); len(matches) == 2 {
-		feedURL := fmt.Sprintf(`https://www.youtube.com/feeds/videos.xml?channel_id=%s`, matches[1])
+	if _, channelID, found := strings.Cut(decodedUrl.Path, "channel/"); found {
+		feedURL := "https://www.youtube.com/feeds/videos.xml?channel_id=" + channelID
 		return Subscriptions{NewSubscription(websiteURL, feedURL, parser.FormatAtom)}, nil
 	}
 
@@ -318,7 +315,7 @@ func (f *SubscriptionFinder) FindSubscriptionsFromYouTubePlaylistPage(websiteURL
 
 	if (strings.HasPrefix(decodedUrl.Path, "/watch") && decodedUrl.Query().Has("list")) || strings.HasPrefix(decodedUrl.Path, "/playlist") {
 		playlistID := decodedUrl.Query().Get("list")
-		feedURL := fmt.Sprintf(`https://www.youtube.com/feeds/videos.xml?playlist_id=%s`, playlistID)
+		feedURL := "https://www.youtube.com/feeds/videos.xml?playlist_id=" + playlistID
 		return Subscriptions{NewSubscription(websiteURL, feedURL, parser.FormatAtom)}, nil
 	}
 

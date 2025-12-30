@@ -1,3 +1,261 @@
+Version 2.2.11 (July 26, 2025)
+------------------------------
+
+### ✨ New Features
+
+* **TLS support for Unix sockets**: Miniflux can now serve TLS over Unix domain sockets using `CERT_FILE` and `KEY_FILE` ([#fcf86e3](https://github.com/miniflux/v2/commit/fcf86e3)).
+* **RSS fallback**: If a feed entry has no URL, Miniflux now uses the enclosure URL as a fallback ([#d9de9d1](https://github.com/miniflux/v2/commit/d9de9d1)).
+* **Bearer token for Linkwarden**: The Linkwarden integration now uses Bearer token authorization instead of cookies ([#1d11623](https://github.com/miniflux/v2/commit/1d11623)).
+* **Cookie policy improvement**: `SameSiteStrictMode` is enforced for cookies when OAuth2/OIDC is not used ([#135ce1d](https://github.com/miniflux/v2/commit/135ce1d)).
+* **Readability engine**: Avoid removing elements with the `content` class during readability parsing ([#66b269e](https://github.com/miniflux/v2/commit/66b269e)).
+
+### 🛠️ Improvements
+
+* **Massive readability engine refactoring** and performance optimizations:
+
+  * Improved performance of `getClassWeight`, `getLinkDensity`, and `transformMisusedDivsIntoParagraphs`.
+  * Simplified and optimized internal logic of `removeUnlikelyCandidates`, `getSelectionLength`, and `getArticle`.
+  * Reduced memory allocation in sanitizer and readability components.
+* **Storage optimization**: Strings are now truncated on the Go side to respect `tsvector` limits, reducing DB load and ensuring valid UTF-8 ([#703f113](https://github.com/miniflux/v2/commit/703f113)).
+* **Simplified and clarified internal code structure**:
+
+  * Major cleanup and size optimization of internal structs (`Feed`, `FeedCreationRequest`, etc.).
+  * Reduced memory use and improved CPU cache locality.
+  * Numerous refactors across `config`, `template`, `locale`, `subscription`, and `fetcher` modules.
+
+### 🐛 Bug Fixes
+
+* Fixed an issue with feeds having excessive leading whitespace causing parser buffer issues ([#54abd0a](https://github.com/miniflux/v2/commit/54abd0a)).
+* Properly preserve UTF-8 when truncating strings for full-text search ([#703f113](https://github.com/miniflux/v2/commit/703f113)).
+* Fixed logic error in enclosure type detection ([#50d5cb9](https://github.com/miniflux/v2/commit/50d5cb9)).
+* Fixed incorrect filter rule parsing of Windows-style newlines ([#dc81725](https://github.com/miniflux/v2/commit/dc81725)).
+* Fixed a panic in `startAutoCertTLSServer` function when using Let's Encrypt automatic certificates ([#f7a6b02](https://github.com/miniflux/v2/commit/f7a6b02))
+* Improved UI spacing consistency around header/footer ([#32fbb4e](https://github.com/miniflux/v2/commit/32fbb4e)).
+
+### ⚠️ Breaking Changes
+
+* **Windows binary no longer distributed**: Windows is no longer a supported platform for binary distribution. Users must build from source if needed ([#b470b18](https://github.com/miniflux/v2/commit/b470b18)).
+
+### 🧪 Tests & CI
+
+* Test coverage significantly increased for modules like `readability`, `sanitizer`, `processor`, `locale`, and `storage`.
+* Commit linter updated to support new Git revert message format.
+
+### 🐘 Docker & Environment
+
+* Base Docker image updated to Alpine 3.22.
+* PostgreSQL Docker example updated to use the latest version.
+
+### 🌐 Localization
+
+* Updated Chinese and German translations.
+
+### 🔒 Dependency Updates
+
+* Bumped `github.com/go-webauthn/webauthn` to `0.13.4`
+* Bumped `github.com/tdewolff/minify/v2` to `2.23.10`
+* Bumped `golang.org/x/*` modules: `image`, `net`, `term`, `crypto`
+* Bumped `github.com/andybalholm/brotli` to `1.2.0`
+
+Version 2.2.10 (June 23, 2025)
+------------------------------
+
+* test(sanitizer): add unit test for 0x0 pixel tracker
+* test(sanitizer): add test case to cover Vimeo iframe rewrite without query string
+* refactor(youtube): Remove a regex and make use of `fetchWatchTime`
+* refactor(youtube): initialize two maps to the proper length
+* refactor(tests): use `b.Loop()` instead of for range `b.N`
+* refactor(server): avoid double call to `Sprintf`
+* refactor(sanitizer): use global variables to avoid recreating slices on every call
+* refactor(sanitizer): use a map for iframe allow list
+* refactor(sanitizer): remove two useless `www.` prefixes
+* refactor(sanitizer): make `isValidAttribute()` check O(1)
+* refactor(rewrite): rename `Rewriter` function to `ApplyContentRewriteRules`
+* refactor(processor): simplify Bilibili processing
+* refactor(processor): remove a useless type declaration
+* refactor(processor): remove a duplicated function call
+* refactor(processor): refactor common code into a `fetchWatchTime` function
+* refactor(processor): move filters to a `filter` package
+* refactor(processor): move `FilterEntryMaxAgeDays` filter to filter package
+* refactor(processor): move `RewriteEntryURL` function to `rewrite` package
+* refactor(processor): minor simplification of a loop
+* refactor(internal): add an `urllib.DomainWithoutWWW` function
+* refactor(http): rename package from `httpd` to `server` for consistency
+* refactor(http): Don't hardcode TLS configuration
+* refactor(filter): avoid code duplication between `IsBlockedEntry` and `IsAllowedEntry` functions
+* refactor(database): drop 3 columns in a single transaction
+* refactor(crypto): use `rand.Text()` instead of a custom implementation
+* refactor(config): remove deprecated config options
+* refactor(appjs): no need to check if always present elements are always present
+* perf(xml): optimized `NewXMLDecoder`
+* perf(xml): optimize XML filtering
+* perf(validator): slightly optimize a regex
+* perf(timezone): cache `getLocation`'s results
+* perf(storage): pre-allocate a slice in `RefreshFeedEntries`
+* perf(storage): optimize away two `Sprintf` calls
+* perf(sanitizer): use a switch-case instead of a map
+* perf(sanitizer): minor simplifications of the sanitizer
+* perf(sanitizer): extract a call to `url.Parse` and make intensive use of it
+* perf(rss): optimize a bit `BuildFeed`
+* perf(rss): early return when looking for an item's author
+* perf(rewrite): make `getPredefinedRewriteRules` O(1)
+* perf(reader): use a non-cryptographic hash when possible
+* perf(reader): optimize `RemoveTrackingParameters`
+* perf(readability): minor regex improvement
+* perf(media): minor regex simplification
+* perf(fetcher): pre-allocate the cipherSuites
+* perf(database): use `TRUNCATE` instead of `DELETE FROM` in migrations
+* perf(database): marginally speeds migrations up
+* perf(api): use `math/rand/v2` instead of `math/rand` for better performance
+* fix(readability): do not remove elements within code blocks
+* fix(karakeep): correct method name and improve error handling in `SaveURL`
+* fix(filter): skip invalid rules instead of exiting the loop
+* feat(ui): display external link in single entry view because the URL was not visible on mobile (no mouse over)
+* feat(ui): avoid showing an excessive number of tags
+* feat(ui): add user setting to control `target="_blank"` on links
+* feat(sanitizer): validate MathML XML namespace
+* feat(sanitizer): consider images of size 0x0 as pixel trackers
+* feat(sanitizer): add validation for empty `width` and `height` attributes in img tags
+* feat(sanitizer): add support for `fetchpriority` and `decoding` attributes in img tags
+* feat(rewrite): add support for YouTube Shorts video URL pattern
+* feat(rewrite): add `parkablogs.com` to the referer override list
+* feat(oidc): use `preferred_username` first instead of `email` claim
+* feat(locale): update Polish translations
+* feat(locale): update locales using machine translation
+* feat(locale): update Indonesian translations
+* feat(locale): update German translations
+* feat(locale): update Chinese translations
+* feat(integration)!: remove Pocket integration (Pocket will no longer be available after July 8, 2025)
+* feat(filter): add `EntryDate=max-age:duration` filter
+* feat(css): add margin-bottom to input for consistent spacing
+* feat(config)!: remove `SERVER_TIMING_HEADER` config option
+* feat: Allow multiple listen addresses
+* feat: adding support for saving entries to Karakeep
+* feat: add entry filters at the feed level
+* docs(readme): document a couple of nifty features
+* docs: add `CONTRIBUTING.md` file
+* chore(template): remove `X-UA-Compatible` meta tag specific to Internet Explorer
+* build(go): bump to go 1.24
+* build(deps): bump `library/alpine` in `/packaging/docker/alpine`
+* build(deps): bump `golang.org/x/net` from `0.40.0` to `0.41.0`
+* build(deps): bump `golang.org/x/image` from `0.27.0` to `0.28.0`
+* build(deps): bump `golang.org/x/crypto` from `0.38.0` to `0.39.0`
+
+Version 2.2.9 (May 26, 2025)
+----------------------------
+
+* refactor(googlereader): remove redundant log message
+* refactor(googlereader): move constants to separate files
+* fix(webauthn): correct argument in debug log
+* fix(sanitizer): MathML tags are not fully supported by `golang.org/x/net/html`
+* fix(migrations): prevent failure at version 45 with long entry URLs
+* fix(locale): localize Git commit label in about page
+* fix(googlereader): return a 400 instead of 500 for invalid edit requests
+* fix(googlereader): handle various item ID formats
+* fix(googlereader): avoid panic for inexisting feed or category
+* fix(googlereader): `/items/contents` should accept short form item IDs
+* feat(webauthn): prefer creation of a client-side discoverable credential
+* feat(urlcleaner): remove the `ref` parameter from url
+* feat(settings): replace `div.panel` with paragraph tags for OAuth2 links
+* feat(settings): add validation for entry order and categories sorting order
+* feat(settings): add option to always open articles externally
+* feat(server): add liveness and readiness probes
+* feat(sanitizer): add MathML tags to the sanitizer
+* feat(sanitized): allow Spotify iframes
+* feat(rssbridge): support authentication token for RSS-Bridge
+* feat(response): change error response content type to plain text and escape HTML
+* feat(reader): populate feed description automatically
+* feat(locale): update Russian translation
+* feat(locale): update Polish translation
+* feat(locale): update French translation
+* feat(googlereader): avoid SQL query to fetch username in streamItemContentsHandler
+* feat(googlereader): add `mark-all-as-read` endpoint
+* feat(api): add new endpoints to manage API keys
+* ci: remove deprecated `reviewers` field from `dependantbot.yml`
+* chore(gitignore): ignore miniflux binary in root directory
+* build(deps): bump `golangci/golangci-lint-action` from `7` to `8`
+* build(deps): bump `golang.org/x/oauth2` from `0.29.0` to `0.30.0`
+* build(deps): bump `golang.org/x/net` from `0.39.0` to `0.40.0`
+* build(deps): bump `golang.org/x/image` from `0.26.0` to `0.27.0`
+* build(deps): bump `golang.org/x/crypto` from `0.37.0` to `0.38.0`
+* build(deps): bump `github.com/tdewolff/minify/v2` from `2.23.3` to `2.23.8`
+* build(deps): bump `github.com/tdewolff/minify/v2` from `2.23.1` to `2.23.3`
+* build(deps): bump `github.com/go-webauthn/webauthn` from `0.12.3` to `0.13.0`
+
+Version 2.2.8 (April 22, 2025)
+------------------------------
+
+* refactor(js): replace `DomHelper` methods with standalone functions
+* refactor: avoid logging twice the feed errors in the background worker
+* fix(api): `hide_globally` categories field should be a boolean
+* fix(ui): add missing `await` when calling `navigator.share()` method
+* fix(ui): replace share link with a form button for better accessibility
+* feat(telegrambot): replace "Go to website" button with "Go to Miniflux"
+* feat(locale): update Polish translation
+* feat(locale): update German translation
+* feat(locale): update Chinese translation
+* feat(config): add `SCHEDULER_ROUND_ROBIN_MAX_INTERVAL` option
+* feat(cli): add `-reset-feed-next-check-at` argument
+* feat(api): add `update_content` query parameter to `/entries/{entryID}/fetch-content` endpoint
+* feat: use `Cache-Control` max-age and `Expires` headers to calculate next check
+* feat: implement proxy URL per feed
+* feat: add proxy rotation functionality
+* ci(linter): replace commitlint with a Python script
+* ci: add documentation issue template
+* build(deps): bump `golang.org/x/oauth2` from `0.28.0` to `0.29.0`
+* build(deps): bump `golang.org/x/net` from `0.38.0` to `0.39.0`
+* build(deps): bump `golang.org/x/image` from `0.25.0` to `0.26.0`
+* build(deps): bump `github.com/tdewolff/minify/v2` from `2.22.4` to `2.23.1`
+* build(deps): bump `github.com/PuerkitoBio/goquery` from `1.10.2` to `1.10.3`
+* build(deps): bump `github.com/prometheus/client_golang`
+* build(deps): bump `github.com/mattn/go-sqlite3` from `1.14.24` to `1.14.28`
+* build(deps): bump `github.com/go-webauthn/webauthn` from `0.12.2` to `0.12.3`
+* build(deps): bump `github.com/coreos/go-oidc/v3` from `3.13.0` to `3.14.1`
+
+Version 2.2.7 (April 1, 2025)
+-----------------------------
+
+* test(api): update base URL after upgrading Hugo
+* refactor(rewrite): reorganize referer rules and remove obsolete mappings
+* refactor: combine feed icon handlers to use only `externalIconID`
+* fix(ui): update share feature to correctly select the title element and handle empty titles
+* fix(ui): update entry tags display logic to show links based on user authentication
+* fix(ui): remove touch-action style to prevent horizontal scrolling issues
+* fix(ui): log a warning for an empty client secret
+* fix(ui): change labels from "Read / Unread" to "Mark as Read"
+* fix(ui): avoid 500 errors and NaN when marking a deleted entry as read
+* fix(subscription): add `/rss/feed.xml` to the list of known feed URLs
+* fix(security): use a more restrictive CSP for untrusted content
+* fix(rewrite): remove obsolete rule for `webtoons.com`
+* fix(processor): add missing quotation marks to import comments
+* fix(googlereader): return enclosures in the `streamItemContentsHandler` response
+* fix: address minor issues detected by Go linters
+* feat(urlcleaner): add more Google Analytics parameters
+* feat(storage): reduce the number of SQL queries when fetching entry enclosures
+* feat(sanitizer): allow the `<u>` tag in feeds
+* feat(sanitizer): allow the `<b>` tag
+* feat(locale): update Polish translation
+* feat(locale): add Romanian translation
+* feat(integrations/ntfy): make ntfy topics configurable per feed
+* feat(googlereader): add a feed icon endpoint
+* feat: show database size on the about page
+* feat: add a `make add string` command to add new localized strings
+* docs: update README
+* docs: update client README to remove references to deprecated functions
+* ci: replace GitHub Issue Markdown templates with YAML forms
+* build(deps): bump `golangci/golangci-lint-action` from `6` to `7`
+* build(deps): bump `golang.org/x/term` from `0.29.0` to `0.30.0`
+* build(deps): bump `golang.org/x/oauth2` from `0.26.0` to` 0.28.0`
+* build(deps): bump `golang.org/x/net` from `0.35.0` to `0.38.0`
+* build(deps): bump `golang.org/x/image` from `0.24.0` to `0.25.0`
+* build(deps): bump `golang.org/x/crypto` from `0.33.0` to `0.36.0`
+* build(deps): bump `github.com/tdewolff/minify/v2` from `2.21.3` to `2.22.4`
+* build(deps): bump `github.com/prometheus/client_golang`
+* build(deps): bump `github.com/golang-jwt/jwt/v5` from `5.2.1` to `5.2.2`
+* build(deps): bump `github.com/go-webauthn/webauthn` from `0.11.2` to `0.12.2`
+* build(deps): bump `github.com/go-jose/go-jose/v4` from `4.0.2` to `4.0.5`
+* build(deps): bump `github.com/coreos/go-oidc/v3` from `3.12.0` to `3.13.0`
+
 Version 2.2.6 (February 22, 2025)
 ---------------------------------
 

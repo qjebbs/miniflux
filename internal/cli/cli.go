@@ -14,6 +14,7 @@ import (
 	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/database"
 	"miniflux.app/v2/internal/model"
+	"miniflux.app/v2/internal/proxyrotator"
 	"miniflux.app/v2/internal/storage"
 	"miniflux.app/v2/internal/ui/static"
 	"miniflux.app/v2/internal/version"
@@ -39,33 +40,35 @@ const (
 	flagRefreshFeedsHelp     = "Refresh a batch of feeds and exit"
 	flagRunCleanupTasksHelp  = "Run cleanup tasks (delete old sessions and archives old entries)"
 	flagExportUserFeedsHelp  = "Export user feeds (provide the username as argument)"
+	flagResetNextCheckAtHelp = "Reset the next check time for all feeds"
 	flagFixCoverImagesHelp   = "Fix cover images display for old articles for a user"
 )
 
 // Parse parses command line arguments.
 func Parse() {
 	var (
-		err                  error
-		flagInfo             bool
-		flagVersion          bool
-		flagMigrate          bool
-		flagFlushSessions    bool
-		flagCreateAdmin      bool
-		flagResetPassword    bool
-		flagResetFeedErrors  bool
-		flagDebugMode        bool
-		flagConfigFile       string
-		flagConfigDump       bool
-		flagMediaCacheToDisk bool
-		flagMediaCleanUp     bool
-		flagMediaCache       bool
-		flagMediaPack        bool
-		flagArchiveRead      bool
-		flagHealthCheck      string
-		flagRefreshFeeds     bool
-		flagRunCleanupTasks  bool
-		flagExportUserFeeds  string
-		flagFixCoverImages   int64
+		err                      error
+		flagInfo                 bool
+		flagVersion              bool
+		flagMigrate              bool
+		flagFlushSessions        bool
+		flagCreateAdmin          bool
+		flagResetPassword        bool
+		flagResetFeedErrors      bool
+		flagResetFeedNextCheckAt bool
+		flagDebugMode            bool
+		flagConfigFile           string
+		flagConfigDump           bool
+		flagMediaCacheToDisk     bool
+		flagMediaCleanUp         bool
+		flagMediaCache           bool
+		flagMediaPack            bool
+		flagArchiveRead          bool
+		flagHealthCheck          string
+		flagRefreshFeeds         bool
+		flagRunCleanupTasks      bool
+		flagExportUserFeeds      string
+		flagFixCoverImages       int64
 	)
 
 	flag.BoolVar(&flagInfo, "info", false, flagInfoHelp)
@@ -77,6 +80,7 @@ func Parse() {
 	flag.BoolVar(&flagCreateAdmin, "create-admin", false, flagCreateAdminHelp)
 	flag.BoolVar(&flagResetPassword, "reset-password", false, flagResetPasswordHelp)
 	flag.BoolVar(&flagResetFeedErrors, "reset-feed-errors", false, flagResetFeedErrorsHelp)
+	flag.BoolVar(&flagResetFeedNextCheckAt, "reset-feed-next-check-at", false, flagResetNextCheckAtHelp)
 	flag.BoolVar(&flagDebugMode, "debug", false, flagDebugModeHelp)
 	flag.StringVar(&flagConfigFile, "config-file", "", flagConfigFileHelp)
 	flag.StringVar(&flagConfigFile, "c", "", flagConfigFileHelp)
@@ -208,7 +212,16 @@ func Parse() {
 	}
 
 	if flagResetFeedErrors {
-		store.ResetFeedErrors()
+		if err := store.ResetFeedErrors(); err != nil {
+			printErrorAndExit(err)
+		}
+		return
+	}
+
+	if flagResetFeedNextCheckAt {
+		if err := store.ResetNextCheckAt(); err != nil {
+			printErrorAndExit(err)
+		}
 		return
 	}
 
@@ -303,6 +316,14 @@ func Parse() {
 
 	if config.Opts.CreateAdmin() {
 		createAdminUserFromEnvironmentVariables(store)
+	}
+
+	if config.Opts.HasHTTPClientProxiesConfigured() {
+		slog.Info("Initializing proxy rotation", slog.Int("proxies_count", len(config.Opts.HTTPClientProxies())))
+		proxyrotator.ProxyRotatorInstance, err = proxyrotator.NewProxyRotator(config.Opts.HTTPClientProxies())
+		if err != nil {
+			printErrorAndExit(fmt.Errorf("unable to initialize proxy rotator: %v", err))
+		}
 	}
 
 	if flagRefreshFeeds {

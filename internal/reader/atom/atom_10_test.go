@@ -82,6 +82,29 @@ func TestParseAtomSample(t *testing.T) {
 	}
 }
 
+func TestParseFeedWithSubtitle(t *testing.T) {
+	data := `<?xml version="1.0" encoding="utf-8"?>
+	<feed xmlns="http://www.w3.org/2005/Atom">
+	  <title>Example Feed</title>
+	  <subtitle>This is a subtitle</subtitle>
+	  <link href="http://example.org/"/>
+	  <updated>2003-12-13T18:30:02Z</updated>
+	  <author>
+		<name>John Doe</name>
+	  </author>
+	  <id>urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6</id>
+	</feed>`
+
+	feed, err := Parse("http://example.org/feed.xml", bytes.NewReader([]byte(data)), "10")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if feed.Description != "This is a subtitle" {
+		t.Errorf("Incorrect description, got: %s", feed.Description)
+	}
+}
+
 func TestParseFeedWithoutTitle(t *testing.T) {
 	data := `<?xml version="1.0" encoding="utf-8"?>
 		<feed xmlns="http://www.w3.org/2005/Atom">
@@ -1738,6 +1761,8 @@ func TestParseItemWithCategories(t *testing.T) {
 		<updated>2003-12-13T18:30:02Z</updated>
 		<summary>Some text.</summary>
 		<category term='ZZZZ' />
+		<category term='ZZZZ' />
+		<category term=" " />
 		<category term='Technology' label='Science' />
 	  </entry>
 	</feed>`
@@ -1751,16 +1776,13 @@ func TestParseItemWithCategories(t *testing.T) {
 		t.Fatalf("Incorrect number of tags, got: %d", len(feed.Entries[0].Tags))
 	}
 
-	expected := "Science"
-	result := feed.Entries[0].Tags[0]
-	if result != expected {
-		t.Errorf("Incorrect entry category, got %q instead of %q", result, expected)
-	}
+	expected := []string{"Science", "ZZZZ"}
+	result := feed.Entries[0].Tags
 
-	expected = "ZZZZ"
-	result = feed.Entries[0].Tags[1]
-	if result != expected {
-		t.Errorf("Incorrect entry category, got %q instead of %q", result, expected)
+	for i, tag := range result {
+		if tag != expected[i] {
+			t.Errorf("Incorrect entry tag, got %q instead of %q", tag, expected[i])
+		}
 	}
 }
 
@@ -1769,9 +1791,10 @@ func TestParseFeedWithCategories(t *testing.T) {
 	<feed xmlns="http://www.w3.org/2005/Atom">
 	  <title>Example Feed</title>
 	  <link href="http://example.org/"/>
-	  <category term='Test' label='Some Label' />
-	  <category term='Test' label='Some Label' />
-	  <category term='Test' label='Some Label' />
+	  <category term='C term' label='C label' />
+	  <category term='B term' label='B label' />
+	  <category term='B term' label='B label' />
+	  <category term='A term' label='A label' />
 	  <entry>
 	  	<link href="http://www.example.org/entries/1" />
 		<updated>2003-12-13T18:30:02Z</updated>
@@ -1784,14 +1807,16 @@ func TestParseFeedWithCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(feed.Entries[0].Tags) != 1 {
+	if len(feed.Entries[0].Tags) != 3 {
 		t.Fatalf("Incorrect number of tags, got: %d", len(feed.Entries[0].Tags))
 	}
 
-	expected := "Some Label"
-	result := feed.Entries[0].Tags[0]
-	if result != expected {
-		t.Errorf("Incorrect entry category, got %q instead of %q", result, expected)
+	expected := []string{"A label", "B label", "C label"}
+	result := feed.Entries[0].Tags
+	for i, tag := range result {
+		if tag != expected[i] {
+			t.Errorf("Incorrect entry tag, got %q instead of %q", tag, expected[i])
+		}
 	}
 }
 

@@ -8,8 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"slices"
-	"strings"
 	"time"
 
 	"miniflux.app/v2/internal/crypto"
@@ -82,10 +80,10 @@ func (s *Storage) UpdateEntryTitleAndContent(entry *model.Entry) error {
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
 	err = s.updateEntryMedia(tx, entry)
 	if err != nil {
-		tx.Rollback()
 		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
 	}
 
@@ -96,36 +94,27 @@ func (s *Storage) UpdateEntryTitleAndContent(entry *model.Entry) error {
 			title=$1,	
 			content=$2, 
 			reading_time=$3,
-			cover_image=$4, 
-			image_count=$5
+			document_vectors = setweight(to_tsvector($4), 'A') || setweight(to_tsvector($5), 'B'),
+			cover_image=$6, 
+			image_count=$7
 		WHERE
-			id=$6 AND user_id=$7
+			id=$8 AND user_id=$9
 	`
-	_, err = tx.Exec(
-		query, entry.Title, entry.Content, entry.ReadingTime,
-		entry.CoverImage, entry.ImageCount,
-		entry.ID, entry.UserID,
-	)
-	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
+	if _, err := s.db.Exec(
+		query,
+		entry.Title,
+		entry.Content,
+		entry.ReadingTime,
+		truncateStringForTSVectorField(entry.Title),
+		truncateStringForTSVectorField(entry.Content),
+		entry.CoverImage,
+		entry.ImageCount,
+		entry.ID,
+		entry.UserID); err != nil {
+		return fmt.Errorf(`store: unable to update entry #%d: %v`, entry.ID, err)
 	}
 
-	query = `
-		UPDATE
-			entries
-		SET
-			document_vectors = setweight(to_tsvector(left(coalesce(title, ''), 500000)), 'A') || setweight(to_tsvector(left(coalesce(content, ''), 500000)), 'B')
-		WHERE
-			id=$1 AND user_id=$2
-	`
-	_, err = tx.Exec(query, entry.ID, entry.UserID)
-	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf(`store: unable to update content of entry #%d: %v`, entry.ID, err)
-	}
-
-	return nil
+	return tx.Commit()
 }
 
 // CreateEntry add a new entry.
@@ -160,8 +149,8 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 				$9,
 				$10,
 				now(),
-				setweight(to_tsvector(left(coalesce($1, ''), 500000)), 'A') || setweight(to_tsvector(left(coalesce($6, ''), 500000)), 'B'),
-				$11
+				setweight(to_tsvector($11), 'A') || setweight(to_tsvector($12), 'B'),
+				$13
 			)
 		RETURNING
 			id, status, created_at, changed_at
@@ -178,7 +167,9 @@ func (s *Storage) CreateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.UserID,
 		entry.FeedID,
 		entry.ReadingTime,
-		pq.Array(removeEmpty(removeDuplicates(entry.Tags))),
+		truncateStringForTSVectorField(entry.Title),
+		truncateStringForTSVectorField(entry.Content),
+		pq.Array(entry.Tags),
 	).Scan(
 		&entry.ID,
 		&entry.Status,
@@ -236,12 +227,12 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 			content=$4,
 			author=$5,
 			reading_time=$6,
-			cover_image=$7, 
-			image_count=$8,
-			tags=$9,
-			document_vectors = setweight(to_tsvector(left(coalesce($1, ''), 500000)), 'A') || setweight(to_tsvector(left(coalesce($4, ''), 500000)), 'B')
+			document_vectors = setweight(to_tsvector($7), 'A') || setweight(to_tsvector($8), 'B'),
+			cover_image=$9, 
+			image_count=$10,
+			tags=$14,
 		WHERE
-			user_id=$10 AND feed_id=$11 AND hash=$12
+			user_id=$11 AND feed_id=$12 AND hash=$13
 		RETURNING
 			id
 	`
@@ -253,12 +244,14 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 		entry.Content,
 		entry.Author,
 		entry.ReadingTime,
+		truncateStringForTSVectorField(entry.Title),
+		truncateStringForTSVectorField(entry.Content),
 		entry.CoverImage,
 		entry.ImageCount,
-		pq.Array(removeEmpty(entry.Tags)),
 		entry.UserID,
 		entry.FeedID,
 		entry.Hash,
+		pq.Array(entry.Tags),
 	).Scan(&entry.ID)
 
 	if err != nil {
@@ -376,7 +369,7 @@ func (s *Storage) cleanupEntries(feedID int64, entryHashes []string) error {
 
 // RefreshFeedEntries updates feed entries while refreshing a feed.
 func (s *Storage) RefreshFeedEntries(userID, feedID int64, entries model.Entries, updateExistingEntries bool) (newEntries model.Entries, err error) {
-	var entryHashes []string
+	entryHashes := make([]string, 0, len(entries))
 
 	for _, entry := range entries {
 		entry.UserID = userID
@@ -476,18 +469,8 @@ func (s *Storage) ArchiveEntries(status string, days, limit int) (int64, error) 
 // SetEntriesStatus update the status of the given list of entries.
 func (s *Storage) SetEntriesStatus(userID int64, entryIDs []int64, status string) error {
 	query := `UPDATE entries SET status=$1, changed_at=now() WHERE user_id=$2 AND id=ANY($3)`
-	result, err := s.db.Exec(query, status, userID, pq.Array(entryIDs))
-	if err != nil {
+	if _, err := s.db.Exec(query, status, userID, pq.Array(entryIDs)); err != nil {
 		return fmt.Errorf(`store: unable to update entries statuses %v: %v`, entryIDs, err)
-	}
-
-	count, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf(`store: unable to update these entries %v: %v`, entryIDs, err)
-	}
-
-	if count == 0 {
-		return errors.New(`store: nothing has been updated`)
 	}
 
 	return nil
@@ -594,6 +577,30 @@ func (s *Storage) MarkAllAsRead(userID int64) error {
 	return nil
 }
 
+// MarkAllAsReadBeforeDate updates all user entries to the read status before the given date.
+func (s *Storage) MarkAllAsReadBeforeDate(userID int64, before time.Time) error {
+	query := `
+		UPDATE
+			entries
+		SET
+			status=$1,
+			changed_at=now()
+		WHERE
+			user_id=$2 AND status=$3 AND published_at < $4
+	`
+	result, err := s.db.Exec(query, model.EntryStatusRead, userID, model.EntryStatusUnread, before)
+	if err != nil {
+		return fmt.Errorf(`store: unable to mark all entries as read before %s: %v`, before.Format(time.RFC3339), err)
+	}
+	count, _ := result.RowsAffected()
+	slog.Debug("Marked all entries as read before date",
+		slog.Int64("user_id", userID),
+		slog.Int64("nb_entries", count),
+		slog.String("before", before.Format(time.RFC3339)),
+	)
+	return nil
+}
+
 // MarkAllAsReadExceptNSFW updates all user entries except nsfw ones to the read status
 func (s *Storage) MarkAllAsReadExceptNSFW(userID int64) error {
 	query := `
@@ -641,6 +648,7 @@ func (s *Storage) MarkFeedAsRead(userID, feedID int64, before time.Time) error {
 		slog.Int64("user_id", userID),
 		slog.Int64("feed_id", feedID),
 		slog.Int64("nb_entries", count),
+		slog.String("before", before.Format(time.RFC3339)),
 	)
 
 	return nil
@@ -677,6 +685,7 @@ func (s *Storage) MarkCategoryAsRead(userID, categoryID int64, before time.Time)
 		slog.Int64("user_id", userID),
 		slog.Int64("category_id", categoryID),
 		slog.Int64("nb_entries", count),
+		slog.String("before", before.Format(time.RFC3339)),
 	)
 
 	return nil
@@ -716,17 +725,30 @@ func (s *Storage) UnshareEntry(userID int64, entryID int64) (err error) {
 	return
 }
 
-func removeDuplicates(l []string) []string {
-	slices.Sort(l)
-	return slices.Compact(l)
-}
+// truncateStringForTSVectorField truncates a string to fit within the maximum size for a TSVector field in PostgreSQL.
+func truncateStringForTSVectorField(s string) string {
+	// The length of a tsvector (lexemes + positions) must be less than 1 megabyte.
+	const maxTSVectorSize = 1024 * 1024
 
-func removeEmpty(l []string) []string {
-	var finalSlice []string
-	for _, item := range l {
-		if strings.TrimSpace(item) != "" {
-			finalSlice = append(finalSlice, item)
+	if len(s) < maxTSVectorSize {
+		return s
+	}
+
+	// Truncate to fit under the limit, ensuring we don't break UTF-8 characters
+	truncated := s[:maxTSVectorSize-1]
+
+	// Walk backwards to find the last complete UTF-8 character
+	for i := len(truncated) - 1; i >= 0; i-- {
+		if (truncated[i] & 0x80) == 0 {
+			// ASCII character, we can stop here
+			return truncated[:i+1]
+		}
+		if (truncated[i] & 0xC0) == 0xC0 {
+			// Start of a multi-byte UTF-8 character
+			return truncated[:i]
 		}
 	}
-	return finalSlice
+
+	// Fallback: return empty string if we can't find a valid UTF-8 boundary
+	return ""
 }

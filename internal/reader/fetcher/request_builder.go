@@ -6,11 +6,15 @@ package fetcher // import "miniflux.app/v2/internal/reader/fetcher"
 import (
 	"crypto/tls"
 	"encoding/base64"
+	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
+	"slices"
 	"time"
+
+	"miniflux.app/v2/internal/proxyrotator"
 )
 
 const (
@@ -21,12 +25,14 @@ const (
 
 type RequestBuilder struct {
 	headers          http.Header
-	clientProxyURL   string
-	useClientProxy   bool
+	clientProxyURL   *url.URL
 	clientTimeout    int
+	useClientProxy   bool
 	withoutRedirects bool
 	ignoreTLSErrors  bool
 	disableHTTP2     bool
+	proxyRotator     *proxyrotator.ProxyRotator
+	feedProxyURL     string
 }
 
 func NewRequestBuilder() *RequestBuilder {
@@ -78,13 +84,23 @@ func (r *RequestBuilder) WithUsernameAndPassword(username, password string) *Req
 	return r
 }
 
-func (r *RequestBuilder) WithProxy(proxyURL string) *RequestBuilder {
+func (r *RequestBuilder) WithProxyRotator(proxyRotator *proxyrotator.ProxyRotator) *RequestBuilder {
+	r.proxyRotator = proxyRotator
+	return r
+}
+
+func (r *RequestBuilder) WithCustomApplicationProxyURL(proxyURL *url.URL) *RequestBuilder {
 	r.clientProxyURL = proxyURL
 	return r
 }
 
-func (r *RequestBuilder) UseProxy(value bool) *RequestBuilder {
+func (r *RequestBuilder) UseCustomApplicationProxyURL(value bool) *RequestBuilder {
 	r.useClientProxy = value
+	return r
+}
+
+func (r *RequestBuilder) WithCustomFeedProxyURL(proxyURL string) *RequestBuilder {
+	r.feedProxyURL = proxyURL
 	return r
 }
 
@@ -109,38 +125,29 @@ func (r *RequestBuilder) IgnoreTLSErrors(value bool) *RequestBuilder {
 }
 
 func (r *RequestBuilder) ExecuteRequest(requestURL string) (*http.Response, error) {
-	// We get the safe ciphers
-	ciphers := tls.CipherSuites()
-	if r.ignoreTLSErrors {
-		// and the insecure ones if we are ignoring TLS errors. This allows to connect to badly configured servers anyway
-		ciphers = append(ciphers, tls.InsecureCipherSuites()...)
-	}
-	cipherSuites := []uint16{}
-	for _, cipher := range ciphers {
-		cipherSuites = append(cipherSuites, cipher.ID)
-	}
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		// Setting `DialContext` disables HTTP/2, this option forces the transport to try HTTP/2 regardless.
 		ForceAttemptHTTP2: true,
 		DialContext: (&net.Dialer{
-			// Default is 30s.
-			Timeout: 10 * time.Second,
-
-			// Default is 30s.
-			KeepAlive: 15 * time.Second,
+			Timeout:   10 * time.Second, // Default is 30s.
+			KeepAlive: 15 * time.Second, // Default is 30s.
 		}).DialContext,
+		MaxIdleConns:    50,               // Default is 100.
+		IdleConnTimeout: 10 * time.Second, // Default is 90s.
+	}
 
-		// Default is 100.
-		MaxIdleConns: 50,
-
-		// Default is 90s.
-		IdleConnTimeout: 10 * time.Second,
-
-		TLSClientConfig: &tls.Config{
+	if r.ignoreTLSErrors {
+		//  Add insecure ciphers if we are ignoring TLS errors. This allows to connect to badly configured servers anyway
+		ciphers := slices.Concat(tls.CipherSuites(), tls.InsecureCipherSuites())
+		cipherSuites := make([]uint16, 0, len(ciphers))
+		for _, cipher := range ciphers {
+			cipherSuites = append(cipherSuites, cipher.ID)
+		}
+		transport.TLSClientConfig = &tls.Config{
 			CipherSuites:       cipherSuites,
-			InsecureSkipVerify: r.ignoreTLSErrors,
-		},
+			InsecureSkipVerify: true,
+		}
 	}
 
 	if r.disableHTTP2 {
@@ -151,15 +158,25 @@ func (r *RequestBuilder) ExecuteRequest(requestURL string) (*http.Response, erro
 		transport.TLSNextProto = map[string]func(string, *tls.Conn) http.RoundTripper{}
 	}
 
-	if r.useClientProxy && r.clientProxyURL != "" {
-		if proxyURL, err := url.Parse(r.clientProxyURL); err != nil {
-			slog.Warn("Unable to parse proxy URL",
-				slog.String("proxy_url", r.clientProxyURL),
-				slog.Any("error", err),
-			)
-		} else {
-			transport.Proxy = http.ProxyURL(proxyURL)
+	var clientProxyURL *url.URL
+
+	switch {
+	case r.feedProxyURL != "":
+		var err error
+		clientProxyURL, err = url.Parse(r.feedProxyURL)
+		if err != nil {
+			return nil, fmt.Errorf(`fetcher: invalid feed proxy URL %q: %w`, r.feedProxyURL, err)
 		}
+	case r.useClientProxy && r.clientProxyURL != nil:
+		clientProxyURL = r.clientProxyURL
+	case r.proxyRotator != nil && r.proxyRotator.HasProxies():
+		clientProxyURL = r.proxyRotator.GetNextProxy()
+	}
+
+	var clientProxyURLRedacted string
+	if clientProxyURL != nil {
+		transport.Proxy = http.ProxyURL(clientProxyURL)
+		clientProxyURLRedacted = clientProxyURL.Redacted()
 	}
 
 	client := &http.Client{
@@ -189,8 +206,8 @@ func (r *RequestBuilder) ExecuteRequest(requestURL string) (*http.Response, erro
 		slog.String("url", req.URL.String()),
 		slog.Any("headers", req.Header),
 		slog.Bool("without_redirects", r.withoutRedirects),
-		slog.Bool("with_proxy", r.useClientProxy),
-		slog.String("proxy_url", r.clientProxyURL),
+		slog.Bool("use_app_client_proxy", r.useClientProxy),
+		slog.String("client_proxy_url", clientProxyURLRedacted),
 		slog.Bool("ignore_tls_errors", r.ignoreTLSErrors),
 		slog.Bool("disable_http2", r.disableHTTP2),
 	))

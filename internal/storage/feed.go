@@ -259,6 +259,8 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			rewrite_rules,
 			blocklist_rules,
 			keeplist_rules,
+			block_filter_entry_rules,
+			keep_filter_entry_rules,
 			ignore_http_cache,
 			allow_self_signed_certificates,
 			fetch_via_proxy,
@@ -268,10 +270,11 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 			apprise_service_urls,
 			webhook_url,
 			disable_http2,
-			description
+			description,
+			proxy_url
 		)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30)
 		RETURNING
 			id
 	`
@@ -294,6 +297,8 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.RewriteRules,
 		feed.BlocklistRules,
 		feed.KeeplistRules,
+		feed.BlockFilterEntryRules,
+		feed.KeepFilterEntryRules,
 		feed.IgnoreHTTPCache,
 		feed.AllowSelfSignedCertificates,
 		feed.FetchViaProxy,
@@ -304,6 +309,7 @@ func (s *Storage) CreateFeed(feed *model.Feed) error {
 		feed.WebhookURL,
 		feed.DisableHTTP2,
 		feed.Description,
+		feed.ProxyURL,
 	).Scan(&feed.ID)
 	if err != nil {
 		return fmt.Errorf(`store: unable to create feed %q: %v`, feed.FeedURL, err)
@@ -362,32 +368,36 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			rewrite_rules=$11,
 			blocklist_rules=$12,
 			keeplist_rules=$13,
-			crawler=$14,
-			user_agent=$15,
-			cookie=$16,
-			username=$17,
-			password=$18,
-			disabled=$19,
-			next_check_at=$20,
-			ignore_http_cache=$21,
-			allow_self_signed_certificates=$22,
-			fetch_via_proxy=$23,
-			nsfw=$24,
-			url_rewrite_rules=$25,
-			no_media_player=$26,
-			cache_media=$27,
-			view=$28,
-			proxify_media=$29,
-			apprise_service_urls=$30,
-			webhook_url=$31,
-			disable_http2=$32,
-			description=$33,
-			ntfy_enabled=$34,
-			ntfy_priority=$35,
+			block_filter_entry_rules=$14,
+			keep_filter_entry_rules=$15,
+			crawler=$16,
+			user_agent=$17,
+			cookie=$18,
+			username=$19,
+			password=$20,
+			disabled=$21,
+			next_check_at=$22,
+			ignore_http_cache=$23,
+			allow_self_signed_certificates=$24,
+			fetch_via_proxy=$25,
+			nsfw=$26,
+			url_rewrite_rules=$27,
+			no_media_player=$28,
+			apprise_service_urls=$29,
+			webhook_url=$30,
+			disable_http2=$31,
+			description=$32,
+			ntfy_enabled=$33,
+			ntfy_priority=$34,
+			ntfy_topic=$35,
 			pushover_enabled=$36,
-			pushover_priority=$37
+			pushover_priority=$37,
+			proxy_url=$38,
+			cache_media=$39,
+			view=$40,
+			proxify_media=$41
 		WHERE
-			id=$38 AND user_id=$39
+			id=$41 AND user_id=$42
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -403,6 +413,8 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.RewriteRules,
 		feed.BlocklistRules,
 		feed.KeeplistRules,
+		feed.BlockFilterEntryRules,
+		feed.KeepFilterEntryRules,
 		feed.Crawler,
 		feed.UserAgent,
 		feed.Cookie,
@@ -416,17 +428,19 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.NSFW,
 		feed.UrlRewriteRules,
 		feed.NoMediaPlayer,
-		feed.CacheMedia,
-		feed.View,
-		feed.ProxifyMedia,
 		feed.AppriseServiceURLs,
 		feed.WebhookURL,
 		feed.DisableHTTP2,
 		feed.Description,
 		feed.NtfyEnabled,
 		feed.NtfyPriority,
+		feed.NtfyTopic,
 		feed.PushoverEnabled,
 		feed.PushoverPriority,
+		feed.ProxyURL,
+		feed.CacheMedia,
+		feed.View,
+		feed.ProxifyMedia,
 		feed.ID,
 		feed.UserID,
 	)
@@ -526,5 +540,10 @@ func (s *Storage) RemoveFeed(userID, feedID int64) error {
 // ResetFeedErrors removes all feed errors.
 func (s *Storage) ResetFeedErrors() error {
 	_, err := s.db.Exec(`UPDATE feeds SET parsing_error_count=0, parsing_error_msg=''`)
+	return err
+}
+
+func (s *Storage) ResetNextCheckAt() error {
+	_, err := s.db.Exec(`UPDATE feeds SET next_check_at=now()`)
 	return err
 }

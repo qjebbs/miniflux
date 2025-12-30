@@ -1,6 +1,7 @@
 package storage // import "miniflux.app/v2/internal/storage"
 
 import (
+	"database/sql"
 	"fmt"
 
 	"miniflux.app/v2/internal/model"
@@ -9,7 +10,7 @@ import (
 // UnreadStatByFeed returns unread count of feeds.
 func (s *Storage) UnreadStatByFeed(userID int64, nsfw bool) (stat model.EntryStat, err error) {
 	query := `
-		SELECT f.id, f.title, max(fi.icon_id) icon, count(e.id) u_count
+		SELECT f.id, f.title, max(i.id) icon, max(i.external_id) icon_external_id, count(e.id) u_count
 		FROM feeds f
 			INNER JOIN categories c ON c.id=f.category_id
 			LEFT JOIN (
@@ -21,6 +22,7 @@ func (s *Storage) UnreadStatByFeed(userID int64, nsfw bool) (stat model.EntrySta
 			) starred ON f.id=starred.id
 			INNER JOIN entries e ON f.id=e.feed_id
 			LEFT JOIN feed_icons fi ON fi.feed_id=f.id
+			LEFT JOIN icons i ON i.id=fi.icon_id
 		WHERE f.user_id=$1 AND e.status='unread' %s
 		GROUP BY f.id
 		ORDER BY max(starred.count) DESC NULLS LAST, f.title ASC`
@@ -35,11 +37,12 @@ func (s *Storage) UnreadStatByFeed(userID int64, nsfw bool) (stat model.EntrySta
 // StarredStatByFeed returns starred count of feeds.
 func (s *Storage) StarredStatByFeed(userID int64, nsfw bool) (stat model.EntryStat, err error) {
 	query := `
-		SELECT f.id, f.title, max(fi.icon_id) icon, count(e.id) s_count
+		SELECT f.id, f.title, max(i.id) icon, max(i.external_id) icon_external_id, count(e.id) s_count
 		FROM feeds f
 			INNER JOIN entries e ON f.id=e.feed_id
 			INNER JOIN categories c ON c.id=f.category_id
 			LEFT JOIN feed_icons fi ON fi.feed_id=f.id
+			LEFT JOIN icons i ON i.id=fi.icon_id
 		WHERE f.user_id=$1 AND e.starred='T' %s
 		GROUP BY f.id
 		ORDER BY s_count DESC NULLS LAST, f.title ASC`
@@ -105,7 +108,8 @@ func (s *Storage) feedStatistics(query string, args ...interface{}) (stat model.
 	stat = make(model.EntryStat, 0)
 
 	for rows.Next() {
-		var iconID interface{}
+		var iconID sql.NullInt64
+		var externalIconID sql.NullString
 		item := model.EntryStatItem{
 			Feed: &model.Feed{
 				Icon: &model.FeedIcon{},
@@ -115,15 +119,18 @@ func (s *Storage) feedStatistics(query string, args ...interface{}) (stat model.
 			&item.Feed.ID,
 			&item.Feed.Title,
 			&iconID,
+			&externalIconID,
 			&item.Count,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("unable to get feed statistics row: %v", err)
 		}
-		if iconID == nil {
-			item.Feed.Icon.IconID = 0
+		if iconID.Valid && externalIconID.Valid && externalIconID.String != "" {
+			item.Feed.Icon.FeedID = item.Feed.ID
+			item.Feed.Icon.IconID = iconID.Int64
+			item.Feed.Icon.ExternalIconID = externalIconID.String
 		} else {
-			item.Feed.Icon.IconID = iconID.(int64)
+			item.Feed.Icon.IconID = 0
 		}
 		stat = append(stat, &item)
 	}

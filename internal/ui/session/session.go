@@ -74,11 +74,6 @@ func (s *Session) SetNSFW(nsfw string) {
 	s.store.UpdateAppSessionField(s.sessionID, "nsfw", nsfw)
 }
 
-// SetPocketRequestToken updates Pocket Request Token.
-func (s *Session) SetPocketRequestToken(requestToken string) {
-	s.store.UpdateAppSessionField(s.sessionID, "pocket_request_token", requestToken)
-}
-
 func (s *Session) SetWebAuthnSessionData(sessionData *model.WebAuthnSession) {
 	s.store.UpdateAppSessionObjectField(s.sessionID, "webauthn_session_data", sessionData)
 }

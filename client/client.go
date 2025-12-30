@@ -18,6 +18,7 @@ type Client struct {
 }
 
 // New returns a new Miniflux client.
+//
 // Deprecated: use NewClient instead.
 func New(endpoint string, credentials ...string) *Client {
 	return NewClient(endpoint, credentials...)
@@ -179,6 +180,45 @@ func (c *Client) DeleteUser(userID int64) error {
 	return c.request.Delete(fmt.Sprintf("/v1/users/%d", userID))
 }
 
+// APIKeys returns all API keys for the authenticated user.
+func (c *Client) APIKeys() (APIKeys, error) {
+	body, err := c.request.Get("/v1/api-keys")
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	var apiKeys APIKeys
+	if err := json.NewDecoder(body).Decode(&apiKeys); err != nil {
+		return nil, fmt.Errorf("miniflux: response error (%v)", err)
+	}
+
+	return apiKeys, nil
+}
+
+// CreateAPIKey creates a new API key for the authenticated user.
+func (c *Client) CreateAPIKey(description string) (*APIKey, error) {
+	body, err := c.request.Post("/v1/api-keys", &APIKeyCreationRequest{
+		Description: description,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	var apiKey *APIKey
+	if err := json.NewDecoder(body).Decode(&apiKey); err != nil {
+		return nil, fmt.Errorf("miniflux: response error (%v)", err)
+	}
+
+	return apiKey, nil
+}
+
+// DeleteAPIKey removes an API key for the authenticated user.
+func (c *Client) DeleteAPIKey(apiKeyID int64) error {
+	return c.request.Delete(fmt.Sprintf("/v1/api-keys/%d", apiKeyID))
+}
+
 // MarkAllAsRead marks all unread entries as read for a given user.
 func (c *Client) MarkAllAsRead(userID int64) error {
 	_, err := c.request.Put(fmt.Sprintf("/v1/users/%d/mark-all-as-read", userID), nil)
@@ -238,8 +278,8 @@ func (c *Client) Categories() (Categories, error) {
 
 // CreateCategory creates a new category.
 func (c *Client) CreateCategory(title string) (*Category, error) {
-	body, err := c.request.Post("/v1/categories", map[string]interface{}{
-		"title": title,
+	body, err := c.request.Post("/v1/categories", &CategoryCreationRequest{
+		Title: title,
 	})
 	if err != nil {
 		return nil, err
@@ -254,11 +294,42 @@ func (c *Client) CreateCategory(title string) (*Category, error) {
 	return category, nil
 }
 
+// CreateCategoryWithOptions creates a new category with options.
+func (c *Client) CreateCategoryWithOptions(createRequest *CategoryCreationRequest) (*Category, error) {
+	body, err := c.request.Post("/v1/categories", createRequest)
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	var category *Category
+	if err := json.NewDecoder(body).Decode(&category); err != nil {
+		return nil, fmt.Errorf("miniflux: response error (%v)", err)
+	}
+	return category, nil
+}
+
 // UpdateCategory updates a category.
 func (c *Client) UpdateCategory(categoryID int64, title string) (*Category, error) {
-	body, err := c.request.Put(fmt.Sprintf("/v1/categories/%d", categoryID), map[string]interface{}{
-		"title": title,
+	body, err := c.request.Put(fmt.Sprintf("/v1/categories/%d", categoryID), &CategoryModificationRequest{
+		Title: SetOptionalField(title),
 	})
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	var category *Category
+	if err := json.NewDecoder(body).Decode(&category); err != nil {
+		return nil, fmt.Errorf("miniflux: response error (%v)", err)
+	}
+
+	return category, nil
+}
+
+// UpdateCategoryWithOptions updates a category with options.
+func (c *Client) UpdateCategoryWithOptions(categoryID int64, categoryChanges *CategoryModificationRequest) (*Category, error) {
+	body, err := c.request.Put(fmt.Sprintf("/v1/categories/%d", categoryID), categoryChanges)
 	if err != nil {
 		return nil, err
 	}

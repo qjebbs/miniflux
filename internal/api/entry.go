@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/http/request"
 	"miniflux.app/v2/internal/http/response/json"
 	"miniflux.app/v2/internal/integration"
@@ -34,7 +35,7 @@ func (h *handler) getEntryFromBuilder(w http.ResponseWriter, r *http.Request, b 
 	}
 
 	entry.Content = mediaproxy.RewriteDocumentWithAbsoluteProxyURL(h.router, entry.Content)
-	entry.Enclosures.ProxifyEnclosureURL(h.router)
+	entry.Enclosures.ProxifyEnclosureURL(h.router, config.Opts.MediaProxyMode(), config.Opts.MediaProxyResourceTypes())
 
 	json.OK(w, r, entry)
 }
@@ -327,6 +328,18 @@ func (h *handler) fetchContent(w http.ResponseWriter, r *http.Request) {
 
 	if err := processor.ProcessEntryWebPage(feed, entry, user); err != nil {
 		json.ServerError(w, r, err)
+		return
+	}
+
+	shouldUpdateContent := request.QueryBoolParam(r, "update_content", false)
+	if shouldUpdateContent {
+		if err := h.store.UpdateEntryTitleAndContent(entry); err != nil {
+			json.ServerError(w, r, err)
+			return
+		}
+
+		json.OK(w, r, map[string]interface{}{"content": mediaproxy.RewriteDocumentWithRelativeProxyURL(h.router, entry.Content), "reading_time": entry.ReadingTime})
+
 		return
 	}
 

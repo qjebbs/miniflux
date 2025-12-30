@@ -8,34 +8,37 @@ import (
 
 	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/model"
+	"miniflux.app/v2/internal/proxyrotator"
 	"miniflux.app/v2/internal/reader/fetcher"
 	"miniflux.app/v2/internal/storage"
 )
 
-type IconChecker struct {
+type iconChecker struct {
 	store *storage.Storage
 	feed  *model.Feed
 }
 
-func NewIconChecker(store *storage.Storage, feed *model.Feed) *IconChecker {
-	return &IconChecker{
+func NewIconChecker(store *storage.Storage, feed *model.Feed) *iconChecker {
+	return &iconChecker{
 		store: store,
 		feed:  feed,
 	}
 }
 
-func (c *IconChecker) fetchAndStoreIcon() {
+func (c *iconChecker) fetchAndStoreIcon() {
 	requestBuilder := fetcher.NewRequestBuilder()
 	requestBuilder.WithUserAgent(c.feed.UserAgent, config.Opts.HTTPClientUserAgent())
 	requestBuilder.WithCookie(c.feed.Cookie)
 	requestBuilder.WithTimeout(config.Opts.HTTPClientTimeout())
-	requestBuilder.WithProxy(config.Opts.HTTPClientProxy())
-	requestBuilder.UseProxy(c.feed.FetchViaProxy)
+	requestBuilder.WithProxyRotator(proxyrotator.ProxyRotatorInstance)
+	requestBuilder.WithCustomFeedProxyURL(c.feed.ProxyURL)
+	requestBuilder.WithCustomApplicationProxyURL(config.Opts.HTTPClientProxyURL())
+	requestBuilder.UseCustomApplicationProxyURL(c.feed.FetchViaProxy)
 	requestBuilder.IgnoreTLSErrors(c.feed.AllowSelfSignedCertificates)
 	requestBuilder.DisableHTTP2(c.feed.DisableHTTP2)
 
-	iconFinder := NewIconFinder(requestBuilder, c.feed.SiteURL, c.feed.IconURL)
-	if icon, err := iconFinder.FindIcon(); err != nil {
+	iconFinder := newIconFinder(requestBuilder, c.feed.SiteURL, c.feed.IconURL)
+	if icon, err := iconFinder.findIcon(); err != nil {
 		slog.Debug("Unable to find feed icon",
 			slog.Int64("feed_id", c.feed.ID),
 			slog.String("website_url", c.feed.SiteURL),
@@ -68,7 +71,7 @@ func (c *IconChecker) fetchAndStoreIcon() {
 	}
 }
 
-func (c *IconChecker) CreateFeedIconIfMissing() {
+func (c *iconChecker) CreateFeedIconIfMissing() {
 	if c.store.HasFeedIcon(c.feed.ID) {
 		slog.Debug("Feed icon already exists",
 			slog.Int64("feed_id", c.feed.ID),
@@ -79,6 +82,6 @@ func (c *IconChecker) CreateFeedIconIfMissing() {
 	c.fetchAndStoreIcon()
 }
 
-func (c *IconChecker) UpdateOrCreateFeedIcon() {
+func (c *iconChecker) UpdateOrCreateFeedIcon() {
 	c.fetchAndStoreIcon()
 }

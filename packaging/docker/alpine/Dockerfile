@@ -1,10 +1,10 @@
-FROM docker.io/library/golang:alpine3.20 AS build
+FROM docker.io/library/golang:alpine3.22 AS build
 RUN apk add --no-cache build-base git make
 ADD . /go/src/app
 WORKDIR /go/src/app
 RUN make miniflux
 
-FROM docker.io/library/alpine:3.21
+FROM docker.io/library/alpine:3.22
 
 LABEL org.opencontainers.image.title=Miniflux
 LABEL org.opencontainers.image.description="Miniflux is a minimalist and opinionated feed reader"

@@ -48,9 +48,11 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		Description:                 feed.Description,
 		ScraperRules:                feed.ScraperRules,
 		RewriteRules:                feed.RewriteRules,
+		UrlRewriteRules:             feed.UrlRewriteRules,
 		BlocklistRules:              feed.BlocklistRules,
 		KeeplistRules:               feed.KeeplistRules,
-		UrlRewriteRules:             feed.UrlRewriteRules,
+		BlockFilterEntryRules:       feed.BlockFilterEntryRules,
+		KeepFilterEntryRules:        feed.KeepFilterEntryRules,
 		Crawler:                     feed.Crawler,
 		CacheMedia:                  feed.CacheMedia,
 		UserAgent:                   feed.UserAgent,
@@ -71,8 +73,10 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		DisableHTTP2:                feed.DisableHTTP2,
 		NtfyEnabled:                 feed.NtfyEnabled,
 		NtfyPriority:                feed.NtfyPriority,
+		NtfyTopic:                   feed.NtfyTopic,
 		PushoverEnabled:             feed.PushoverEnabled,
 		PushoverPriority:            feed.PushoverPriority,
+		ProxyURL:                    feed.ProxyURL,
 	}
 
 	all, count, size, err := h.store.MediaStatisticsByFeed(feedID)
@@ -96,7 +100,7 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 	view.Set("mediaCount", all)
 	view.Set("cacheCount", count)
 	view.Set("cacheSize", byteSizeHumanReadable(size))
-	view.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
+	view.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyURLConfigured())
 
 	html.OK(w, r, view.Render("edit_feed"))
 }

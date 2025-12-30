@@ -12,6 +12,7 @@ import (
 	"miniflux.app/v2/internal/http/route"
 	"miniflux.app/v2/internal/locale"
 	"miniflux.app/v2/internal/model"
+	"miniflux.app/v2/internal/proxyrotator"
 	"miniflux.app/v2/internal/reader/fetcher"
 	feedHandler "miniflux.app/v2/internal/reader/handler"
 	"miniflux.app/v2/internal/reader/subscription"
@@ -42,7 +43,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 	v.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 	v.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 	v.Set("defaultUserAgent", config.Opts.HTTPClientUserAgent())
-	v.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
+	v.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyURLConfigured())
 
 	subscriptionForm := form.NewSubscriptionForm(r)
 	if validationErr := subscriptionForm.Validate(); validationErr != nil {
@@ -53,17 +54,21 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var rssBridgeURL string
+	var rssBridgeToken string
 	if intg, err := h.store.Integration(user.ID); err == nil && intg != nil && intg.RSSBridgeEnabled {
 		rssBridgeURL = intg.RSSBridgeURL
+		rssBridgeToken = intg.RSSBridgeToken
 	}
 
 	requestBuilder := fetcher.NewRequestBuilder()
 	requestBuilder.WithTimeout(config.Opts.HTTPClientTimeout())
-	requestBuilder.WithProxy(config.Opts.HTTPClientProxy())
+	requestBuilder.WithProxyRotator(proxyrotator.ProxyRotatorInstance)
+	requestBuilder.WithCustomFeedProxyURL(subscriptionForm.ProxyURL)
+	requestBuilder.WithCustomApplicationProxyURL(config.Opts.HTTPClientProxyURL())
+	requestBuilder.UseCustomApplicationProxyURL(subscriptionForm.FetchViaProxy)
 	requestBuilder.WithUserAgent(subscriptionForm.UserAgent, config.Opts.HTTPClientUserAgent())
 	requestBuilder.WithCookie(subscriptionForm.Cookie)
 	requestBuilder.WithUsernameAndPassword(subscriptionForm.Username, subscriptionForm.Password)
-	requestBuilder.UseProxy(subscriptionForm.FetchViaProxy)
 	requestBuilder.IgnoreTLSErrors(subscriptionForm.AllowSelfSignedCertificates)
 	requestBuilder.DisableHTTP2(subscriptionForm.DisableHTTP2)
 
@@ -71,6 +76,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 	subscriptions, localizedError := subscriptionFinder.FindSubscriptions(
 		subscriptionForm.URL,
 		rssBridgeURL,
+		rssBridgeToken,
 	)
 	if localizedError != nil {
 		v.Set("form", subscriptionForm)
@@ -101,12 +107,15 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 				Password:                    subscriptionForm.Password,
 				ScraperRules:                subscriptionForm.ScraperRules,
 				RewriteRules:                subscriptionForm.RewriteRules,
+				UrlRewriteRules:             subscriptionForm.UrlRewriteRules,
 				BlocklistRules:              subscriptionForm.BlocklistRules,
 				KeeplistRules:               subscriptionForm.KeeplistRules,
-				UrlRewriteRules:             subscriptionForm.UrlRewriteRules,
+				KeepFilterEntryRules:        subscriptionForm.KeepFilterEntryRules,
+				BlockFilterEntryRules:       subscriptionForm.BlockFilterEntryRules,
 				FetchViaProxy:               subscriptionForm.FetchViaProxy,
 				NSFW:                        subscriptionForm.NSFW,
 				DisableHTTP2:                subscriptionForm.DisableHTTP2,
+				ProxyURL:                    subscriptionForm.ProxyURL,
 			},
 		})
 		if localizedError != nil {
@@ -129,11 +138,14 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 			Password:                    subscriptionForm.Password,
 			ScraperRules:                subscriptionForm.ScraperRules,
 			RewriteRules:                subscriptionForm.RewriteRules,
+			UrlRewriteRules:             subscriptionForm.UrlRewriteRules,
 			BlocklistRules:              subscriptionForm.BlocklistRules,
 			KeeplistRules:               subscriptionForm.KeeplistRules,
-			UrlRewriteRules:             subscriptionForm.UrlRewriteRules,
+			KeepFilterEntryRules:        subscriptionForm.KeepFilterEntryRules,
+			BlockFilterEntryRules:       subscriptionForm.BlockFilterEntryRules,
 			FetchViaProxy:               subscriptionForm.FetchViaProxy,
 			DisableHTTP2:                subscriptionForm.DisableHTTP2,
+			ProxyURL:                    subscriptionForm.ProxyURL,
 		})
 		if localizedError != nil {
 			v.Set("form", subscriptionForm)
@@ -152,7 +164,7 @@ func (h *handler) submitSubscription(w http.ResponseWriter, r *http.Request) {
 		view.Set("user", user)
 		view.Set("countUnread", h.store.CountUnreadEntries(user.ID, nsfw))
 		view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
-		view.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyConfigured())
+		view.Set("hasProxyConfigured", config.Opts.HasHTTPClientProxyURLConfigured())
 
 		html.OK(w, r, view.Render("choose_subscription"))
 	}

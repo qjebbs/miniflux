@@ -6,18 +6,18 @@ This is a Miniflux fork, ships with all upstream features, plus:
 - Masonry view with thumbnails.
 - NSFW Feature: Show / Hide content which is `Not Safe For Work`. 
 - Quickly toggle masonry / list view for every category / feed.
-- Action menu, with additinal action `Mark Above as Read`.
+- Add entry button `Mark Above as Read`.
 - Save / Edit articles.
 - Cache images to disk/database according to feeds settings
 
 ### Environment Variables Added
 
-| Variable Name         | Description                                 | Default Value |
-| --------------------- | ------------------------------------------- | ------------- |
-| DISABLE_CACHE_SERVICE | Set the value to 1 to disable cache service | None          |
-| CACHE_FREQUENCY       | Caching job frequency                       | 24 (hours)    |
-| CACHE_LOCATION        | Where to save caches, "disk" or "database"  | disk          |
-| DISK_STORAGE_ROOT     | The path where the disk storage located     | ./            |
+| Variable Name         | Description                                | Default Value |
+| --------------------- | ------------------------------------------ | ------------- |
+| DISABLE_CACHE_SERVICE | Set to 1 to disable cache service          | 0             |
+| CACHE_INTERVAL        | Caching job interval                       | 24h           |
+| CACHE_LOCATION        | Where to save caches, "disk" or "database" | disk          |
+| DISK_STORAGE_ROOT     | The path where the disk storage located    | ./            |
 
 > Disable HTTP service (with `DISABLE_HTTP_SERVICE`), will disable cache service on anyway.
 

@@ -588,7 +588,7 @@ func NewConfigOptions() *configOptions {
 				RawValue:          "https://www.youtube-nocookie.com/embed/",
 				ValueType:         stringType,
 			},
-			"CACHE_SERVICE": {
+			"DISABLE_CACHE_SERVICE": {
 				ParsedBoolValue: false,
 				RawValue:        "0",
 				ValueType:       boolType,
@@ -1005,7 +1005,7 @@ func (c *configOptions) YouTubeEmbedDomain() string {
 }
 
 func (c *configOptions) HasCacheService() bool {
-	return c.options["CACHE_SERVICE"].ParsedBoolValue
+	return !c.options["DISABLE_CACHE_SERVICE"].ParsedBoolValue && !c.options["DISABLE_HTTP_SERVICE"].ParsedBoolValue
 }
 
 func (c *configOptions) CacheInterval() time.Duration {

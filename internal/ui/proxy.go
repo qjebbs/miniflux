@@ -107,7 +107,7 @@ func (h *handler) mediaProxy(w http.ResponseWriter, r *http.Request) {
 		var file *os.File
 		file, err = filesystem.MediaFileByHash(m.URLHash)
 		if err != nil {
-			slog.Debug("Unable to fetch media from file system: %s", err)
+			slog.Error("Unable to fetch media from file system: %s", slog.Any("error", err))
 			goto FETCH
 		}
 		defer file.Close()

@@ -25,7 +25,7 @@ func (s *Storage) CreateMediasRunOnce() {
 	for {
 		entries, err := getEntriesForCreateMediasRunOnce(s.db, startID)
 		if err != nil {
-			slog.Error("[Storage:CreateMediasRunOnce] Error: %v", err)
+			slog.Error("[Storage:CreateMediasRunOnce] Error: %s", slog.Any("error", err))
 			break
 		}
 		if len(entries) == 0 {
@@ -33,7 +33,7 @@ func (s *Storage) CreateMediasRunOnce() {
 		}
 		err = s.CreateEntriesMedia(tx, entries)
 		if err != nil {
-			slog.Error("[Storage:CreateMediasRunOnce] Error: %v", err)
+			slog.Error("[Storage:CreateMediasRunOnce] Error: %s", slog.Any("error", err))
 		}
 		startID = entries[len(entries)-1].ID
 	}

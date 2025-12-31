@@ -15,6 +15,7 @@ body {
     text-rendering: optimizeLegibility;
     color: var(--body-color);
     background: var(--body-background);
+    padding: 0 1.2em;
 }
 
 hr {
@@ -1363,14 +1364,14 @@ textarea.small {
 }
 
 .statistics-list .list-header {
-    padding: 0.5em;
+    padding: 0.5em 0;
     color: var(--category-color);
 }
 
 .statistics-list .list-item {
     border: solid var(--header-list-border-color);
     border-width: 0 0 1px 0;
-    padding: 0.5em;
+    padding: 0.5em 0;
     line-height: 2.5em;
 }
 

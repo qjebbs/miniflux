@@ -68,6 +68,12 @@ func (e *EntryPaginationBuilder) WithTags(tags []string) {
 	}
 }
 
+// WithGloballyVisible adds global visibility to the condition.
+func (e *EntryPaginationBuilder) WithGloballyVisible() {
+	e.conditions = append(e.conditions, "not c.hide_globally")
+	e.conditions = append(e.conditions, "not f.hide_globally")
+}
+
 // WithoutNSFW adds non-NSFW to the condition.
 func (e *EntryPaginationBuilder) WithoutNSFW() {
 	e.conditions = append(e.conditions, "not c.nsfw")

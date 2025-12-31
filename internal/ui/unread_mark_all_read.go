@@ -11,14 +11,7 @@ import (
 )
 
 func (h *handler) markAllAsRead(w http.ResponseWriter, r *http.Request) {
-	var err error
-	if request.IsNSFWEnabled(r) {
-		err = h.store.MarkAllAsReadExceptNSFW(request.UserID(r))
-	} else {
-		err = h.store.MarkAllAsRead(request.UserID(r))
-	}
-
-	if err != nil {
+	if err := h.store.MarkGloballyVisibleFeedsAsRead(request.UserID(r), request.IsNSFWEnabled(r)); err != nil {
 		json.ServerError(w, r, err)
 		return
 	}

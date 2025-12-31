@@ -54,19 +54,18 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		BlockFilterEntryRules:       feed.BlockFilterEntryRules,
 		KeepFilterEntryRules:        feed.KeepFilterEntryRules,
 		Crawler:                     feed.Crawler,
-		CacheMedia:                  feed.CacheMedia,
 		UserAgent:                   feed.UserAgent,
 		Cookie:                      feed.Cookie,
 		CategoryID:                  feed.Category.ID,
 		Username:                    feed.Username,
 		Password:                    feed.Password,
-		View:                        feed.View,
 		IgnoreHTTPCache:             feed.IgnoreHTTPCache,
 		AllowSelfSignedCertificates: feed.AllowSelfSignedCertificates,
 		FetchViaProxy:               feed.FetchViaProxy,
 		Disabled:                    feed.Disabled,
 		NoMediaPlayer:               feed.NoMediaPlayer,
-		NSFW:                        feed.NSFW,
+		HideGlobally:                feed.HideGlobally,
+		CategoryHidden:              feed.Category.HideGlobally,
 		AppriseServiceURLs:          feed.AppriseServiceURLs,
 		WebhookURL:                  feed.WebhookURL,
 		DisableHTTP2:                feed.DisableHTTP2,
@@ -76,6 +75,10 @@ func (h *handler) showEditFeedPage(w http.ResponseWriter, r *http.Request) {
 		PushoverEnabled:             feed.PushoverEnabled,
 		PushoverPriority:            feed.PushoverPriority,
 		ProxyURL:                    feed.ProxyURL,
+
+		CacheMedia: feed.CacheMedia,
+		View:       feed.View,
+		NSFW:       feed.NSFW,
 	}
 
 	all, count, size, err := h.store.MediaStatisticsByFeed(feedID)

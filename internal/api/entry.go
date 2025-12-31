@@ -141,6 +141,14 @@ func (h *handler) findEntries(w http.ResponseWriter, r *http.Request, feedID int
 	builder.WithEnclosures()
 	builder.WithoutStatus(model.EntryStatusRemoved)
 
+	if request.HasQueryParam(r, "globally_visible") {
+		globallyVisible := request.QueryBoolParam(r, "globally_visible", true)
+
+		if globallyVisible {
+			builder.WithGloballyVisible()
+		}
+	}
+
 	if request.HasQueryParam(r, "nsfw") {
 		nsfw := request.QueryBoolParam(r, "nsfw", true)
 

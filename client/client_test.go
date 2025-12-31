@@ -721,6 +721,7 @@ func TestFeeds(t *testing.T) {
 				ID:    1,
 				Title: "Example",
 			},
+			HideGlobally: false,
 			DisableHTTP2: false,
 			ProxyURL:     "",
 		},

@@ -42,6 +42,11 @@
     {{ t "form.feed.label.nsfw" }}
     </label>
 
+    <label>
+        <input type="checkbox" name="hide_globally" {{ if .form.HideGlobally }}checked{{ end }} value="1">
+        {{ t "form.category.hide_globally" }}
+    </label>
+
     <div class="buttons">
         <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button>
     </div>

@@ -171,9 +171,11 @@ type Feed struct {
 	Username                    string    `json:"username"`
 	Password                    string    `json:"password"`
 	Category                    *Category `json:"category,omitempty"`
-	NSFW                        bool      `json:"nsfw"`
+	HideGlobally                bool      `json:"hide_globally"`
 	DisableHTTP2                bool      `json:"disable_http2"`
 	ProxyURL                    string    `json:"proxy_url"`
+
+	NSFW bool `json:"nsfw"`
 }
 
 // FeedCreationRequest represents the request to create a feed.
@@ -196,9 +198,11 @@ type FeedCreationRequest struct {
 	KeeplistRules               string `json:"keeplist_rules"`
 	BlockFilterEntryRules       string `json:"block_filter_entry_rules"`
 	KeepFilterEntryRules        string `json:"keep_filter_entry_rules"`
-	NSFW                        bool   `json:"nsfw"`
+	HideGlobally                bool   `json:"hide_globally"`
 	DisableHTTP2                bool   `json:"disable_http2"`
 	ProxyURL                    string `json:"proxy_url"`
+
+	NSFW bool `json:"nsfw"`
 }
 
 // FeedModificationRequest represents the request to update a feed.
@@ -223,9 +227,11 @@ type FeedModificationRequest struct {
 	IgnoreHTTPCache             *bool   `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates *bool   `json:"allow_self_signed_certificates"`
 	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
-	NSFW                        *bool   `json:"nsfw"`
+	HideGlobally                *bool   `json:"hide_globally"`
 	DisableHTTP2                *bool   `json:"disable_http2"`
 	ProxyURL                    *string `json:"proxy_url"`
+
+	NSFW *bool `json:"nsfw"`
 }
 
 // FeedIcon represents the feed icon.

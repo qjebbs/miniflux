@@ -221,6 +221,12 @@ func (e *EntryQueryBuilder) WithOffset(offset int) *EntryQueryBuilder {
 	return e
 }
 
+func (e *EntryQueryBuilder) WithGloballyVisible() *EntryQueryBuilder {
+	e.conditions = append(e.conditions, "c.hide_globally IS FALSE")
+	e.conditions = append(e.conditions, "f.hide_globally IS FALSE")
+	return e
+}
+
 // WithoutNSFW excludes entries whose feed marked as Not Safe For Work.
 func (e *EntryQueryBuilder) WithoutNSFW() *EntryQueryBuilder {
 	e.conditions = append(e.conditions, "c.nsfw IS FALSE")
@@ -295,12 +301,14 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			f.checked_at,
 			f.category_id,
 			c.title as category_title,
+			c.hide_globally as category_hidden,
 			c.nsfw,
 			f.scraper_rules,
 			f.rewrite_rules,
 			f.crawler,
 			f.user_agent,
 			f.cookie,
+			f.hide_globally,
 			f.nsfw,
 			f.no_media_player,
 			f.webhook_url,
@@ -366,12 +374,14 @@ func (e *EntryQueryBuilder) GetEntries() (model.Entries, error) {
 			&entry.Feed.CheckedAt,
 			&entry.Feed.Category.ID,
 			&entry.Feed.Category.Title,
+			&entry.Feed.Category.HideGlobally,
 			&entry.Feed.Category.NSFW,
 			&entry.Feed.ScraperRules,
 			&entry.Feed.RewriteRules,
 			&entry.Feed.Crawler,
 			&entry.Feed.UserAgent,
 			&entry.Feed.Cookie,
+			&entry.Feed.HideGlobally,
 			&entry.Feed.NSFW,
 			&entry.Feed.NoMediaPlayer,
 			&entry.Feed.WebhookURL,

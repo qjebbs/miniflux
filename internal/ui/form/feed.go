@@ -24,19 +24,18 @@ type FeedForm struct {
 	BlockFilterEntryRules       string
 	KeepFilterEntryRules        string
 	Crawler                     bool
-	CacheMedia                  bool
 	UserAgent                   string
 	Cookie                      string
 	CategoryID                  int64
 	Username                    string
 	Password                    string
-	View                        string
 	IgnoreHTTPCache             bool
 	AllowSelfSignedCertificates bool
 	FetchViaProxy               bool
 	Disabled                    bool
 	NoMediaPlayer               bool
-	NSFW                        bool
+	HideGlobally                bool
+	CategoryHidden              bool // Category has "hide_globally"
 	AppriseServiceURLs          string
 	WebhookURL                  string
 	DisableHTTP2                bool
@@ -46,6 +45,10 @@ type FeedForm struct {
 	PushoverEnabled             bool
 	PushoverPriority            int
 	ProxyURL                    string
+
+	CacheMedia bool
+	View       string
+	NSFW       bool
 }
 
 // Merge updates the fields of the given feed.
@@ -63,20 +66,18 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.BlockFilterEntryRules = f.BlockFilterEntryRules
 	feed.KeepFilterEntryRules = f.KeepFilterEntryRules
 	feed.Crawler = f.Crawler
-	feed.CacheMedia = f.CacheMedia
 	feed.UserAgent = f.UserAgent
 	feed.Cookie = f.Cookie
 	feed.ParsingErrorCount = 0
 	feed.ParsingErrorMsg = ""
 	feed.Username = f.Username
 	feed.Password = f.Password
-	feed.View = f.View
 	feed.IgnoreHTTPCache = f.IgnoreHTTPCache
 	feed.AllowSelfSignedCertificates = f.AllowSelfSignedCertificates
 	feed.FetchViaProxy = f.FetchViaProxy
 	feed.Disabled = f.Disabled
 	feed.NoMediaPlayer = f.NoMediaPlayer
-	feed.NSFW = f.NSFW
+	feed.HideGlobally = f.HideGlobally
 	feed.AppriseServiceURLs = f.AppriseServiceURLs
 	feed.WebhookURL = f.WebhookURL
 	feed.DisableHTTP2 = f.DisableHTTP2
@@ -86,6 +87,11 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.PushoverEnabled = f.PushoverEnabled
 	feed.PushoverPriority = f.PushoverPriority
 	feed.ProxyURL = f.ProxyURL
+
+	feed.CacheMedia = f.CacheMedia
+	feed.View = f.View
+	feed.NSFW = f.NSFW
+
 	return feed
 }
 
@@ -125,17 +131,15 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		BlockFilterEntryRules:       r.FormValue("block_filter_entry_rules"),
 		KeepFilterEntryRules:        r.FormValue("keep_filter_entry_rules"),
 		Crawler:                     r.FormValue("crawler") == "1",
-		CacheMedia:                  r.FormValue("cache_media") == "1",
 		CategoryID:                  int64(categoryID),
 		Username:                    r.FormValue("feed_username"),
 		Password:                    r.FormValue("feed_password"),
-		View:                        view,
 		IgnoreHTTPCache:             r.FormValue("ignore_http_cache") == "1",
 		AllowSelfSignedCertificates: r.FormValue("allow_self_signed_certificates") == "1",
 		FetchViaProxy:               r.FormValue("fetch_via_proxy") == "1",
 		Disabled:                    r.FormValue("disabled") == "1",
 		NoMediaPlayer:               r.FormValue("no_media_player") == "1",
-		NSFW:                        r.FormValue("nsfw") == "1",
+		HideGlobally:                r.FormValue("hide_globally") == "1",
 		AppriseServiceURLs:          r.FormValue("apprise_service_urls"),
 		WebhookURL:                  r.FormValue("webhook_url"),
 		DisableHTTP2:                r.FormValue("disable_http2") == "1",
@@ -145,5 +149,9 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		PushoverEnabled:             r.FormValue("pushover_enabled") == "1",
 		PushoverPriority:            pushoverPriority,
 		ProxyURL:                    r.FormValue("proxy_url"),
+
+		CacheMedia: r.FormValue("cache_media") == "1",
+		View:       view,
+		NSFW:       r.FormValue("nsfw") == "1",
 	}
 }

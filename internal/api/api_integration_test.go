@@ -2372,8 +2372,9 @@ func TestGetGlobalEntriesEndpoint(t *testing.T) {
 	regularUserClient := miniflux.NewClient(testConfig.testBaseURL, regularTestUser.Username, testConfig.testRegularPassword)
 
 	feedID, err := regularUserClient.CreateFeed(&miniflux.FeedCreationRequest{
-		FeedURL: testConfig.testFeedURL,
-		NSFW:    true,
+		FeedURL:      testConfig.testFeedURL,
+		HideGlobally: true,
+		NSFW:         true,
 	})
 
 	if err != nil {
@@ -2383,6 +2384,10 @@ func TestGetGlobalEntriesEndpoint(t *testing.T) {
 	feedIDEntry, err := regularUserClient.Feed(feedID)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if feedIDEntry.HideGlobally != true {
+		t.Fatalf(`Expected feed to have globally_hidden set to true, was false.`)
 	}
 
 	if feedIDEntry.NSFW != true {

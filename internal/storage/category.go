@@ -40,11 +40,12 @@ func (s *Storage) CategoryIDExists(userID, categoryID int64) bool {
 func (s *Storage) Category(userID, categoryID int64) (*model.Category, error) {
 	var category model.Category
 
-	query := `SELECT id, user_id, title, nsfw, view FROM categories WHERE user_id=$1 AND id=$2`
+	query := `SELECT id, user_id, title, hide_globally, nsfw, view FROM categories WHERE user_id=$1 AND id=$2`
 	err := s.db.QueryRow(query, userID, categoryID).Scan(
 		&category.ID,
 		&category.UserID,
 		&category.Title,
+		&category.HideGlobally,
 		&category.NSFW,
 		&category.View,
 	)
@@ -61,13 +62,14 @@ func (s *Storage) Category(userID, categoryID int64) (*model.Category, error) {
 
 // FirstCategory returns the first category for the given user.
 func (s *Storage) FirstCategory(userID int64) (*model.Category, error) {
-	query := `SELECT id, user_id, title, nsfw, view FROM categories WHERE user_id=$1 ORDER BY title ASC LIMIT 1`
+	query := `SELECT id, user_id, title, hide_globally, nsfw, view FROM categories WHERE user_id=$1 ORDER BY title ASC LIMIT 1`
 
 	var category model.Category
 	err := s.db.QueryRow(query, userID).Scan(
 		&category.ID,
 		&category.UserID,
 		&category.Title,
+		&category.HideGlobally,
 		&category.NSFW,
 		&category.View,
 	)
@@ -86,11 +88,12 @@ func (s *Storage) FirstCategory(userID int64) (*model.Category, error) {
 func (s *Storage) CategoryByTitle(userID int64, title string) (*model.Category, error) {
 	var category model.Category
 
-	query := `SELECT id, user_id, title, nsfw, view FROM categories WHERE user_id=$1 AND title=$2`
+	query := `SELECT id, user_id, title, hide_globally, nsfw, view FROM categories WHERE user_id=$1 AND title=$2`
 	err := s.db.QueryRow(query, userID, title).Scan(
 		&category.ID,
 		&category.UserID,
 		&category.Title,
+		&category.HideGlobally,
 		&category.NSFW,
 		&category.View,
 	)
@@ -107,7 +110,7 @@ func (s *Storage) CategoryByTitle(userID int64, title string) (*model.Category, 
 
 // Categories returns all categories that belongs to the given user.
 func (s *Storage) Categories(userID int64) (model.Categories, error) {
-	query := `SELECT id, user_id, title, nsfw, view FROM categories WHERE user_id=$1 ORDER BY title ASC`
+	query := `SELECT id, user_id, title, hide_globally, nsfw, view FROM categories WHERE user_id=$1 ORDER BY title ASC`
 	rows, err := s.db.Query(query, userID)
 	if err != nil {
 		return nil, fmt.Errorf(`store: unable to fetch categories: %v`, err)
@@ -121,6 +124,7 @@ func (s *Storage) Categories(userID int64) (model.Categories, error) {
 			&category.ID,
 			&category.UserID,
 			&category.Title,
+			&category.HideGlobally,
 			&category.NSFW,
 			&category.View,
 		); err != nil {
@@ -145,6 +149,7 @@ func (s *Storage) CategoriesWithFeedCount(userID int64, nsfw bool) (model.Catego
 			c.id,
 			c.user_id,
 			c.title,
+			c.hide_globally,
 			(SELECT count(*) FROM feeds WHERE feeds.category_id=c.id) AS count,
 			(SELECT count(*)
 			   FROM feeds
@@ -181,7 +186,7 @@ func (s *Storage) CategoriesWithFeedCount(userID int64, nsfw bool) (model.Catego
 	categories := make(model.Categories, 0)
 	for rows.Next() {
 		var category model.Category
-		if err := rows.Scan(&category.ID, &category.UserID, &category.Title, &category.FeedCount, &category.TotalUnread); err != nil {
+		if err := rows.Scan(&category.ID, &category.UserID, &category.Title, &category.HideGlobally, &category.FeedCount, &category.TotalUnread); err != nil {
 			return nil, fmt.Errorf(`store: unable to fetch category row: %v`, err)
 		}
 
@@ -197,24 +202,27 @@ func (s *Storage) CreateCategory(userID int64, request *model.CategoryCreationRe
 
 	query := `
 		INSERT INTO categories
-			(user_id, title, nsfw, view)
+			(user_id, title, hide_globally, nsfw, view)
 		VALUES
-			($1, $2, $3, $4)
+			($1, $2, $3, $4, $5)
 		RETURNING
 			id,
 			user_id,
-			title
+			title,
+			hide_globally
 	`
 	err := s.db.QueryRow(
 		query,
 		userID,
 		request.Title,
+		request.HideGlobally,
 		request.NSFW,
 		request.View,
 	).Scan(
 		&category.ID,
 		&category.UserID,
 		&category.Title,
+		&category.HideGlobally,
 	)
 
 	if err != nil {
@@ -226,10 +234,11 @@ func (s *Storage) CreateCategory(userID int64, request *model.CategoryCreationRe
 
 // UpdateCategory updates an existing category.
 func (s *Storage) UpdateCategory(category *model.Category) error {
-	query := `UPDATE categories SET title=$1, nsfw=$2, view=$3 WHERE id=$4 AND user_id=$5`
+	query := `UPDATE categories SET title=$1, hide_globally=$2, nsfw=$3, view=$4 WHERE id=$5 AND user_id=$6`
 	_, err := s.db.Exec(
 		query,
 		category.Title,
+		category.HideGlobally,
 		category.NSFW,
 		category.View,
 		category.ID,
@@ -286,7 +295,7 @@ func (s *Storage) UpdateCategoryView(userID int64, categoryID int64, view string
 }
 
 // RemoveAndReplaceCategoriesByName deletes the given categories, replacing those categories with the user's first
-// category on affected feeds
+// category on affected feeds.
 func (s *Storage) RemoveAndReplaceCategoriesByName(userid int64, titles []string) error {
 	tx, err := s.db.Begin()
 	if err != nil {

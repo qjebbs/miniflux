@@ -50,6 +50,7 @@ type Feed struct {
 	IgnoreHTTPCache             bool      `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates bool      `json:"allow_self_signed_certificates"`
 	FetchViaProxy               bool      `json:"fetch_via_proxy"`
+	HideGlobally                bool      `json:"hide_globally"`
 	DisableHTTP2                bool      `json:"disable_http2"`
 	PushoverEnabled             bool      `json:"pushover_enabled"`
 	NtfyEnabled                 bool      `json:"ntfy_enabled"`
@@ -210,6 +211,7 @@ type FeedModificationRequest struct {
 	IgnoreHTTPCache             *bool   `json:"ignore_http_cache"`
 	AllowSelfSignedCertificates *bool   `json:"allow_self_signed_certificates"`
 	FetchViaProxy               *bool   `json:"fetch_via_proxy"`
+	HideGlobally                *bool   `json:"hide_globally"`
 	DisableHTTP2                *bool   `json:"disable_http2"`
 	ProxyURL                    *string `json:"proxy_url"`
 
@@ -306,6 +308,10 @@ func (f *FeedModificationRequest) Patch(feed *Feed) {
 
 	if f.FetchViaProxy != nil {
 		feed.FetchViaProxy = *f.FetchViaProxy
+	}
+
+	if f.HideGlobally != nil {
+		feed.HideGlobally = *f.HideGlobally
 	}
 
 	if f.View != nil {

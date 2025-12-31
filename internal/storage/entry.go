@@ -54,6 +54,7 @@ func (s *Storage) CountAllEntries() map[string]int64 {
 func (s *Storage) CountUnreadEntries(userID int64, nsfw bool) int {
 	builder := s.NewEntryQueryBuilder(userID)
 	builder.WithStatus(model.EntryStatusUnread)
+	builder.WithGloballyVisible()
 	if nsfw {
 		builder.WithoutNSFW()
 	}
@@ -557,6 +558,8 @@ func (s *Storage) SetEntriesStatusCount(userID int64, entryIDs []int64, status s
 		    JOIN categories c ON (c.id = f.category_id)
 		WHERE e.user_id = $1
 			AND e.id = ANY($2)
+			AND NOT f.hide_globally
+			AND NOT c.hide_globally
 	`
 	if nsfw {
 		query += "AND NOT f.nsfw AND NOT c.nsfw"
@@ -670,27 +673,34 @@ func (s *Storage) MarkAllAsReadBeforeDate(userID int64, before time.Time) error 
 	return nil
 }
 
-// MarkAllAsReadExceptNSFW updates all user entries except nsfw ones to the read status
-func (s *Storage) MarkAllAsReadExceptNSFW(userID int64) error {
+// MarkGloballyVisibleFeedsAsRead updates all visible user entries to the read status.
+func (s *Storage) MarkGloballyVisibleFeedsAsRead(userID int64, nsfw bool) error {
 	query := `
-		UPDATE entries 
-		SET status=$1
-		WHERE id in (
-			SELECT e.id 
-			FROM feeds f
-			INNER JOIN entries e ON f.id = e.feed_id
-			WHERE e.user_id=$2 AND e.status=$3 AND f.nsfw = 'f'
-		)
+		UPDATE
+			entries 
+		SET 
+			status=$1,
+			changed_at=now()
+		FROM
+			feeds
+		WHERE
+			entries.feed_id = feeds.id
+			AND entries.user_id=$2
+			AND entries.status=$3
+			AND NOT feeds.hide_globally
 	`
+	if nsfw {
+		query += " AND NOT feeds.nsfw"
+	}
 	result, err := s.db.Exec(query, model.EntryStatusRead, userID, model.EntryStatusUnread)
 	if err != nil {
-		return fmt.Errorf(`store: unable to mark all entries as read: %v`, err)
+		return fmt.Errorf(`store: unable to mark globally visible feeds as read: %v`, err)
 	}
 
 	count, _ := result.RowsAffected()
-	slog.Debug(
-		"Storage:MarkAllAsReadExceptNSFW",
-		slog.Int64("user_id", userID), slog.Int64("nb_entries", count),
+	slog.Debug("Marked globally visible feed entries as read",
+		slog.Int64("user_id", userID),
+		slog.Int64("nb_entries", count),
 	)
 
 	return nil

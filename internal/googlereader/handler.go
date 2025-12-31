@@ -893,7 +893,7 @@ func (h *handler) renameTagHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	categoryModificationRequest := model.CategoryModificationRequest{
-		Title: destination.ID,
+		Title: model.SetOptionalField(destination.ID),
 	}
 
 	if validationError := validator.ValidateCategoryModification(h.store, userID, category.ID, &categoryModificationRequest); validationError != nil {

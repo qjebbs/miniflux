@@ -167,11 +167,12 @@ func CreateFeed(store *storage.Storage, userID int64, feedCreationRequest *model
 	subscription.KeeplistRules = feedCreationRequest.KeeplistRules
 	subscription.BlockFilterEntryRules = feedCreationRequest.BlockFilterEntryRules
 	subscription.KeepFilterEntryRules = feedCreationRequest.KeepFilterEntryRules
-	subscription.NSFW = feedCreationRequest.NSFW
+	subscription.HideGlobally = feedCreationRequest.HideGlobally
 	subscription.EtagHeader = responseHandler.ETag()
 	subscription.LastModifiedHeader = responseHandler.LastModified()
 	subscription.FeedURL = responseHandler.EffectiveURL()
 	subscription.ProxyURL = feedCreationRequest.ProxyURL
+	subscription.NSFW = feedCreationRequest.NSFW
 	subscription.WithCategoryID(feedCreationRequest.CategoryID)
 	subscription.CheckedNow()
 

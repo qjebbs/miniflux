@@ -11,9 +11,11 @@ import (
 
 // CategoryForm represents a feed form in the UI
 type CategoryForm struct {
-	Title string
-	NSFW  bool
-	View  string
+	Title        string
+	HideGlobally bool
+
+	NSFW bool
+	View string
 }
 
 // NewCategoryForm returns a new CategoryForm.
@@ -23,8 +25,10 @@ func NewCategoryForm(r *http.Request) *CategoryForm {
 		view = model.ViewDefault
 	}
 	return &CategoryForm{
-		Title: r.FormValue("title"),
-		NSFW:  r.FormValue("nsfw") == "1",
-		View:  view,
+		Title:        r.FormValue("title"),
+		HideGlobally: r.FormValue("hide_globally") == "1",
+
+		NSFW: r.FormValue("nsfw") == "1",
+		View: view,
 	}
 }

@@ -23,7 +23,8 @@ func (s *Storage) UnreadStatByFeed(userID int64, nsfw bool) (stat model.EntrySta
 			INNER JOIN entries e ON f.id=e.feed_id
 			LEFT JOIN feed_icons fi ON fi.feed_id=f.id
 			LEFT JOIN icons i ON i.id=fi.icon_id
-		WHERE f.user_id=$1 AND e.status='unread' %s
+		WHERE f.user_id=$1 AND e.status='unread' 
+			AND not f.hide_globally AND not c.hide_globally %s
 		GROUP BY f.id
 		ORDER BY max(starred.count) DESC NULLS LAST, f.title ASC`
 	nsfwCond := ""
@@ -43,7 +44,8 @@ func (s *Storage) StarredStatByFeed(userID int64, nsfw bool) (stat model.EntrySt
 			INNER JOIN categories c ON c.id=f.category_id
 			LEFT JOIN feed_icons fi ON fi.feed_id=f.id
 			LEFT JOIN icons i ON i.id=fi.icon_id
-		WHERE f.user_id=$1 AND e.starred='T' %s
+		WHERE f.user_id=$1 AND e.starred='T' 
+			AND not f.hide_globally AND not c.hide_globally %s
 		GROUP BY f.id
 		ORDER BY s_count DESC NULLS LAST, f.title ASC`
 	nsfwCond := ""

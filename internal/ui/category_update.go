@@ -48,9 +48,11 @@ func (h *handler) updateCategory(w http.ResponseWriter, r *http.Request) {
 	view.Set("countErrorFeeds", h.store.CountUserFeedsWithErrors(user.ID, nsfw))
 
 	categoryRequest := &model.CategoryModificationRequest{
-		Title: categoryForm.Title,
-		NSFW:  categoryForm.NSFW,
-		View:  categoryForm.View,
+		Title:        model.SetOptionalField(categoryForm.Title),
+		HideGlobally: model.SetOptionalField(categoryForm.HideGlobally),
+
+		NSFW: categoryForm.NSFW,
+		View: categoryForm.View,
 	}
 
 	if validationErr := validator.ValidateCategoryModification(h.store, user.ID, category.ID, categoryRequest); validationErr != nil {

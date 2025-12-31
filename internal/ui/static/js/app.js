@@ -681,7 +681,7 @@ function updateEntriesStatus(entryIDs, status, callback) {
             if (callback) {
                 callback(resp);
             }
-            updateUnreadCounterValue(status === "read" ? -count : count);
+            updateUnreadCounterValue(count);
         });
     });
 }
@@ -882,16 +882,13 @@ function scrollToCurrentItemAction() {
  *
  * @param {number} delta - The amount to change the counter by.
  */
-function updateUnreadCounterValue(delta) {
+function updateUnreadCounterValue(value) {
     document.querySelectorAll("span.unread-counter").forEach((element) => {
-        const oldValue = parseInt(element.textContent, 10);
-        element.textContent = oldValue + delta;
+        element.textContent = value;
     });
 
     if (window.location.href.endsWith('/unread')) {
-        const oldValue = parseInt(document.title.split('(')[1], 10);
-        const newValue = oldValue + delta;
-        document.title = document.title.replace(/\(\d+\)/, `(${newValue})`);
+        document.title = document.title.replace(/\(\d+\)/, `(${value})`);
     }
 }
 

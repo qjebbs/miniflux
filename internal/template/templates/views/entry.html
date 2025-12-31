@@ -125,24 +125,6 @@
                         data-label-loading="{{ t "entry.state.loading" }}"
                         >{{ icon "scraper" }}<span class="icon-label">{{ t "entry.scraper.label" }}</span></button>
                 </li>
-                {{ if .entry.CommentsURL }}
-                <li>
-                    <a href="{{ .entry.CommentsURL | safeURL }}"
-                        class="page-link"
-                        title="{{ t "entry.comments.title" }}"
-                        {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ else }}rel="noopener"{{ end }}
-                        data-comments-link="true"
-                        >{{ icon "comment" }}<span class="icon-label">{{ t "entry.comments.label" }}</span></a>
-                </li>
-                {{ end }}
-                <li>
-                    <button 
-                        class="page-button"
-                        href="{{ route "editEntry" "entryID" .entry.ID }}"
-                        title="{{ t "entry.edit.title" }}"
-                    >
-                        {{ icon "edit" }}<span class="icon-label">{{ t "entry.edit.label" }}</span></button>
-                </li>
                 {{ if .hasCacheService }}
                     <li>
                         <button href="#"
@@ -158,6 +140,24 @@
                         >{{ if .entryCached }}{{ icon "uncache" }}{{ else }}{{ icon "cache" }}{{ end }}<span class="icon-label">{{ if .entryCached }}{{ t "entry.cache.toggle.off" }}{{ else }}{{ t "entry.cache.toggle.on" }}{{ end }}</span></button>
                     </li>
                 {{ end }}
+                {{ if .entry.CommentsURL }}
+                <li>
+                    <a href="{{ .entry.CommentsURL | safeURL }}"
+                        class="page-link"
+                        title="{{ t "entry.comments.title" }}"
+                        {{ if $.user.OpenExternalLinksInNewTab }}target="_blank"{{ else }}rel="noopener"{{ end }}
+                        data-comments-link="true"
+                        >{{ icon "comment" }}<span class="icon-label">{{ t "entry.comments.label" }}</span></a>
+                </li>
+                {{ end }}
+                <li>
+                    <a 
+                        class="page-button"
+                        href="{{ route "editEntry" "entryID" .entry.ID }}"
+                        title="{{ t "entry.edit.title" }}"
+                    >
+                        {{ icon "edit" }}<span class="icon-label">{{ t "entry.edit.label" }}</span></a>
+                </li>
             </ul>
         </div>
         {{ end }}

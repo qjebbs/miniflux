@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"miniflux.app/v2/internal/config"
+	"miniflux.app/v2/internal/proxyrotator"
+	"miniflux.app/v2/internal/reader/fetcher"
 	"miniflux.app/v2/internal/urllib"
 
 	"github.com/PuerkitoBio/goquery"
@@ -61,29 +63,25 @@ func FindMedia(media *model.Media) error {
 
 // FetchMedia fetches the media from the URL.
 func FetchMedia(media *model.Media, r *http.Request) (*http.Response, error) {
-	clt := &http.Client{
-		Transport: &http.Transport{
-			IdleConnTimeout: time.Duration(config.Opts.MediaProxyHTTPClientTimeout()) * time.Second,
-		},
-		Timeout: time.Duration(config.Opts.HTTPClientTimeout()) * time.Second,
-	}
-	req, err := http.NewRequest("GET", media.URL, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("Connection", "close")
+	requestBuilder := fetcher.NewRequestBuilder()
+	requestBuilder.WithTimeout(config.Opts.HTTPClientTimeout())
+	requestBuilder.WithProxyRotator(proxyrotator.ProxyRotatorInstance)
+	requestBuilder.WithCustomApplicationProxyURL(config.Opts.HTTPClientProxyURL())
+	requestBuilder.WithUserAgent("", config.Opts.HTTPClientUserAgent())
+
+	// req.Header.Add("Connection", "close")
 	if media.Referrer != "" {
-		req.Header.Add("Referer", media.Referrer)
+		requestBuilder.WithHeader("Referer", media.Referrer)
 	}
 	if r != nil {
 		forwardedRequestHeader := []string{"Range", "Accept", "Accept-Encoding"}
 		for _, requestHeaderName := range forwardedRequestHeader {
 			if r.Header.Get(requestHeaderName) != "" {
-				req.Header.Add(requestHeaderName, r.Header.Get(requestHeaderName))
+				requestBuilder.WithHeader(requestHeaderName, r.Header.Get(requestHeaderName))
 			}
 		}
 	}
-	resp, err := clt.Do(req)
+	resp, err := requestBuilder.ExecuteRequest(media.URL)
 	if err != nil {
 		return nil, err
 	}

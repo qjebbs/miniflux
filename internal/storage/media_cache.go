@@ -153,8 +153,8 @@ func (s *Storage) HasEntryCache(entryID int64) bool {
 }
 
 // CacheEntryMedias caches media of an entry.
-func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
-	medias, err := s.getEntryMedias(userID, EntryID)
+func (s *Storage) CacheEntryMedias(userID, entryID int64) error {
+	medias, err := s.getEntryMedias(userID, entryID)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,10 @@ func (s *Storage) CacheEntryMedias(userID, EntryID int64) error {
 				return fmt.Errorf("[Storage:CacheEntryMedias] unable to update media #%d: %v", m.ID, err)
 			}
 		}
-		buf.WriteString(fmt.Sprintf("('%v','%v','T'),", EntryID, m.ID))
+		buf.WriteString(fmt.Sprintf("('%v','%v','T'),", entryID, m.ID))
+	}
+	if buf.Len() == 0 {
+		return nil
 	}
 	vals := buf.String()[:buf.Len()-1]
 	sql := fmt.Sprintf(`

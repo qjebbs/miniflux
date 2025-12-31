@@ -603,10 +603,10 @@ func NewConfigOptions() *configOptions {
 			},
 			"CACHE_INTERVAL": {
 				ParsedDuration: 24 * time.Hour,
-				RawValue:       "24h",
-				ValueType:      minuteType,
+				RawValue:       "24",
+				ValueType:      hourType,
 				Validator: func(rawValue string) error {
-					return validateGreaterOrEqualThan(rawValue, int(time.Minute))
+					return validateGreaterOrEqualThan(rawValue, 1)
 				},
 			},
 			"DISK_STORAGE_ROOT": {

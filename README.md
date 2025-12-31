@@ -15,7 +15,7 @@ This is a Miniflux fork, ships with all upstream features, plus:
 | Variable Name         | Description                                | Default Value |
 | --------------------- | ------------------------------------------ | ------------- |
 | DISABLE_CACHE_SERVICE | Set to 1 to disable cache service          | 0             |
-| CACHE_INTERVAL        | Caching job interval                       | 24h           |
+| CACHE_INTERVAL        | Caching job interval (hours)               | 24            |
 | CACHE_LOCATION        | Where to save caches, "disk" or "database" | disk          |
 | DISK_STORAGE_ROOT     | The path where the disk storage located    | ./            |
 

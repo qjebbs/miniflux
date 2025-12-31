@@ -73,10 +73,9 @@ type Feed struct {
 	ReadCount              int           `json:"-"`
 	NumberOfVisibleEntries int           `json:"-"`
 
-	NSFW         bool   `json:"nsfw"`
-	View         string `json:"view"`
-	CacheMedia   bool   `json:"cache_media"`
-	ProxifyMedia bool   `json:"-"`
+	NSFW       bool   `json:"nsfw"`
+	View       string `json:"view"`
+	CacheMedia bool   `json:"cache_media"`
 }
 
 type FeedCounters struct {
@@ -214,10 +213,9 @@ type FeedModificationRequest struct {
 	DisableHTTP2                *bool   `json:"disable_http2"`
 	ProxyURL                    *string `json:"proxy_url"`
 
-	NSFW         *bool   `json:"nsfw"`
-	View         *string `json:"view"`
-	ProxifyMedia *bool   `json:"proxify_media"`
-	CacheMedia   *bool   `json:"cache_media"`
+	NSFW       *bool   `json:"nsfw"`
+	View       *string `json:"view"`
+	CacheMedia *bool   `json:"cache_media"`
 }
 
 // Patch updates a feed with modified values.
@@ -320,10 +318,6 @@ func (f *FeedModificationRequest) Patch(feed *Feed) {
 
 	if f.CacheMedia != nil {
 		feed.CacheMedia = *f.CacheMedia
-	}
-
-	if f.ProxifyMedia != nil {
-		feed.ProxifyMedia = *f.ProxifyMedia
 	}
 
 	if f.DisableHTTP2 != nil {

@@ -59,12 +59,6 @@ func patch(db *sql.DB) error {
 			return err
 		}
 	}
-	if !columnExists(tx, "feeds", "proxify_media") {
-		_, err = tx.Exec("alter table feeds add column proxify_media bool not null default 'f';")
-		if err != nil {
-			return err
-		}
-	}
 	if !columnExists(tx, "categories", "nsfw") {
 		_, err = tx.Exec("alter table categories add column nsfw bool not null default 'f';")
 		if err != nil {

@@ -662,7 +662,6 @@
     "error.entry_existed": "无法创建文章，该文章在指定源中已存在。",
     "form.feed.label.cache_media": "缓存收藏文章的媒体",
     "form.feed.label.nsfw": "不适合工作场合(NSFW)的内容",
-    "form.feed.label.proxify_media": "代理文章中的图片(应对防盗链等)",
     "form.entry.label.title": "标题",
     "form.entry.label.author": "作者",
     "form.entry.label.url": "文章网址",

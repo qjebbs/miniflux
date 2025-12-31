@@ -664,7 +664,6 @@
     "error.entry_existed": "Cannot create article, it already exists in the feed.",
     "form.feed.label.cache_media": "Cache medias for starred entries",
     "form.feed.label.nsfw": "Not Safe For Work(NSFW)",
-    "form.feed.label.proxify_media": "Proxify images of articles (to deal with anti-leech, etc.)",
     "form.entry.label.title": "Title",
     "form.entry.label.author": "Author",
     "form.entry.label.url": "URL",

@@ -37,7 +37,6 @@ type FeedForm struct {
 	Disabled                    bool
 	NoMediaPlayer               bool
 	NSFW                        bool
-	ProxifyMedia                bool
 	AppriseServiceURLs          string
 	WebhookURL                  string
 	DisableHTTP2                bool
@@ -78,7 +77,6 @@ func (f FeedForm) Merge(feed *model.Feed) *model.Feed {
 	feed.Disabled = f.Disabled
 	feed.NoMediaPlayer = f.NoMediaPlayer
 	feed.NSFW = f.NSFW
-	feed.ProxifyMedia = f.ProxifyMedia
 	feed.AppriseServiceURLs = f.AppriseServiceURLs
 	feed.WebhookURL = f.WebhookURL
 	feed.DisableHTTP2 = f.DisableHTTP2
@@ -138,7 +136,6 @@ func NewFeedForm(r *http.Request) *FeedForm {
 		Disabled:                    r.FormValue("disabled") == "1",
 		NoMediaPlayer:               r.FormValue("no_media_player") == "1",
 		NSFW:                        r.FormValue("nsfw") == "1",
-		ProxifyMedia:                r.FormValue("proxify_media") == "1",
 		AppriseServiceURLs:          r.FormValue("apprise_service_urls"),
 		WebhookURL:                  r.FormValue("webhook_url"),
 		DisableHTTP2:                r.FormValue("disable_http2") == "1",

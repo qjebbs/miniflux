@@ -406,10 +406,9 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			pushover_priority=$37,
 			proxy_url=$38,
 			cache_media=$39,
-			view=$40,
-			proxify_media=$41
+			view=$40
 		WHERE
-			id=$42 AND user_id=$43
+			id=$41 AND user_id=$42
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,
@@ -452,7 +451,6 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 		feed.ProxyURL,
 		feed.CacheMedia,
 		feed.View,
-		feed.ProxifyMedia,
 		feed.ID,
 		feed.UserID,
 	)

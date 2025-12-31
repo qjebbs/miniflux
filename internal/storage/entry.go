@@ -233,7 +233,7 @@ func (s *Storage) updateEntry(tx *sql.Tx, entry *model.Entry) error {
 			document_vectors = setweight(to_tsvector($7), 'A') || setweight(to_tsvector($8), 'B'),
 			cover_image=$9, 
 			image_count=$10,
-			tags=$14,
+			tags=$14
 		WHERE
 			user_id=$11 AND feed_id=$12 AND hash=$13
 		RETURNING

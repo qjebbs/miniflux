@@ -409,7 +409,7 @@ func (s *Storage) UpdateFeed(feed *model.Feed) (err error) {
 			view=$40,
 			proxify_media=$41
 		WHERE
-			id=$41 AND user_id=$42
+			id=$42 AND user_id=$43
 	`
 	_, err = s.db.Exec(query,
 		feed.FeedURL,

@@ -88,7 +88,7 @@ function setEntryStatusRead(element) {
 
 function setEntriesAboveStatusRead(element) {
     let currentItem = findEntry(element);
-    let items = getVisibleElements(".items .item");
+    let items = getVisibleEntries();
     if (!currentItem || items.length === 0) {
         return;
     }
@@ -105,8 +105,11 @@ function setEntriesAboveStatusRead(element) {
         return;
     }
     updateEntriesStatus(entryIds, "read", () => {
-        targetItems.map(element => {
-            handleEntryStatus("next", element, true);
+        targetItems.forEach(element => {
+            element.classList.replace("item-status-unread", "item-status-read");
+            const buttonElement = element.querySelector(":is(a, button)[data-toggle-status]");
+            if (!buttonElement) return;
+            setReadStatusButtonState(buttonElement, "read");
         });
     });
 }

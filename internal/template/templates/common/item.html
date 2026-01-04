@@ -29,7 +29,10 @@
     <div class="thumbnail">
         <a target="_blank" data-set-read="{{ .user.MarkReadOnView }}" data-no-request="true" href="{{ .href }}">
             <div class="image">
-                <img class="lazy" src="" data-src="{{ proxyURL .entry.CoverImage }}" data-fallback="{{ fallbackProxyURL .entry.CoverImage }}">
+                <img class="lazy" 
+                    src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                    data-src="{{ proxyURL .entry.CoverImage }}" 
+                    data-fallback-src="{{ fallbackProxyURL .entry.CoverImage }}">
                 {{ if gt .entry.ImageCount 1 }}
             </div>
             <p class="badge">{{ t "entry.more_images" .entry.ImageCount }}</p>

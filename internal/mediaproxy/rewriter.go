@@ -45,7 +45,14 @@ func genericProxyRewriter(router *mux.Router, proxifyFunction urlProxyRewriter, 
 					if shouldProxifyURL(srcAttrValue, proxyOption) {
 						img.SetAttr("src", purl)
 					} else {
-						img.SetAttr("data-fallback", purl)
+						// Use a placeholder to prevent immediate loading.
+						img.SetAttr("src", "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7")
+						// Store the original URL for lazy loading.
+						img.SetAttr("data-src", srcAttrValue)
+						// Store the proxied/fallback URL.
+						img.SetAttr("data-fallback-src", purl)
+						// Add a class to identify these images for the JS.
+						img.AddClass("lazy")
 					}
 				}
 

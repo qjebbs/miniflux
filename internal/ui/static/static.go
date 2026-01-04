@@ -125,9 +125,7 @@ func GenerateJavascriptBundles(webauthnEnabled bool) error {
 			"js/keyboard_handler.js",
 			"js/app.js",
 			"js/tabs_handler.js",
-			"js/lazy_load_handler.js",
 			"js/masonry.pkgd.min.js",
-			"js/imagesloaded.pkgd.min.js",
 			"js/app2.js",
 		},
 		"service-worker": {

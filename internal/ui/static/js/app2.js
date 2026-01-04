@@ -111,18 +111,6 @@ function setEntriesAboveStatusRead(element) {
     });
 }
 
-function imageFallback(selector) {
-    document.querySelectorAll(selector).forEach((element) => {
-        if (!element.dataset.fallback) {
-            return
-        }
-        element.onerror = (event) => {
-            element.src = element.dataset.fallback;
-            element.onerror = undefined;
-        };
-    });
-}
-
 // https://masonry.desandro.com
 function initMasonryLayout() {
     let layoutCallback;
@@ -142,8 +130,10 @@ function initMasonryLayout() {
     }
     let imgs = document.querySelectorAll(".masonry img");
     if (layoutCallback && imgs.length) {
-        LazyloadHandler.add(".item", 'progress', layoutCallback);
         imgs.forEach(img => {
+            img.addEventListener("load", (e) => {
+                if (layoutCallback) layoutCallback();
+            })
             img.addEventListener("error", (e) => {
                 if (layoutCallback) layoutCallback();
             })
@@ -187,6 +177,67 @@ function throttle(fn, delay, atleast) {
     }
 }
 
+// Function to handle lazy loading for a given container.
+function initializeLazyLoad(container) {
+    var lazyImages = [].slice.call(container.querySelectorAll("img.lazy"));
+
+    if ("IntersectionObserver" in window) {
+        let lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    let lazyImage = entry.target;
+                    const originalSrc = lazyImage.dataset.src;
+                    const fallbackSrc = lazyImage.dataset.fallbackSrc;
+
+                    if (originalSrc) {
+                        const img = new Image();
+                        img.src = originalSrc;
+                        img.onload = function () {
+                            lazyImage.src = originalSrc;
+                        };
+                        img.onerror = function () {
+                            // If the original image fails, use the fallback.
+                            if (fallbackSrc) {
+                                lazyImage.src = fallbackSrc;
+                            }
+                        };
+                    }
+
+                    lazyImage.classList.remove("lazy");
+                    observer.unobserve(lazyImage);
+                }
+            });
+        }, {
+            rootMargin: '0px 0px 1000px 0px'
+        });
+
+        lazyImages.forEach(function (lazyImage) {
+            lazyImageObserver.observe(lazyImage);
+        });
+    }
+}
+
+function initializeLazyLoadWithObserver() {
+    // Initial load for the whole document.
+    initializeLazyLoad(document);
+
+    // Create a MutationObserver to watch for new nodes being added.
+    const content = document.getElementById("content");
+    if (content) {
+        const mutationObserver = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                mutation.addedNodes.forEach(function (node) {
+                    if (node.nodeType === 1) { // Check if it's an element.
+                        initializeLazyLoad(node);
+                    }
+                });
+            });
+        });
+
+        mutationObserver.observe(content, { childList: true, subtree: true });
+    }
+}
+
 function initializeForkClickHandlers() {
     // Entry actions
     onClick(":is(a, button)[data-mark-above-read]", (event) => setEntriesAboveStatusRead(event.target));
@@ -223,7 +274,6 @@ initializeForkClickHandlers();
 document.addEventListener("DOMContentLoaded", () => {
     initMasonryLayout();
     category_feeds_cascader();
-    imageFallback(":is(img, source)[data-fallback]");
 
     if (document.querySelector('.no-back-forward-cache')) {
         window.onpageshow = function (event) {
@@ -232,4 +282,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
     }
+
+    initializeLazyLoadWithObserver();
 });

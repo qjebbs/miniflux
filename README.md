@@ -6,9 +6,10 @@ This is a Miniflux fork, ships with all upstream features, plus:
 - Masonry view with thumbnails.
 - NSFW Feature: Show / Hide content which is `Not Safe For Work`. 
 - Quickly toggle masonry / list view for every category / feed.
-- Add entry button `Mark Above as Read`.
+- Add entry operation `Mark Above as Read`.
 - Save / Edit articles.
-- Cache images to disk/database according to feeds settings
+- Cache images to disk/database, the cached images will be used when the original images are not reachable on web UI.
+    > Use `miniflux --cache-pack output.zip` to create a pack of images that recognizable by OS.
 
 ### Environment Variables Added
 
